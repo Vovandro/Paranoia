@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.7)
 project(Paranoia)
 
 set( MAJOR_VERSION 0.1.0 )
@@ -9,8 +9,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 set(SRC_DIR ${PARANOIA_SOURCE_DIR}/src)
 include_directories( ${PARANOIA_SOURCE_DIR}/include )
 
-#include_directories( ${PARANOIA_SOURCE_DIR}../Dependencies/include )
-#link_directories( ${PARANOIA_SOURCE_DIR}../Dependencies/lib/Linux )
+include_directories( ${PARANOIA_SOURCE_DIR}../dep/include )
+link_directories( ${PARANOIA_SOURCE_DIR}../dep/lib/Linux )
 
 
 # find OpenGL
@@ -32,7 +32,7 @@ set(INSTALL_PATH ${PARANOIA_SOURCE_DIR}/../bin)
 add_library(Paranoia SHARED ${SOURCES} ${HEADERS})
 
 
-#target_link_libraries(Paranoia sfml-window sfml-system sfml-graphics ${ADDITIONAL_LIBRARIES})
+target_link_libraries(Paranoia sfml-window sfml-system sfml-graphics ${ADDITIONAL_LIBRARIES})
 
 set_target_properties( Paranoia PROPERTIES 
                               VERSION ${MAJOR_VERSION} 
