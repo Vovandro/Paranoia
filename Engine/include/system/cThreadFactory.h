@@ -13,7 +13,7 @@ namespace System {
     protected:
     public:
         cThreadFactory();
-        ~cThreadFactory();
+        virtual ~cThreadFactory();
 
         sf::Mutex globalMutex;
 

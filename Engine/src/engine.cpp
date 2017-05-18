@@ -22,7 +22,7 @@ Paranoia::Engine::~Engine() {
 
 bool Paranoia::Engine::Init() {
 
-    window->Init(3, 0, 0);
+    window->Init(3, 0, 2);
 
     run = true;
     return true;

@@ -9,13 +9,14 @@ Paranoia::Engine *engine;
 class MyThreads: public System::cThread {
 protected:
 public:
-    MyThreads() : System::cThread(engine->threads, "names", 10, true, true) {}
+    MyThreads(int id) : System::cThread(engine->threads, "names", id, true, true) {}
 
     void Work() override {
         System::cThread::Work();
-        LockLocal();
-        std::cout << "Threads" << std::endl;
-        UnLockLocal();
+        Lock();
+        std::cout << "Threads № " << id << std::endl;
+        UnLock();
+        SleepThis(100);
     }
 };
 
@@ -24,15 +25,17 @@ int main() {
 
     engine->Init();
 
-    MyThreads thread;
-    MyThreads thread2;
-    MyThreads thread3;
+    MyThreads thread(1);
+    MyThreads thread2(2);
+    MyThreads thread3(3);
+    MyThreads thread4(4);
+    MyThreads thread5(5);
 
     engine->threads->AddWork(&thread, true);
-
     engine->threads->AddWork(&thread2, true);
-
     engine->threads->AddWork(&thread3, true);
+    engine->threads->AddWork(&thread4, true);
+    engine->threads->AddWork(&thread5, true);
 
     engine->Start();
 

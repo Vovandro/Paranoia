@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_subdirectory(Engine)
 
-#Samples build
-add_subdirectory(Samples/Window)
-add_subdirectory(Samples/Threads)
+
+set(BUILD_EXAMPLES ON)
+
+if (${BUILD_EXAMPLES})
+    #Samples build
+    add_subdirectory(Samples/Window)
+    add_subdirectory(Samples/Threads)
+endif ()

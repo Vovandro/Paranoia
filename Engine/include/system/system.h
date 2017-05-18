@@ -9,6 +9,8 @@
 #include "cWindow.h"
 #include "cThread.h"
 #include "cThreadFactory.h"
+#include "cFile.h"
+#include "cFileFactory.h"
 
 
 namespace System {
