@@ -13,6 +13,7 @@ namespace Paranoia {
 }
 
 namespace System {
+    /* Класс для работы с окном */
     class cWindow {
     protected:
         Paranoia::Engine *engine;
@@ -25,11 +26,11 @@ namespace System {
         cWindow(Paranoia::Engine *engine);
         ~cWindow();
 
-        /*Инициализация окна
+        /* Инициализация окна
          * isConsole - терминальное окно
          * w,h - ширина и высота окна
          * isFullscreen - полноэкранный режим (не совместим с терминальным окном) */
-        bool Init(bool isConsole, int w = 640, int h = 480, bool isFullscreen = false);
+        bool Init(unsigned int glMajor = 2, unsigned int glMinor = 0,unsigned int antialiasingLevel = 0, bool isConsole = false, int w = 640, int h = 480, bool isFullscreen = false);
 
         /* Получение дескриптора окна */
         sf::Window *GetWindow();

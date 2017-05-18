@@ -7,6 +7,8 @@
 
 
 #include "cWindow.h"
+#include "cThread.h"
+#include "cThreadFactory.h"
 
 
 namespace System {

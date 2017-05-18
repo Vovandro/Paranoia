@@ -10,10 +10,39 @@ System::cWindow::cWindow(class Paranoia::Engine *engine) {
 }
 
 
-System::cWindow::~cWindow(class Paranoia::Engine *engine) {
+System::cWindow::~cWindow() {
+    win->close();
 }
 
-bool System::cWindow::Init(bool isConsole, int w = 640, int h = 480, bool isFullscreen = false) {
+bool System::cWindow::Init(unsigned int glMajor, unsigned int glMinor,unsigned int antialiasingLevel, bool isConsole, int w, int h, bool isFullscreen) {
+    if (!isConsole)
+    {
+        this->w = w;
+        this->h = h;
+        this->isFullscreen = isFullscreen;
+
+        sf::ContextSettings settings;
+        settings.depthBits = 24;
+        settings.stencilBits = 8;
+        settings.antialiasingLevel = antialiasingLevel;
+        settings.majorVersion = glMajor;
+        settings.minorVersion = glMinor;
+
+        //Создаем окно
+        if (isFullscreen)
+            win = new sf::Window(sf::VideoMode(w, h), "Paranoia Engine", sf::Style::Default, settings);
+        else
+            win = new sf::Window(sf::VideoMode(w, h), "Paranoia Engine", sf::Style::Default, settings);
+
+        if (win == nullptr)
+        {
+            std::cout << "Create Window Error: " << std::endl;
+            return false;
+        }
+
+        win->setActive(true);
+    }
+
     return true;
 }
 
