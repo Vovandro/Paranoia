@@ -21,5 +21,14 @@ bool System::cFileFactory::Add(std::string fName, FILE_OPEN_TYPE type) {
 }
 
 System::cFileData *System::cFileFactory::Read(std::string fName, unsigned int size, bool isLine, bool isWord) {
-    return NULL;
+    if (fName == "")
+        return NULL;
+
+    cFile *newFile = FindObject(fName);
+
+    if (newFile == NULL) {
+        return NULL;
+    }
+
+    return newFile->Read(size, isLine, isWord);
 }

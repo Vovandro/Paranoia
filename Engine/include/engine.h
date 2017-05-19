@@ -27,7 +27,8 @@ namespace Paranoia {
         System::cWindow *window;
         //Класс для работы с потоками
         System::cThreadFactory *threads;
-
+        //Класс для работы с файлами
+        System::cFileFactory *files;
 
         Engine(eStartType type);
         ~Engine();

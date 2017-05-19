@@ -10,11 +10,13 @@ Paranoia::Engine::Engine(eStartType type) {
 
     window = new System::cWindow(this);
     threads = new System::cThreadFactory();
+    files = new System::cFileFactory();
 }
 
 Paranoia::Engine::~Engine() {
     Stop();
 
+    delete files;
     delete threads;
     delete window;
 }
