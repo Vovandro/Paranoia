@@ -11,6 +11,7 @@
 #include "cThreadFactory.h"
 #include "cFile.h"
 #include "cFileFactory.h"
+#include "cLog.h"
 
 
 namespace System {

@@ -29,6 +29,8 @@ namespace Paranoia {
         System::cThreadFactory *threads;
         //Класс для работы с файлами
         System::cFileFactory *files;
+        //Работа с логами
+        System::cLog *log;
 
         Engine(eStartType type);
         ~Engine();

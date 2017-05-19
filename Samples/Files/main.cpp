@@ -22,8 +22,10 @@ int main() {
 
     if (fd != NULL)
         std::cout << fd->data << std::endl;
-    else
+    else {
         std::cout << "File not found!" << std::endl;
+        engine->log->AddMessage("File not found!", LOG_TYPE::LOG_ERROR);
+    }
 
     engine->Start();
 

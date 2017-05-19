@@ -2,6 +2,7 @@
 // Created by devil on 18.05.17.
 //
 
+#include <cstring>
 #include "../../include/system/cFile.h"
 
 System::cFile::cFile(std::string name, int id, bool lock) : Core::cFactoryObject(name, id, lock) {
@@ -156,16 +157,26 @@ void System::cFile::Write(System::cFileData *data) {
         break;
 
         case OPEN_WRITE: {
-            f_W->write(data->data, data->size);
+            *f_W << data->data;
         }
         break;
 
         case OPEN_RW: {
-            f_RW->write(data->data, data->size);
+            *f_RW << data->data;
         }
         break;
 
         default:
             break;
     }
+}
+
+void System::cFile::Write(std::string message) {
+    cFileData fd;
+
+    fd.data = new char[message.size()];
+    strcpy(fd.data, message.c_str());
+    fd.size = message.size();
+
+    Write(&fd);
 }

@@ -11,11 +11,15 @@ Paranoia::Engine::Engine(eStartType type) {
     window = new System::cWindow(this);
     threads = new System::cThreadFactory();
     files = new System::cFileFactory();
+    log = new System::cLog(this, "log");
+
+    log->AddMessage("Init log system", LOG_TYPE::LOG_MESSAGE);
 }
 
 Paranoia::Engine::~Engine() {
     Stop();
 
+    delete log;
     delete files;
     delete threads;
     delete window;

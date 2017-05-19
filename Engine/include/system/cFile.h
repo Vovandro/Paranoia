@@ -34,7 +34,7 @@ namespace System {
 
     public:
         cFile(std::string name, int id, bool lock = false);
-        ~cFile();
+        virtual ~cFile();
 
         //Открытие файла
         bool Open(FILE_OPEN_TYPE type, bool clear = false);
@@ -44,6 +44,7 @@ namespace System {
         cFileData* Read(unsigned int size, bool isLine = false, bool isWord = false);
         //Запись в файл
         void Write(cFileData *data);
+        void Write(std::string message);
     };
 }
 

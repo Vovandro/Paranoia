@@ -20,7 +20,7 @@ namespace Core {
         unsigned long ids;
     public:
         cFactory() {ids = 1000;};
-        ~cFactory() {};
+        virtual ~cFactory() {};
 
         // Добавление элемента в фабрику
         virtual void AddObject(T *newObject) {if (newObject == NULL) return; obj.push_back(newObject);};
