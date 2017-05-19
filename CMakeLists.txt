@@ -12,4 +12,5 @@ if (${BUILD_EXAMPLES})
     #Samples build
     add_subdirectory(Samples/Window)
     add_subdirectory(Samples/Threads)
+    add_subdirectory(Samples/Files)
 endif ()

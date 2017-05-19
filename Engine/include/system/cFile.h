@@ -17,6 +17,12 @@ enum FILE_OPEN_TYPE {
 };
 
 namespace System {
+    class cFileData {
+    public:
+        char* data;
+        int size;
+    };
+
     class cFile : public Core::cFactoryObject {
     protected:
         FILE_OPEN_TYPE type;
@@ -31,11 +37,13 @@ namespace System {
         ~cFile();
 
         //Открытие файла
-        bool Open(FILE_OPEN_TYPE type);
+        bool Open(FILE_OPEN_TYPE type, bool clear = false);
         //Закрытие файла
         void Close();
         //Считывание файла
-        bool Read();
+        cFileData* Read(unsigned int size, bool isLine = false, bool isWord = false);
+        //Запись в файл
+        void Write(cFileData *data);
     };
 }
 

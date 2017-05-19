@@ -16,8 +16,10 @@ namespace Core {
     protected:
         //Объекты фабрики
         std::vector<T*> obj;
+        //Счетчик ID
+        unsigned long ids;
     public:
-        cFactory() {};
+        cFactory() {ids = 1000;};
         ~cFactory() {};
 
         // Добавление элемента в фабрику
@@ -36,6 +38,8 @@ namespace Core {
         // Получение элемента по имени
         T* Get(std::string name) {for (typename std::vector<T*>::iterator it = obj.begin(); it != obj.end(); ++it) if ((*it)->GetName() == name) return (*it); return NULL;};
         //T* Get(std::string name) {for (int i = 0; i <= obj.size(); i++) if (obj[i]->GetName() == name) return obj[i]; return NULL;};
+
+        unsigned long GetNewID() {return ids++;};
 
         //Получение всего вектора
         std::vector<T*> *GetAll() {return &obj;};

@@ -12,6 +12,8 @@ namespace System {
     class cFileFactory : public Core::cFactory<cFile> {
     protected:
     public:
+        bool Add(std::string fName, FILE_OPEN_TYPE type);
+        cFileData *Read(std::string fName, unsigned int size, bool isLine = false, bool isWord = false);
     };
 }
 
