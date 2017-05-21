@@ -6,8 +6,6 @@
 #define PROJECT_CFILE_H
 
 #include "../core/cFactoryObject.h"
-#include <fstream>
-#include <iostream>
 #include <stdio.h>
 
 enum FILE_OPEN_TYPE {
@@ -26,9 +24,8 @@ namespace System {
     class cFile : public Core::cFactoryObject {
     protected:
         FILE_OPEN_TYPE type;
-        std::ofstream *f_W;
-        std::ifstream *f_R;
-        std::fstream *f_RW;
+
+        std::FILE *file;
 
         bool open;
 

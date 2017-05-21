@@ -6,9 +6,7 @@
 #include "../../include/system/cFile.h"
 
 System::cFile::cFile(std::string name, int id, bool lock) : Core::cFactoryObject(name, id, lock) {
-    f_R = NULL;
-    f_W = NULL;
-    f_RW = NULL;
+    file = NULL;
 }
 
 System::cFile::~cFile() {
@@ -23,41 +21,17 @@ bool System::cFile::Open(FILE_OPEN_TYPE type, bool clear) {
 
     switch (type) {
         case OPEN_READ: {
-            f_R = new std::ifstream(name.c_str(), std::ios_base::binary);
-
-            if (f_R->is_open()) {
-                open = true;
-                return true;
-            } else {
-                open = false;
-                return false;
-            }
+            file = fopen(name.c_str(), "r");
         }
         break;
 
         case OPEN_WRITE: {
-            f_W = new std::ofstream(name.c_str(), clear?(std::ios_base::binary|std::ios_base::trunc):(std::ios_base::binary));
-
-            if (f_W->is_open()) {
-                open = true;
-                return true;
-            } else {
-                open = false;
-                return false;
-            }
+            file = fopen(name.c_str(), "w");
         }
         break;
 
         case OPEN_RW: {
-            f_RW = new std::fstream(name.c_str(), clear?(std::ios_base::binary|std::ios_base::trunc):(std::ios_base::binary));
-
-            if (f_RW->is_open()) {
-                open = true;
-                return true;
-            } else {
-                open = false;
-                return false;
-            }
+            file = fopen(name.c_str(), "r+");
         }
         break;
 
@@ -65,26 +39,19 @@ bool System::cFile::Open(FILE_OPEN_TYPE type, bool clear) {
             break;
     }
 
+    if (file != NULL) {
+        open = true;
+        return true;
+    }
+
+    open = false;
     return false;
 }
 
 void System::cFile::Close() {
-    if (f_R != NULL) {
-        f_R->close();
-        delete f_R;
-        f_R = NULL;
-    }
-
-    if (f_W != NULL) {
-        f_W->close();
-        delete f_W;
-        f_W = NULL;
-    }
-
-    if (f_RW != NULL) {
-        f_RW->close();
-        delete f_RW;
-        f_RW = NULL;
+    if (file != NULL) {
+       fclose(file);
+        file = NULL;
     }
 
     open = false;
@@ -101,16 +68,16 @@ System::cFileData *System::cFile::Read(unsigned int size, bool isLine, bool isWo
             ret->data = new char[size];
 
             if (isLine) {
-                f_R->getline(ret->data, ret->size);
+                //f_R->getline(ret->data, ret->size);
                 return ret;
             }
 
             if (isWord) {
-                *f_R >> ret->data;
+               // *f_R >> ret->data;
                 return ret;
             }
 
-            f_R->read(ret->data, ret->size);
+            //f_R->read(ret->data, ret->size);
 
             return ret;
         }
@@ -127,16 +94,16 @@ System::cFileData *System::cFile::Read(unsigned int size, bool isLine, bool isWo
             ret->data = new char[size];
 
             if (isLine) {
-                f_R->getline(ret->data, ret->size);
+                //f_R->getline(ret->data, ret->size);
                 return ret;
             }
 
             if (isWord) {
-                *f_R >> ret->data;
+                //*f_R >> ret->data;
                 return ret;
             }
 
-            f_RW->read(ret->data, ret->size);
+            //f_RW->read(ret->data, ret->size);
 
             return ret;
         }
@@ -156,13 +123,9 @@ void System::cFile::Write(System::cFileData *data) {
         }
         break;
 
-        case OPEN_WRITE: {
-            *f_W << data->data;
-        }
-        break;
-
+        case OPEN_WRITE:
         case OPEN_RW: {
-            *f_RW << data->data;
+            fwrite(data->data, sizeof(char), data->size, file);
         }
         break;
 

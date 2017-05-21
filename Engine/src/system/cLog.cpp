@@ -18,6 +18,10 @@ System::cLog::cLog(Paranoia::Engine *engine, std::string fName) : System::cThrea
 }
 
 System::cLog::~cLog() {
+    LockLocal();
+    file->Close();
+    delete file;
+    UnLockLocal();
 }
 
 void System::cLog::Work() {
@@ -37,7 +41,7 @@ void System::cLog::Write() {
         return;
 
     cLogMessage *msg = cyrMessage;
-    file->Write(msg->Message + "/n");
+    file->Write(msg->Message + "\n");
 
     if (lastMessage == cyrMessage) {
         lastMessage = NULL;
