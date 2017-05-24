@@ -11,7 +11,9 @@
 enum FILE_OPEN_TYPE {
     OPEN_READ,
     OPEN_WRITE,
+    OPEN_WRITE_CLEAR,
     OPEN_RW,
+    OPEN_RW_CLEAR,
 };
 
 namespace System {
@@ -34,7 +36,7 @@ namespace System {
         virtual ~cFile();
 
         //Открытие файла
-        bool Open(FILE_OPEN_TYPE type, bool clear = false);
+        bool Open(FILE_OPEN_TYPE type, bool binaries = false);
         //Закрытие файла
         void Close();
         //Считывание файла

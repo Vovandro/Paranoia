@@ -13,31 +13,46 @@ System::cFile::~cFile() {
     Close();
 }
 
-bool System::cFile::Open(FILE_OPEN_TYPE type, bool clear) {
+bool System::cFile::Open(FILE_OPEN_TYPE type, bool binaries) {
     if (open)
         Close();
 
     this->type = type;
+    std::string modes = "r";
 
     switch (type) {
         case OPEN_READ: {
-            file = fopen(name.c_str(), "r");
+            modes = "r";
         }
         break;
 
         case OPEN_WRITE: {
-            file = fopen(name.c_str(), "w");
+            modes = "a";
+        }
+        break;
+
+        case OPEN_WRITE_CLEAR: {
+            modes = "w";
         }
         break;
 
         case OPEN_RW: {
-            file = fopen(name.c_str(), "r+");
+                modes = "a+";
         }
         break;
+
+        case OPEN_RW_CLEAR: {
+            modes = "w+";
+        }
 
         default:
             break;
     }
+
+    if (binaries)
+        modes += "b";
+
+    file = fopen(name.c_str(), modes.c_str());
 
     if (file != NULL) {
         open = true;
