@@ -12,7 +12,7 @@ System::cLog::cLog(Paranoia::Engine *engine, std::string fName) : System::cThrea
 
     file = new cFile(fName, 0, true);
     engine->files->AddObject(file);
-    file->Open(FILE_OPEN_TYPE::OPEN_WRITE);
+    file->Open(FILE_OPEN_TYPE::OPEN_WRITE_CLEAR);
 
     engine->threads->AddWork(this, true);
 }
@@ -69,5 +69,8 @@ void System::cLog::AddMessage(std::string Message, LOG_TYPE Type) {
         lastMessage->nextMessage = msg;
         lastMessage = msg;
     }
+
+    std::cout << Message + "\n";
+
     UnLockLocal();
 }

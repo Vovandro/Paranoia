@@ -7,6 +7,7 @@
 
 #include "system/system.h"
 #include "core/core.h"
+#include "render/render.h"
 
 
 enum eStartType
@@ -31,6 +32,10 @@ namespace Paranoia {
         System::cFileFactory *files;
         //Работа с логами
         System::cLog *log;
+        //Система рендера
+        Render::cRender *render;
+        //Система обновления данных
+        System::cUpdate *update;
 
         Engine(eStartType type);
         ~Engine();

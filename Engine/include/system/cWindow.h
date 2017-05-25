@@ -34,6 +34,8 @@ namespace System {
 
         /* Получение дескриптора окна */
         sf::Window *GetWindow();
+        //Обновление
+        void Update();
     };
 }
 

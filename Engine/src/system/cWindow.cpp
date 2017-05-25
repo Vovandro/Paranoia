@@ -30,7 +30,7 @@ bool System::cWindow::Init(unsigned int glMajor, unsigned int glMinor,unsigned i
 
         //Создаем окно
         if (isFullscreen)
-            win = new sf::Window(sf::VideoMode(w, h), "Paranoia Engine", sf::Style::Default, settings);
+            win = new sf::Window(sf::VideoMode(w, h), "Paranoia Engine", sf::Style::Fullscreen, settings);
         else
             win = new sf::Window(sf::VideoMode(w, h), "Paranoia Engine", sf::Style::Default, settings);
 
@@ -40,6 +40,8 @@ bool System::cWindow::Init(unsigned int glMajor, unsigned int glMinor,unsigned i
             return false;
         }
 
+        win->setVerticalSyncEnabled(true);
+
         win->setActive(true);
     }
 
@@ -48,4 +50,9 @@ bool System::cWindow::Init(unsigned int glMajor, unsigned int glMinor,unsigned i
 
 sf::Window* System::cWindow::GetWindow() {
     return win;
+}
+
+void System::cWindow::Update() {
+    if (win)
+        win->display();
 }

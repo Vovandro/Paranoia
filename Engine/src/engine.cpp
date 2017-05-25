@@ -14,11 +14,16 @@ Paranoia::Engine::Engine(eStartType type) {
     log = new System::cLog(this, "log");
 
     log->AddMessage("Init log system", LOG_TYPE::LOG_MESSAGE);
+
+    render = new Render::cRender(this);
+    update = new System::cUpdate(this);
 }
 
 Paranoia::Engine::~Engine() {
     Stop();
 
+    delete update;
+    delete render;
     delete log;
     delete files;
     delete threads;
@@ -28,7 +33,8 @@ Paranoia::Engine::~Engine() {
 
 bool Paranoia::Engine::Init() {
 
-    window->Init(3, 0, 2);
+    window->Init(2, 2, 0);
+    render->Init();
 
     run = true;
     return true;
@@ -37,6 +43,12 @@ bool Paranoia::Engine::Init() {
 void Paranoia::Engine::Start() {
     while (run) {
         handleEvents();
+
+        //update->Update();
+
+        render->Update(0);
+
+        window->Update();
     }
 }
 
@@ -62,6 +74,7 @@ void Paranoia::Engine::handleEvents() {
                 break;
 
             case sf::Event::Resized:
+                render->Resize(event.size.width, event.size.height);
                 break;
 
             default:

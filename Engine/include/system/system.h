@@ -12,6 +12,7 @@
 #include "cFile.h"
 #include "cFileFactory.h"
 #include "cLog.h"
+#include "cUpdate.h"
 
 
 namespace System {
