@@ -36,6 +36,8 @@ namespace Paranoia {
         Render::cRender *render;
         //Система обновления данных
         System::cUpdate *update;
+        //Система состояний
+        Core::cStateManager *states;
 
         Engine(eStartType type);
         ~Engine();

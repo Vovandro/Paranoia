@@ -17,11 +17,14 @@ Paranoia::Engine::Engine(eStartType type) {
 
     render = new Render::cRender(this);
     update = new System::cUpdate(this);
+
+    states = new Core::cStateManager();
 }
 
 Paranoia::Engine::~Engine() {
     Stop();
 
+    delete states;
     delete update;
     delete render;
     delete log;

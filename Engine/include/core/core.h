@@ -7,6 +7,8 @@
 
 #include "cFactory.h"
 #include "cFactoryObject.h"
+#include "cState.h"
+#include "cStateManager.h"
 
 namespace Core {
 
