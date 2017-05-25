@@ -7,6 +7,7 @@
 
 System::cFile::cFile(std::string name, int id, bool lock) : Core::cFactoryObject(name, id, lock) {
     file = NULL;
+    fData = NULL;
 }
 
 System::cFile::~cFile() {
@@ -18,6 +19,7 @@ bool System::cFile::Open(FILE_OPEN_TYPE type, bool binaries) {
         Close();
 
     this->type = type;
+    isBinary = binaries;
     std::string modes = "r";
 
     switch (type) {
@@ -69,61 +71,90 @@ void System::cFile::Close() {
         file = NULL;
     }
 
+    ClearData();
+
     open = false;
 }
 
-System::cFileData *System::cFile::Read(unsigned int size, bool isLine, bool isWord) {
+System::cFileData *System::cFile::Read(long size) {
     if (!open)
         return NULL;
 
     switch (type) {
-        case OPEN_READ: {
-            cFileData *ret = new cFileData();
-            ret->size = size;
-            ret->data = new char[size];
-
-            if (isLine) {
-                //f_R->getline(ret->data, ret->size);
-                return ret;
-            }
-
-            if (isWord) {
-               // *f_R >> ret->data;
-                return ret;
-            }
-
-            //f_R->read(ret->data, ret->size);
-
-            return ret;
-        }
-        break;
-
-        case OPEN_WRITE: {
-            return NULL;
-        }
-        break;
-
+        case OPEN_READ:
         case OPEN_RW: {
-            cFileData *ret = new cFileData();
-            ret->size = size;
-            ret->data = new char[size];
+            ClearData();
+            fData = new cFileData();
 
-            if (isLine) {
-                //f_R->getline(ret->data, ret->size);
-                return ret;
+            if (size == 0) {
+                SetPosStart(0);
+                fData->size = GetSize();
+            } else {
+                fData->size = size;
             }
 
-            if (isWord) {
-                //*f_R >> ret->data;
-                return ret;
-            }
+            fData->data = new char[fData->size];
 
-            //f_RW->read(ret->data, ret->size);
-
-            return ret;
+            fData->size = fread(fData->data, isBinary?1:sizeof(char), fData->size, file);
+            return fData;
         }
         break;
 
+        case OPEN_WRITE:
+        default:
+            return NULL;
+    }
+}
+
+System::cFileData *System::cFile::ReadLine(long size) {
+    if (!open)
+        return NULL;
+
+    switch (type) {
+        case OPEN_READ:
+        case OPEN_RW: {
+            ClearData();
+            fData = new cFileData();
+
+            if (size == 0) {
+                SetPosStart(0);
+                fData->size = GetSize();
+            } else {
+                fData->size = size;
+            }
+
+            fData->data = new char[fData->size];
+
+            fgets(fData->data, fData->size, file);
+            return fData;
+        }
+            break;
+
+        case OPEN_WRITE:
+        default:
+            return NULL;
+    }
+}
+
+System::cFileData *System::cFile::ReadChar() {
+    if (!open)
+        return NULL;
+
+    switch (type) {
+        case OPEN_READ:
+        case OPEN_RW: {
+            ClearData();
+            fData = new cFileData();
+            fData->size = 1;
+            fData->data = new char;
+
+            *fData->data = (char) getc(file);
+            return fData;
+
+        }
+            break;
+
+        case OPEN_WRITE:
         default:
             return NULL;
     }
@@ -157,4 +188,51 @@ void System::cFile::Write(std::string message) {
     fd.size = message.size();
 
     Write(&fd);
+}
+
+long System::cFile::GetSize() {
+    if (!open)
+        return 0;
+
+    long cyr = ftell(file);
+    fseek(file, 0, SEEK_END);
+    long ret = ftell(file);
+    fseek(file, cyr, SEEK_SET);
+    return ret;
+}
+
+long System::cFile::GetPos() {
+    if (!open)
+        return 0;
+
+    return ftell(file);
+}
+
+void System::cFile::SetPos(long pos) {
+    if (!open)
+        return;
+
+    fseek(file, pos, SEEK_CUR);
+}
+
+void System::cFile::SetPosStart(long pos) {
+    if (!open)
+        return;
+
+    fseek(file, pos, SEEK_SET);
+}
+
+void System::cFile::SetPosEnd(long pos) {
+    if (!open)
+        return;
+
+    fseek(file, pos, SEEK_END);
+}
+
+void System::cFile::ClearData() {
+    if (fData) {
+        delete fData->data;
+        delete fData;
+        fData = NULL;
+    }
 }

@@ -13,7 +13,14 @@ namespace System {
     protected:
     public:
         bool Add(std::string fName, FILE_OPEN_TYPE type);
-        cFileData *Read(std::string fName, unsigned int size, bool isLine = false, bool isWord = false);
+        void Write(std::string fName, cFileData *data);
+        void Write(std::string fName, std::string data);
+        cFileData *Read(std::string fName, unsigned int size = 0);
+        cFileData *ReadLine(std::string fName, unsigned int size = 0);
+        cFileData *ReadChar(std::string fName);
+        void SetPos(std::string fName, long pos);
+        void SetPosStart(std::string fName, long pos);
+        void SetPosEnd(std::string fName, long pos);
     };
 }
 

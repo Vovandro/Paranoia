@@ -12,13 +12,13 @@ int main() {
 
     engine->Init();
 
-    System::cFile File("test.txt", 0);
+    System::cFile File("log", 0);
 
     File.Open(FILE_OPEN_TYPE::OPEN_READ);
 
     System::cFileData *fd;
 
-    fd = File.Read(100);
+    fd = File.Read();
 
     if (fd != NULL)
         std::cout << fd->data << std::endl;
