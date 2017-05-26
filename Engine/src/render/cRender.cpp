@@ -16,7 +16,7 @@ bool Render::cRender::Init() {
     return false;
 }
 
-void Render::cRender::Update(float dt) {
+void Render::cRender::Update() {
     engine->window->GetWindow()->setActive(true);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -28,8 +28,6 @@ void Render::cRender::Update(float dt) {
     glVertex2f(200,50);
     glVertex2f(200,200);
     glEnd();
-
-    engine->window->GetWindow()->setActive(false);
 }
 
 void Render::cRender::Resize(int w, int h) {

@@ -47,11 +47,13 @@ void Paranoia::Engine::Start() {
     while (run) {
         handleEvents();
 
-        //update->Update();
-
-        render->Update(0);
+        update->LockLocal();
+        render->Update();
+        update->UnLockLocal();
 
         window->Update();
+
+        sf::sleep(sf::milliseconds(1));
     }
 }
 

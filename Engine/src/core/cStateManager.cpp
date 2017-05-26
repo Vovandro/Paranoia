@@ -17,8 +17,8 @@ void Core::cStateManager::Pop() {
     if (state)
     {
         cState *last = state;
-        state->End();
         state = state->prev;
+        last->End();
         delete last;
     }
 }

@@ -8,6 +8,11 @@ System::cThreadFactory::cThreadFactory():cFactory() {
 }
 
 System::cThreadFactory::~cThreadFactory() {
+    for (int i = 0; i <= obj.size(); i++) {
+        if (obj[i] != NULL) {
+            obj[i]->Destroy();
+        }
+    }
 }
 
 void System::cThreadFactory::AddWork(cThread *work, bool play) {

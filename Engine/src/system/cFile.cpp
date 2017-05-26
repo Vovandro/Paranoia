@@ -82,7 +82,8 @@ System::cFileData *System::cFile::Read(long size) {
 
     switch (type) {
         case OPEN_READ:
-        case OPEN_RW: {
+        case OPEN_RW:
+        case OPEN_RW_CLEAR: {
             ClearData();
             fData = new cFileData();
 
@@ -101,6 +102,7 @@ System::cFileData *System::cFile::Read(long size) {
         break;
 
         case OPEN_WRITE:
+        case OPEN_WRITE_CLEAR:
         default:
             return NULL;
     }
@@ -112,7 +114,8 @@ System::cFileData *System::cFile::ReadLine(long size) {
 
     switch (type) {
         case OPEN_READ:
-        case OPEN_RW: {
+        case OPEN_RW:
+        case OPEN_RW_CLEAR: {
             ClearData();
             fData = new cFileData();
 
@@ -131,6 +134,7 @@ System::cFileData *System::cFile::ReadLine(long size) {
             break;
 
         case OPEN_WRITE:
+        case OPEN_WRITE_CLEAR:
         default:
             return NULL;
     }
@@ -142,7 +146,8 @@ System::cFileData *System::cFile::ReadChar() {
 
     switch (type) {
         case OPEN_READ:
-        case OPEN_RW: {
+        case OPEN_RW:
+        case OPEN_RW_CLEAR:{
             ClearData();
             fData = new cFileData();
             fData->size = 1;
@@ -155,6 +160,7 @@ System::cFileData *System::cFile::ReadChar() {
             break;
 
         case OPEN_WRITE:
+        case OPEN_WRITE_CLEAR:
         default:
             return NULL;
     }
@@ -170,7 +176,9 @@ void System::cFile::Write(System::cFileData *data) {
         break;
 
         case OPEN_WRITE:
-        case OPEN_RW: {
+        case OPEN_WRITE_CLEAR:
+        case OPEN_RW:
+        case OPEN_RW_CLEAR: {
             fwrite(data->data, sizeof(char), data->size, file);
         }
         break;

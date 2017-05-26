@@ -29,7 +29,7 @@ int main() {
 
     engine->Start();
 
-    //delete engine;
+    delete engine;
 
     return 0;
 }

@@ -21,7 +21,7 @@ namespace Render {
         ~cRender();
 
         bool Init();
-        void Update(float dt);
+        void Update();
         void Resize(int w, int h);
     };
 }
