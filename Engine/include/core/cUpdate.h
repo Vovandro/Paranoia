@@ -5,14 +5,14 @@
 #ifndef PROJECT_CUPDATE_H
 #define PROJECT_CUPDATE_H
 
-#include "cThread.h"
+#include "../system/cThread.h"
 
 namespace Paranoia {
     class Engine;
 }
 
-namespace System {
-    class cUpdate : public cThread {
+namespace Core {
+    class cUpdate : public System::cThread {
     protected:
         Paranoia::Engine *engine;
         sf::Mutex mutex2D;

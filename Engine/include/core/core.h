@@ -9,6 +9,10 @@
 #include "cFactoryObject.h"
 #include "cState.h"
 #include "cStateManager.h"
+#include "cUpdate.h"
+#include "cObject.h"
+#include "cGameObject.h"
+#include "cScene.h"
 
 namespace Core {
 

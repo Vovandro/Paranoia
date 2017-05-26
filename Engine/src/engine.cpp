@@ -16,7 +16,7 @@ Paranoia::Engine::Engine(eStartType type) {
     log->AddMessage("Init log system", LOG_TYPE::LOG_MESSAGE);
 
     render = new Render::cRender(this);
-    update = new System::cUpdate(this);
+    update = new Core::cUpdate(this);
 
     states = new Core::cStateManager();
 }

@@ -35,7 +35,7 @@ namespace Paranoia {
         //Система рендера
         Render::cRender *render;
         //Система обновления данных
-        System::cUpdate *update;
+        Core::cUpdate *update;
         //Система состояний
         Core::cStateManager *states;
 
