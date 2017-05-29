@@ -55,6 +55,8 @@ void System::cThread::Start() {
 }
 
 void System::cThread::Destroy() {
+    LockLocal();
+
     if (thread)
         thread->terminate();
 

@@ -4,7 +4,7 @@
 
 #include "../../include/core/cObject.h"
 
-Core::cObject::cObject(std::string name, int id, bool lock = false) : cFactoryObject(name, id, look) {
+Core::cObject::cObject(std::string name, int id, bool lock) : cFactoryObject(name, id, lock) {
 
 }
 

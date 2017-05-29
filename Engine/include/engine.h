@@ -38,6 +38,8 @@ namespace Paranoia {
         Core::cUpdate *update;
         //Система состояний
         Core::cStateManager *states;
+        //Система сцен и объектов
+        Core::cSceneFactory *scenes;
 
         Engine(eStartType type);
         ~Engine();

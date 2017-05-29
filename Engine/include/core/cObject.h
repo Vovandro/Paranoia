@@ -8,13 +8,14 @@
 #include "cFactoryObject.h"
 
 namespace Core {
-    /*  --- Базовый класс для составляющих классов игрового объекта ---  */
+    /*  --- Базовый класс для составляющих классов игрового объекта ---
+     *  --- объектом может быть как звук, так и спрайт, камера или просто трансформация --- */
     class cObject : public cFactoryObject {
     protected:
     public:
         cObject(std::string name, int id, bool lock = false);
 
-        void Update(int dt);
+        virtual void Update(int dt);
     };
 }
 

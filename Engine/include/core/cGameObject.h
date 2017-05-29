@@ -10,10 +10,15 @@
 
 namespace Core {
     /*   --- Класс игрового объекта, может содержать под объекты ---   */
-    class cGameObject : public cFactoryObject, cFactory<cObject> {
+    class cGameObject : public cFactoryObject, cFactory<cGameObject> {
     protected:
     public:
-        cGameObject();
+        cFactory<cObject> *objects;
+
+        cGameObject(std::string name, int id, bool lock = false);
+        virtual ~cGameObject();
+
+        virtual void Update(int dt);
     };
 }
 

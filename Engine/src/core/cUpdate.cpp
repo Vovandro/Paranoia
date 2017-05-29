@@ -7,7 +7,7 @@
 
 Core::cUpdate::cUpdate(Paranoia::Engine *engine): System::cThread(engine->threads, "update", 1, true, true, 1, true) {
     this->engine = engine;
-    engine->threads->AddWork(this, true);
+    engine->threads->AddObject(this, true);
 }
 
 Core::cUpdate::~cUpdate() {

@@ -18,7 +18,8 @@ namespace System {
         sf::Mutex globalMutex;
 
         //Добавление потока в пул
-        void AddWork(cThread *work, bool play);
+        virtual void AddObject(cThread *work, bool play);
+        virtual void AddObject(cThread *work) override;
         //Продолжение приостановленного потока
         void Play(std::string name);
         //Приостановление потока на паузу
@@ -27,6 +28,7 @@ namespace System {
         void Stop(std::string name);
         //Принудительная остановка потока
         void Destroy(std::string name);
+        void DestroyFull();
 
         //системное, проверка на сообщения и удаление мусора
         void Update();

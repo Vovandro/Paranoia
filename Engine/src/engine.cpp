@@ -19,11 +19,16 @@ Paranoia::Engine::Engine(eStartType type) {
     update = new Core::cUpdate(this);
 
     states = new Core::cStateManager();
+
+    scenes = new Core::cSceneFactory();
 }
 
 Paranoia::Engine::~Engine() {
     Stop();
 
+    threads->DestroyFull();
+
+    delete scenes;
     delete states;
     delete update;
     delete render;

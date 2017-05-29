@@ -14,7 +14,7 @@ System::cLog::cLog(Paranoia::Engine *engine, std::string fName) : System::cThrea
     engine->files->AddObject(file);
     file->Open(FILE_OPEN_TYPE::OPEN_WRITE_CLEAR);
 
-    engine->threads->AddWork(this, true);
+    engine->threads->AddObject(this);
 }
 
 System::cLog::~cLog() {

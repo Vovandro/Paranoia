@@ -13,6 +13,7 @@
 #include "cObject.h"
 #include "cGameObject.h"
 #include "cScene.h"
+#include "cSceneFactory.h"
 
 namespace Core {
 

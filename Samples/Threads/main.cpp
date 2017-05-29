@@ -31,11 +31,11 @@ int main() {
     MyThreads thread4(4);
     MyThreads thread5(5);
 
-    engine->threads->AddWork(&thread, true);
-    engine->threads->AddWork(&thread2, true);
-    engine->threads->AddWork(&thread3, true);
-    engine->threads->AddWork(&thread4, true);
-    engine->threads->AddWork(&thread5, true);
+    engine->threads->AddObject(&thread, true);
+    engine->threads->AddObject(&thread2, true);
+    engine->threads->AddObject(&thread3, true);
+    engine->threads->AddObject(&thread4, true);
+    engine->threads->AddObject(&thread5, true);
 
     engine->Start();
 

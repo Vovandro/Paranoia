@@ -31,6 +31,8 @@ void Core::cStateManager::PopAll(bool isMessage) {
         state = state->prev;
         delete last;
     }
+
+    state = NULL;
 }
 
 Core::cState *Core::cStateManager::Get() {
