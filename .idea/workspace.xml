@@ -2,11 +2,11 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
-      <config projectName="Project" targetName="Files" />
-      <config projectName="Project" targetName="Paranoia" />
       <config projectName="Project" targetName="Window" />
-      <config projectName="Project" targetName="Threads" />
       <config projectName="Project" targetName="States" />
+      <config projectName="Project" targetName="Paranoia" />
+      <config projectName="Project" targetName="Threads" />
+      <config projectName="Project" targetName="Files" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -16,25 +16,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="31293509-8c0a-406d-af87-5412eec8a30e" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Engine/include/core/cSceneFactory.h" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Engine/src/core/cSceneFactory.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Engine/include/core/cConfig.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Engine/src/core/cConfig.cpp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/include/core/cGameObject.h" afterPath="$PROJECT_DIR$/Engine/include/core/cGameObject.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/include/core/cObject.h" afterPath="$PROJECT_DIR$/Engine/include/core/cObject.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/include/core/cScene.h" afterPath="$PROJECT_DIR$/Engine/include/core/cScene.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/include/core/core.h" afterPath="$PROJECT_DIR$/Engine/include/core/core.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/include/engine.h" afterPath="$PROJECT_DIR$/Engine/include/engine.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/include/system/cThreadFactory.h" afterPath="$PROJECT_DIR$/Engine/include/system/cThreadFactory.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/core/cGameObject.cpp" afterPath="$PROJECT_DIR$/Engine/src/core/cGameObject.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/core/cObject.cpp" afterPath="$PROJECT_DIR$/Engine/src/core/cObject.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/core/cScene.cpp" afterPath="$PROJECT_DIR$/Engine/src/core/cScene.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/core/cStateManager.cpp" afterPath="$PROJECT_DIR$/Engine/src/core/cStateManager.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/core/cUpdate.cpp" afterPath="$PROJECT_DIR$/Engine/src/core/cUpdate.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/engine.cpp" afterPath="$PROJECT_DIR$/Engine/src/engine.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/system/cLog.cpp" afterPath="$PROJECT_DIR$/Engine/src/system/cLog.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/system/cThread.cpp" afterPath="$PROJECT_DIR$/Engine/src/system/cThread.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/system/cThreadFactory.cpp" afterPath="$PROJECT_DIR$/Engine/src/system/cThreadFactory.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Samples/Threads/main.cpp" afterPath="$PROJECT_DIR$/Samples/Threads/main.cpp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Engine/src/core/cSceneFactory.cpp" afterPath="$PROJECT_DIR$/Engine/src/core/cSceneFactory.cpp" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -46,7 +32,28 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf>
+      <file leaf-file-name="cConfig.h" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Engine/include/core/cConfig.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-160">
+              <caret line="7" column="16" lean-forward="false" selection-start-line="7" selection-start-column="16" selection-end-line="7" selection-end-column="16" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="cConfig.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Engine/src/core/cConfig.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="80">
+              <caret line="4" column="38" lean-forward="false" selection-start-line="4" selection-start-column="38" selection-end-line="4" selection-end-column="38" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -96,13 +103,15 @@
         <option value="$PROJECT_DIR$/Engine/include/core/cGameObject.h" />
         <option value="$PROJECT_DIR$/Engine/include/core/cScene.h" />
         <option value="$PROJECT_DIR$/Engine/src/core/cScene.cpp" />
-        <option value="$PROJECT_DIR$/Engine/include/core/core.h" />
         <option value="$PROJECT_DIR$/Engine/include/engine.h" />
         <option value="$PROJECT_DIR$/Engine/include/core/cSceneFactory.h" />
         <option value="$PROJECT_DIR$/Engine/src/engine.cpp" />
         <option value="$PROJECT_DIR$/Engine/src/core/cObject.cpp" />
         <option value="$PROJECT_DIR$/Engine/src/core/cGameObject.cpp" />
         <option value="$PROJECT_DIR$/Engine/src/core/cSceneFactory.cpp" />
+        <option value="$PROJECT_DIR$/Engine/src/core/cConfig.cpp" />
+        <option value="$PROJECT_DIR$/Engine/include/core/core.h" />
+        <option value="$PROJECT_DIR$/Engine/include/core/cConfig.h" />
       </list>
     </option>
   </component>
@@ -560,7 +569,8 @@
       <workItem from="1495743216018" duration="534000" />
       <workItem from="1495780946987" duration="12825000" />
       <workItem from="1496086772265" duration="3721000" />
-      <workItem from="1496090948812" duration="829000" />
+      <workItem from="1496090948812" duration="1070000" />
+      <workItem from="1496265010439" duration="849000" />
     </task>
     <task id="LOCAL-00001" summary="Tests commint">
       <created>1495096260585</created>
@@ -611,18 +621,26 @@
       <option name="project" value="LOCAL" />
       <updated>1495811308126</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Scene, Object, Game Object &amp; Scene factory&#10;- Setup cScene, cGameObject and cScene&#10;- Adding base cSceneFactory&#10;- Rename cThreadFacory::AddWork to AddObject&#10;- Add cThreadFacory::AddObject from 1 parametrs (auto start)&#10;- Bug fix: destroy threads">
+      <created>1496092008852</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1496092008852</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="90106000" />
+    <option name="totallyTimeSpent" value="91196000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="27" width="1366" height="741" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1749634" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32263243" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32263243" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26966292" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32905295" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -656,7 +674,8 @@
     <MESSAGE value="cFile &amp; cFileFactory&#10;-Adding convert cFileData to std::string&#10;-Automated free read data&#10;-Read (all, size, line, char)&#10;-Function on positional from file" />
     <MESSAGE value="Update system &amp; fix bug&#10;- Adding updates in thread&#10;- Adding samples file from state manager&#10;- Fix file write from clean&#10;- Fix terminate threads&#10;- Fix free resource in threads" />
     <MESSAGE value="Scene, Object &amp; Game Object&#10;- Adding base from Scene&#10;- Adding base from Object&#10;- Adding base from Game Object&#10;- Minimal refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="Scene, Object &amp; Game Object&#10;- Adding base from Scene&#10;- Adding base from Object&#10;- Adding base from Game Object&#10;- Minimal refactoring" />
+    <MESSAGE value="Scene, Object, Game Object &amp; Scene factory&#10;- Setup cScene, cGameObject and cScene&#10;- Adding base cSceneFactory&#10;- Rename cThreadFacory::AddWork to AddObject&#10;- Add cThreadFacory::AddObject from 1 parametrs (auto start)&#10;- Bug fix: destroy threads" />
+    <option name="LAST_COMMIT_MESSAGE" value="Scene, Object, Game Object &amp; Scene factory&#10;- Setup cScene, cGameObject and cScene&#10;- Adding base cSceneFactory&#10;- Rename cThreadFacory::AddWork to AddObject&#10;- Add cThreadFacory::AddObject from 1 parametrs (auto start)&#10;- Bug fix: destroy threads" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -665,8 +684,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file:///run/media/devil/ACE29608E295D6C4/rec/Engine/src/Thread/cWorker.cpp" />
-    <entry file="file:///run/media/devil/ACE29608E295D6C4/rec/Engine/src/Thread/thread.cpp" />
     <entry file="file://$PROJECT_DIR$/dep/include/boost/system/error_code.hpp" />
     <entry file="file://$PROJECT_DIR$/../Paranoia_last/Samples/FirstTest/main.cpp" />
     <entry file="file:///usr/include/stdio.h">
@@ -815,6 +832,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="587">
           <caret line="52" column="42" lean-forward="true" selection-start-line="52" selection-start-column="42" selection-end-line="52" selection-end-column="42" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -822,7 +840,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="87">
           <caret line="14" column="24" lean-forward="true" selection-start-line="14" selection-start-column="24" selection-end-line="14" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -866,6 +883,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="115">
           <caret line="105" column="22" lean-forward="true" selection-start-line="105" selection-start-column="22" selection-end-line="105" selection-end-column="22" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -889,7 +907,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
           <caret line="44" column="0" lean-forward="false" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -897,7 +914,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="55">
           <caret line="37" column="42" lean-forward="true" selection-start-line="37" selection-start-column="42" selection-end-line="37" selection-end-column="42" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -913,7 +929,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="73">
           <caret line="30" column="21" lean-forward="false" selection-start-line="30" selection-start-column="21" selection-end-line="30" selection-end-column="21" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -947,14 +962,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="394">
           <caret line="35" column="6" lean-forward="true" selection-start-line="35" selection-start-column="6" selection-end-line="35" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Engine/include/core/core.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="15" column="25" lean-forward="false" selection-start-line="15" selection-start-column="25" selection-end-line="15" selection-end-column="25" />
           <folding />
         </state>
       </provider>
@@ -1009,19 +1016,41 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Engine/src/core/cSceneFactory.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="273">
-          <caret line="28" column="21" lean-forward="true" selection-start-line="28" selection-start-column="21" selection-end-line="28" selection-end-column="21" />
+        <state relative-caret-position="620">
+          <caret line="31" column="22" lean-forward="false" selection-start-line="31" selection-start-column="22" selection-end-line="31" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Engine/include/core/cSceneFactory.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="23" column="28" lean-forward="true" selection-start-line="23" selection-start-column="28" selection-end-line="23" selection-end-column="28" />
-          <folding>
-            <element signature="e#105#126#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="174">
+          <caret line="13" column="27" lean-forward="false" selection-start-line="13" selection-start-column="16" selection-end-line="13" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Engine/include/core/core.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="16" column="19" lean-forward="false" selection-start-line="16" selection-start-column="19" selection-end-line="16" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Engine/src/core/cConfig.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="80">
+          <caret line="4" column="38" lean-forward="false" selection-start-line="4" selection-start-column="38" selection-end-line="4" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Engine/include/core/cConfig.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-160">
+          <caret line="7" column="16" lean-forward="false" selection-start-line="7" selection-start-column="16" selection-end-line="7" selection-end-column="16" />
+          <folding />
         </state>
       </provider>
     </entry>

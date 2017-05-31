@@ -14,6 +14,7 @@
 #include "cGameObject.h"
 #include "cScene.h"
 #include "cSceneFactory.h"
+#include "cConfig.h"
 
 namespace Core {
 

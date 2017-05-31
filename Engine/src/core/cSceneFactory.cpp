@@ -13,15 +13,23 @@ Core::cSceneFactory::~cSceneFactory() {
 }
 
 Core::cScene *Core::cSceneFactory::CreateNew(std::string name, int id, bool lock) {
-    return NULL;
+    cScene *ret = new cScene(name, id, lock);
+
+    AddObject(ret);
+
+    return ret;
 }
 
 void Core::cSceneFactory::SetActive(std::string name) {
+    cScene *tmp = FindObject(name);
 
+    if (tmp) {
+        activeScene = tmp;
+    }
 }
 
 Core::cScene *Core::cSceneFactory::GetActive() {
-    return NULL;
+    return activeScene;
 }
 
 void Core::cSceneFactory::Update(int dt) {
