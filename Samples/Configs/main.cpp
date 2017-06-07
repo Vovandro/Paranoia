@@ -29,6 +29,10 @@ int main() {
 
     std::cout << conf.ToString();
 
+    Core::cConfig mk("make_config", 1);
+
+    mk.FromString("2|?|0|||id=1==12|?|1|||name=0==Game Objects");
+
     engine->Start();
 
 

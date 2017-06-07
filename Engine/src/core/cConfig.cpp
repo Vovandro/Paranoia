@@ -10,8 +10,8 @@ Core::cConfig::cConfig(std::string name, int id, bool lock) : Core::cFactoryObje
 
 std::string Core::cConfig::GetLine(std::string *text, std::string split, int &start) {
     int pos = text->find(split, start);
-    std::string ret = text->substr(start, pos);
-    start = pos + 3;
+    std::string ret = text->substr(start, pos - start);
+    start = pos + split.size();
     return ret;
 }
 
