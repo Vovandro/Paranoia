@@ -32,7 +32,7 @@ set(INSTALL_PATH ${PARANOIA_SOURCE_DIR}/../bin)
 add_library(Paranoia SHARED ${SOURCES} ${HEADERS})
 
 
-target_link_libraries(Paranoia sfml-window sfml-system sfml-graphics ${ADDITIONAL_LIBRARIES})
+target_link_libraries(Paranoia sfml-window sfml-system sfml-graphics z ${ADDITIONAL_LIBRARIES})
 
 set_target_properties( Paranoia PROPERTIES 
                               VERSION ${MAJOR_VERSION} 

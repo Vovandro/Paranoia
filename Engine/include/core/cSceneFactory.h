@@ -17,8 +17,11 @@ namespace Core {
         cSceneFactory();
         virtual ~cSceneFactory();
 
+        // Создать новую сцену
         cScene* CreateNew(std::string name, int id = 0, bool lock = false);
+        // Изменить активную сцену
         void SetActive(std::string name);
+        // Получить активную сцену
         cScene* GetActive();
 
         void Update(int dt);

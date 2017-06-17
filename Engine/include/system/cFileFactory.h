@@ -12,12 +12,16 @@ namespace System {
     class cFileFactory : public Core::cFactory<cFile> {
     protected:
     public:
+        // Открытие файла
         bool Add(std::string fName, FILE_OPEN_TYPE type);
+        // Запись данных в файл
         void Write(std::string fName, cFileData *data);
         void Write(std::string fName, std::string data);
+        // Считывание из файла данных
         cFileData *Read(std::string fName, unsigned int size = 0);
         cFileData *ReadLine(std::string fName, unsigned int size = 0);
         cFileData *ReadChar(std::string fName);
+        // Изменение положени курсора в файле
         void SetPos(std::string fName, long pos);
         void SetPosStart(std::string fName, long pos);
         void SetPosEnd(std::string fName, long pos);

@@ -30,14 +30,23 @@ namespace System {
         //Цикл потока
         void Thread();
 
+        // Ассоциаци созданного потока
         void AssignThread(sf::Thread *thread);
+        // Инициализаци потока
         void Init();
+        // Запуск потока
         void Start();
+        // Принудительная остановка потока
         void Destroy();
+        // Изменение активности потока
         void SetEnabled(bool enabled);
+        // Изменение параметра цикличности потока
         void SetLoop(bool loop);
+        // Установка переменной дл остановки потока
         void SetStop();
+        // Получение параметра остановлен ли поток
         bool GetStop();
+        // Получение необходимости вызова сообщения из основного потока
         bool GetMessage();
 
         //Блокировка общих ресурсов необходимая для безопасной записи
@@ -50,6 +59,7 @@ namespace System {
         //Разблокировка локальных ресурсов
         void UnLockLocal();
 
+        // Заморозка потока
         void SleepThis(unsigned int time);
 
 

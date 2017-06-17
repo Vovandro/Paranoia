@@ -28,6 +28,8 @@ namespace System {
         void Stop(std::string name);
         //Принудительная остановка потока
         void Destroy(std::string name);
+
+        // Принудительна остановка всех потоков
         void DestroyFull();
 
         //системное, проверка на сообщения и удаление мусора

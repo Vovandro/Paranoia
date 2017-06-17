@@ -48,9 +48,12 @@ namespace Core {
     public:
         cConfig(std::string name, int id, bool lock = false);
 
+        // Собирает все свои параметры в строку
         std::string ToString();
+        // Разбивает строку на параметры
         void FromString(std::string text);
 
+        // Добавление нового параметра
         void Add(cConfigItem* item);
     };
 }

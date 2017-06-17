@@ -22,11 +22,16 @@ namespace Core {
         cUpdate(Paranoia::Engine *engine);
         ~cUpdate();
 
+        // Блокировка 2Д данных для потоков
         void Lock2D();
+        // Разблокировка 2Д данных дл потоков
         void Unlock2D();
+        // Блокировка 3Д данных для потоков
         void Lock3D();
+        // Разблокировка 3Д данных для потоков
         void Unlock3D();
 
+        /* поток обновления */
         virtual void Work() override;
     };
 }
