@@ -15,6 +15,7 @@
 #include "cScene.h"
 #include "cSceneFactory.h"
 #include "cConfig.h"
+#include "cConfigFactory.h"
 
 namespace Core {
 

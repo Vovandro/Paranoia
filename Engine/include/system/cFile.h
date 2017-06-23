@@ -36,8 +36,10 @@ namespace System {
         bool isBinary;
 
     public:
-        cFile(std::string name, int id, bool lock = false);
+        cFile(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
         virtual ~cFile();
+
+        virtual void Register() override;
 
         //Открытие файла
         bool Open(FILE_OPEN_TYPE type, bool binaries = true);

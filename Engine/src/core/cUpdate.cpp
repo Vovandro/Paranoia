@@ -5,7 +5,7 @@
 #include "../../include/core/cUpdate.h"
 #include "../../include/engine.h"
 
-Core::cUpdate::cUpdate(Paranoia::Engine *engine): System::cThread(engine->threads, "update", 1, true, true, 1, true) {
+Core::cUpdate::cUpdate(Paranoia::Engine *engine): System::cThread(engine, "update", 1, true, true, 1, true) {
     this->engine = engine;
     engine->threads->AddObject(this, true);
 }

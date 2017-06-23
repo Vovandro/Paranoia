@@ -12,7 +12,7 @@ int main() {
 
     engine->Init("engine.cf");
 
-    System::cFile File("log", 0);
+    System::cFile File(engine, "log", 0);
 
     File.Open(FILE_OPEN_TYPE::OPEN_READ);
 

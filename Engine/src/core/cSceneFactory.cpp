@@ -4,7 +4,7 @@
 
 #include "../../include/core/cSceneFactory.h"
 
-Core::cSceneFactory::cSceneFactory() {
+Core::cSceneFactory::cSceneFactory(Paranoia::Engine *engine) : Core::cFactory<cScene>(engine) {
     activeScene = NULL;
 }
 
@@ -13,7 +13,7 @@ Core::cSceneFactory::~cSceneFactory() {
 }
 
 Core::cScene *Core::cSceneFactory::CreateNew(std::string name, int id, bool lock) {
-    cScene *ret = new cScene(name, id, lock);
+    cScene *ret = new cScene(engine, name, id, lock);
 
     AddObject(ret);
 

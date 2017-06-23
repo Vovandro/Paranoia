@@ -3,6 +3,7 @@
 //
 
 #include "../../include/core/cConfig.h"
+#include "../../include/engine.h"
 
 Core::cConfig::cConfig(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
 
@@ -86,4 +87,11 @@ void Core::cConfig::FromString(std::string text) {
 
 void Core::cConfig::Add(Core::cConfigItem *item) {
     items.push_back(item);
+}
+
+void Core::cConfig::Register() {
+    if (engine)
+    {
+        engine->configs->AddObject(this);
+    }
 }

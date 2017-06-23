@@ -12,7 +12,7 @@ namespace System {
     class cThreadFactory : public Core::cFactory<cThread> {
     protected:
     public:
-        cThreadFactory();
+        cThreadFactory(Paranoia::Engine *engine);
         virtual ~cThreadFactory();
 
         sf::Mutex globalMutex;

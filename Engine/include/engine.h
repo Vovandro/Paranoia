@@ -33,6 +33,8 @@ namespace Paranoia {
         System::cFileFactory *files;
         //Работа с логами
         System::cLog *log;
+        //Класс для работы с файлами конфигурации
+        Core::cConfigFactory *configs;
         //Система рендера
         Render::cRender *render;
         //Система обновления данных

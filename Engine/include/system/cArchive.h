@@ -13,7 +13,7 @@ namespace System {
     class cArchive : Core::cFactoryObject {
     protected:
     public:
-        cArchive(std::string name, int id, bool lock = false);
+        cArchive(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
     };
 }
 

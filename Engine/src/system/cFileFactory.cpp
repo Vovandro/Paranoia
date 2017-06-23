@@ -4,14 +4,14 @@
 
 #include "../../include/system/cFileFactory.h"
 
-bool System::cFileFactory::Add(std::string fName, FILE_OPEN_TYPE type) {
+bool System::cFileFactory::Open(std::string fName, FILE_OPEN_TYPE type) {
     if (fName == "")
         return false;
 
     cFile *newFile = FindObject(fName);
 
     if (newFile == NULL) {
-        newFile = new cFile(fName, GetNewID());
+        newFile = new cFile(engine, fName, GetNewID());
     }
 
     newFile->Open(type);
@@ -125,3 +125,12 @@ void System::cFileFactory::Write(std::string fName, std::string data) {
 
     newFile->Write(data);
 }
+
+System::cFileFactory::cFileFactory(Paranoia::Engine *engine) : Core::cFactory<cFile>(engine) {
+
+}
+
+System::cFileFactory::~cFileFactory() {
+    //Close All
+}
+

@@ -4,23 +4,12 @@
 
 #include "../../include/system/cThread.h"
 #include "../../include/system/cThreadFactory.h"
+#include "../../include/engine.h"
 
-System::cThread::cThread(System::cThreadFactory *factory, std::string name, int id, bool enabled, bool loop, unsigned int updateTime, bool lock) : Core::cFactoryObject(name, id, lock) {
-    this->factory = factory;
+System::cThread::cThread(Paranoia::Engine *engine, std::string name, int id, bool enabled, bool loop, unsigned int updateTime, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
     this->enabled = enabled;
     this->loop = loop;
     this->updateTime = updateTime;
-
-    isMessage = false;
-    isStop = false;
-    lockGlobal = false;
-}
-
-System::cThread::cThread(std::string name, int id, bool lock, System::cThreadFactory *factory) : Core::cFactoryObject(name, id, lock) {
-    this->factory = factory;
-    this->enabled = false;
-    this->loop = false;
-    this->updateTime = 1;
 
     isMessage = false;
     isStop = false;
@@ -104,12 +93,12 @@ bool System::cThread::GetMessage() {
 }
 
 void System::cThread::Lock() {
-    factory->globalMutex.lock();
+    engine->threads->globalMutex.lock();
     lockGlobal = true;
 }
 
 void System::cThread::UnLock() {
-    factory->globalMutex.unlock();
+    engine->threads->globalMutex.unlock();
     lockGlobal = false;
 }
 
@@ -134,4 +123,10 @@ void System::cThread::EndWork() {
 }
 
 void System::cThread::Message() {
+}
+
+void System::cThread::Register() {
+    if (engine) {
+        engine->threads->AddObject(this, false);
+    }
 }

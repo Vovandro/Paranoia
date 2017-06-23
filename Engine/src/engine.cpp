@@ -9,18 +9,20 @@ Paranoia::Engine::Engine(eStartType type) {
     this->type = type;
 
     window = new System::cWindow(this);
-    threads = new System::cThreadFactory();
-    files = new System::cFileFactory();
+    threads = new System::cThreadFactory(this);
+    files = new System::cFileFactory(this);
     log = new System::cLog(this, "log");
 
     log->AddMessage("Init log system", LOG_TYPE::LOG_MESSAGE);
+
+    configs = new Core::cConfigFactory(this);
 
     render = new Render::cRender(this);
     update = new Core::cUpdate(this);
 
     states = new Core::cStateManager();
 
-    scenes = new Core::cSceneFactory();
+    scenes = new Core::cSceneFactory(this);
 }
 
 Paranoia::Engine::~Engine() {
@@ -32,6 +34,7 @@ Paranoia::Engine::~Engine() {
     delete states;
     delete update;
     delete render;
+    delete configs;
     delete log;
     delete files;
     delete threads;

@@ -4,7 +4,7 @@
 
 #include "../../include/system/cThreadFactory.h"
 
-System::cThreadFactory::cThreadFactory():cFactory() {
+System::cThreadFactory::cThreadFactory(Paranoia::Engine *engine):cFactory(engine) {
 }
 
 System::cThreadFactory::~cThreadFactory() {

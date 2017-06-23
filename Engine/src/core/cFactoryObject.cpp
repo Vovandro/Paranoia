@@ -27,3 +27,7 @@ int Core::cFactoryObject::GetId() {
 bool Core::cFactoryObject::GetLock() {
     return lock;
 }
+
+void Core::cFactoryObject::Register() {
+
+}

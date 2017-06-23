@@ -4,5 +4,5 @@
 
 #include "../../include/system/cArchive.h"
 
-System::cArchive::cArchive(std::string name, int id, bool lock) : Core::cFactoryObject(name, id, lock) {
+System::cArchive::cArchive(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
 }

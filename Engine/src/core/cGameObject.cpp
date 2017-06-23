@@ -4,8 +4,8 @@
 
 #include "../../include/core/cGameObject.h"
 
-Core::cGameObject::cGameObject(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
-    objects = new Core::cFactory<cObject>();
+Core::cGameObject::cGameObject(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock), Core::cFactory<cGameObject>(engine) {
+    objects = new Core::cFactory<cObject>(engine);
 }
 
 Core::cGameObject::~cGameObject() {

@@ -5,12 +5,12 @@
 #include "../../include/system/cLog.h"
 #include "../../include/engine.h"
 
-System::cLog::cLog(Paranoia::Engine *engine, std::string fName) : System::cThread(engine->threads, "log", 0, true, true, 10, true) {
+System::cLog::cLog(Paranoia::Engine *engine, std::string fName) : System::cThread(engine, "log", 0, true, true, 10, true) {
     this->engine = engine;
     cyrMessage = NULL;
     lastMessage = NULL;
 
-    file = new cFile(fName, 0, true);
+    file = new cFile(engine, fName, 0, true);
     engine->files->AddObject(file);
     file->Open(FILE_OPEN_TYPE::OPEN_WRITE_CLEAR);
 

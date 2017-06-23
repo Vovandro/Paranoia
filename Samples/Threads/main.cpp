@@ -9,7 +9,7 @@ Paranoia::Engine *engine;
 class MyThreads: public System::cThread {
 protected:
 public:
-    MyThreads(int id) : System::cThread(engine->threads, "names", id, true, true) {}
+    MyThreads(int id) : System::cThread(engine, "names", id, true, true) {}
 
     void Work() override {
         System::cThread::Work();

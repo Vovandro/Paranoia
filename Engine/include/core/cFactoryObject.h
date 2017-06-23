@@ -23,6 +23,9 @@ namespace Core {
         cFactoryObject(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
         ~cFactoryObject();
 
+        //Каждый объект регистрируетьс самостоятельно в своей фабрике
+        virtual void Register();
+
         std::string GetName();
         int GetId();
         bool GetLock();

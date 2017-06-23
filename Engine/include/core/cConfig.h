@@ -48,6 +48,8 @@ namespace Core {
     public:
         cConfig(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
 
+        virtual void Register() override;
+
         // Собирает все свои параметры в строку
         std::string ToString();
         // Разбивает строку на параметры

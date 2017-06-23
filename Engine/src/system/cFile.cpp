@@ -4,8 +4,9 @@
 
 #include <cstring>
 #include "../../include/system/cFile.h"
+#include "../../include/engine.h"
 
-System::cFile::cFile(std::string name, int id, bool lock) : Core::cFactoryObject(name, id, lock) {
+System::cFile::cFile(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
     file = NULL;
     fData = NULL;
 }
@@ -242,5 +243,11 @@ void System::cFile::ClearData() {
         delete fData->data;
         delete fData;
         fData = NULL;
+    }
+}
+
+void System::cFile::Register() {
+    if (engine) {
+        engine->files->AddObject(this);
     }
 }

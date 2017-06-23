@@ -4,7 +4,7 @@
 
 #include "../../include/core/cScene.h"
 
-Core::cScene::cScene(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
+Core::cScene::cScene(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock), Core::cFactory<cGameObject>(engine) {
 
 }
 

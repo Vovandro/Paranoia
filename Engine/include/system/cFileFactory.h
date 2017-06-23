@@ -12,8 +12,10 @@ namespace System {
     class cFileFactory : public Core::cFactory<cFile> {
     protected:
     public:
+        cFileFactory(Paranoia::Engine *engine);
+        ~cFileFactory();
         // Открытие файла
-        bool Add(std::string fName, FILE_OPEN_TYPE type);
+        virtual bool Open(std::string fName, FILE_OPEN_TYPE type);
         // Запись данных в файл
         void Write(std::string fName, cFileData *data);
         void Write(std::string fName, std::string data);

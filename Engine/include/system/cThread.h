@@ -13,7 +13,6 @@ namespace System {
 
     class cThread : public Core::cFactoryObject {
     protected:
-        cThreadFactory *factory;
         sf::Mutex localMutex;
         sf::Thread *thread;
 
@@ -24,9 +23,10 @@ namespace System {
         bool isMessage;
         unsigned int updateTime;
     public:
-        cThread(cThreadFactory *factory, std::string name, int id, bool enabled = true, bool loop = false, unsigned int updateTime = 1, bool lock = false);
-        cThread(std::string name, int id, bool lock = false, cThreadFactory *factory = NULL);
+        cThread(Paranoia::Engine *engine, std::string name, int id, bool enabled = true, bool loop = false, unsigned int updateTime = 1, bool lock = false);
         virtual ~cThread();
+
+        virtual void Register() override;
 
         //Цикл потока
         void Thread();

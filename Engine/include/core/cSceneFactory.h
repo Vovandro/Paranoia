@@ -14,7 +14,7 @@ namespace Core {
         cScene *activeScene;
 
     public:
-        cSceneFactory();
+        cSceneFactory(Paranoia::Engine *engine);
         virtual ~cSceneFactory();
 
         // Создать новую сцену

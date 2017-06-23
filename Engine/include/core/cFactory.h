@@ -14,18 +14,19 @@ namespace Core {
     template <class T>
     class cFactory {
     protected:
+        Paranoia::Engine *engine;
         //Объекты фабрики
         std::vector<T*> obj;
         //Счетчик ID
         unsigned long ids;
     public:
-        cFactory() {ids = 1000;};
+        cFactory(Paranoia::Engine *engine) {this->engine = engine; ids = 1000;};
         virtual ~cFactory() {};
 
         // Добавление элемента в фабрику
         virtual void AddObject(T *newObject) {if (newObject == NULL) return; obj.push_back(newObject);};
 
-        virtual T* CreateObject(Paranoia::Engine *engine, std::string name, int id, bool lock = false) {T* tmp = new T(engine, name, id, lock); AddObject(tmp);};
+        virtual T* CreateObject(std::string name, int id, bool lock = false) {T* tmp = new T(engine, name, id, lock); AddObject(tmp); return tmp;};
 
         // Поиск объекта в фабрике
         T* FindObject(std::string name) {for (typename std::vector<T*>::iterator it = obj.begin(); it != obj.end(); ++it) if ((*it)->GetName() == name) return (*it); return NULL;};
