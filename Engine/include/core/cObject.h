@@ -13,7 +13,7 @@ namespace Core {
     class cObject : public cFactoryObject {
     protected:
     public:
-        cObject(std::string name, int id, bool lock = false);
+        cObject(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
 
         virtual void Update(int dt);
     };

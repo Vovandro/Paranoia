@@ -23,7 +23,7 @@ public:
 int main() {
     engine = new Paranoia::Engine(ENGINE_PC);
 
-    engine->Init();
+    engine->Init("engine.cf");
 
     MyThreads thread(1);
     MyThreads thread2(2);

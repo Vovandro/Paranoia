@@ -10,7 +10,7 @@ Paranoia::Engine *engine;
 int main() {
     engine = new Paranoia::Engine(ENGINE_PC);
 
-    engine->Init();
+    engine->Init("engine.cf");
 
     System::cFile File("log", 0);
 

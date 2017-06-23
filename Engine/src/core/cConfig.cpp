@@ -4,7 +4,7 @@
 
 #include "../../include/core/cConfig.h"
 
-Core::cConfig::cConfig(std::string name, int id, bool lock) : Core::cFactoryObject(name, id, lock) {
+Core::cConfig::cConfig(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
 
 }
 

@@ -5,7 +5,8 @@
 #include "../../include/core/cFactoryObject.h"
 
 
-Core::cFactoryObject::cFactoryObject(std::string name, int id, bool lock) {
+Core::cFactoryObject::cFactoryObject(Paranoia::Engine *engine, std::string name, int id, bool lock) {
+    this->engine = engine;
     this->name = name;
     this->id = id;
     this->lock = lock;

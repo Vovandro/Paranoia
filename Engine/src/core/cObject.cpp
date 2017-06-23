@@ -4,7 +4,7 @@
 
 #include "../../include/core/cObject.h"
 
-Core::cObject::cObject(std::string name, int id, bool lock) : cFactoryObject(name, id, lock) {
+Core::cObject::cObject(Paranoia::Engine *engine, std::string name, int id, bool lock) : cFactoryObject(engine, name, id, lock) {
 
 }
 

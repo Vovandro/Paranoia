@@ -39,7 +39,10 @@ Paranoia::Engine::~Engine() {
 }
 
 
-bool Paranoia::Engine::Init() {
+bool Paranoia::Engine::Init(std::string cfName) {
+
+    this->cfName = cfName;
+
 
     window->Init(2, 2, 0);
     render->Init();

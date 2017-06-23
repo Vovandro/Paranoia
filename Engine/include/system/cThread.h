@@ -25,6 +25,7 @@ namespace System {
         unsigned int updateTime;
     public:
         cThread(cThreadFactory *factory, std::string name, int id, bool enabled = true, bool loop = false, unsigned int updateTime = 1, bool lock = false);
+        cThread(std::string name, int id, bool lock = false, cThreadFactory *factory = NULL);
         virtual ~cThread();
 
         //Цикл потока

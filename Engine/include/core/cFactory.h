@@ -25,6 +25,8 @@ namespace Core {
         // Добавление элемента в фабрику
         virtual void AddObject(T *newObject) {if (newObject == NULL) return; obj.push_back(newObject);};
 
+        virtual T* CreateObject(Paranoia::Engine *engine, std::string name, int id, bool lock = false) {T* tmp = new T(engine, name, id, lock); AddObject(tmp);};
+
         // Поиск объекта в фабрике
         T* FindObject(std::string name) {for (typename std::vector<T*>::iterator it = obj.begin(); it != obj.end(); ++it) if ((*it)->GetName() == name) return (*it); return NULL;};
 

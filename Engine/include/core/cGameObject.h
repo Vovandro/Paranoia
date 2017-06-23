@@ -15,7 +15,7 @@ namespace Core {
     public:
         cFactory<cObject> *objects;
 
-        cGameObject(std::string name, int id, bool lock = false);
+        cGameObject(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
         virtual ~cGameObject();
 
         virtual void Update(int dt);

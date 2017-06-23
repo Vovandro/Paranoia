@@ -46,7 +46,7 @@ namespace Core {
         std::string GetLine(std::string *text, std::string split, int &start);
 
     public:
-        cConfig(std::string name, int id, bool lock = false);
+        cConfig(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
 
         // Собирает все свои параметры в строку
         std::string ToString();

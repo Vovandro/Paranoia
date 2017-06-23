@@ -9,7 +9,7 @@ Paranoia::Engine *engine;
 int main() {
     engine = new Paranoia::Engine(ENGINE_PC);
 
-    engine->Init();
+    engine->Init("engine.cf");
 
     engine->Start();
 

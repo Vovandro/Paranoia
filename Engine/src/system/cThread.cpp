@@ -16,6 +16,17 @@ System::cThread::cThread(System::cThreadFactory *factory, std::string name, int 
     lockGlobal = false;
 }
 
+System::cThread::cThread(std::string name, int id, bool lock, System::cThreadFactory *factory) : Core::cFactoryObject(name, id, lock) {
+    this->factory = factory;
+    this->enabled = false;
+    this->loop = false;
+    this->updateTime = 1;
+
+    isMessage = false;
+    isStop = false;
+    lockGlobal = false;
+}
+
 System::cThread::~cThread() {
     if (lockGlobal)
         UnLock();

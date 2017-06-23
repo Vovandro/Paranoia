@@ -7,15 +7,20 @@
 
 #include "string"
 
+namespace Paranoia {
+    class Engine;
+}
+
 namespace Core {
     class cFactoryObject {
     protected:
+        Paranoia::Engine *engine;
         std::string name;
         int id;
         bool lock;
 
     public:
-        cFactoryObject(std::string name, int id, bool lock = false);
+        cFactoryObject(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
         ~cFactoryObject();
 
         std::string GetName();

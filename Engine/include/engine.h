@@ -22,6 +22,7 @@ namespace Paranoia {
     protected:
         eStartType type;
         bool run;
+        std::string cfName;
 
     public:
         //Класс дл работы с окном
@@ -45,7 +46,7 @@ namespace Paranoia {
         ~Engine();
 
         //Инициализация подсистем движка
-        bool Init();
+        bool Init(std::string cfName);
         //Запуск главного цикла движка
         void Start();
         //Отстановка и выгрузка ресурсов

@@ -29,7 +29,7 @@ namespace Core {
     class cScene : public cFactoryObject, cFactory<cGameObject> {
     protected:
     public:
-        cScene(std::string name, int id, bool lock = false);
+        cScene(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
         ~cScene();
 
         virtual void Update(int dt);

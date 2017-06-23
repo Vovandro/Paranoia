@@ -84,3 +84,5 @@
 /cmake-build-debug/Samples/Window/Window
 /cmake-build-debug/Samples/Window/Window.cbp
 /cmake-build-debug/Samples/Window/cmake_install.cmake
+
+cmake-build-debug/

@@ -29,7 +29,7 @@ public:
 int main() {
     engine = new Paranoia::Engine(ENGINE_PC);
 
-    engine->Init();
+    engine->Init("engine.cf");
 
     sLoading *loadingState;
     loadingState = new sLoading();
