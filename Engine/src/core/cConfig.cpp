@@ -6,7 +6,7 @@
 #include "../../include/engine.h"
 
 Core::cConfig::cConfig(Paranoia::Engine *engine, std::string name, int id, bool lock) : Core::cFactoryObject(engine, name, id, lock) {
-
+    AutoValue = false;
 }
 
 std::string Core::cConfig::GetLine(std::string *text, std::string split, int &start) {
@@ -59,6 +59,8 @@ void Core::cConfig::FromString(std::string text) {
 
                     newItem->name = name;
                     newItem->data = GetLine(&text, "|?|", j);
+
+                    items.push_back((cConfigItem*)newItem);
                 }
                 break;
 
@@ -67,6 +69,8 @@ void Core::cConfig::FromString(std::string text) {
 
                     newItem->name = name;
                     newItem->data = std::stof(GetLine(&text, "|?|", j));
+
+                    items.push_back((cConfigItem*)newItem);
                 }
                 break;
 
@@ -75,6 +79,8 @@ void Core::cConfig::FromString(std::string text) {
 
                     newItem->name = name;
                     newItem->data = std::stoi(GetLine(&text, "|?|", j));
+
+                    items.push_back((cConfigItem*)newItem);
                 }
                 break;
 
@@ -94,4 +100,62 @@ void Core::cConfig::Register() {
     {
         engine->configs->AddObject(this);
     }
+}
+
+void Core::cConfig::OnAutoCreate() {
+    AutoValue = true;
+}
+
+std::string Core::cConfig::GetString(std::string vName, std::string def) {
+    for (int i = 0; i < items.size(); i++) {
+        if ((items[i]->name == vName)&&(items[i]->type == CIT_STRING)) {
+            return ((cConfigItemString*)items[i])->data;
+        }
+    }
+
+    if (AutoValue) {
+        cConfigItemString *newItem = new cConfigItemString();
+        newItem->name = vName;
+        newItem->data = def;
+
+        items.push_back((cConfigItem*)newItem);
+    }
+
+    return def;
+}
+
+float Core::cConfig::GetFloat(std::string vName, float def) {
+    for (int i = 0; i < items.size(); i++) {
+        if ((items[i]->name == vName)&&(items[i]->type == CIT_FLOAT)) {
+            return ((cConfigItemFloat*)items[i])->data;
+        }
+    }
+
+    if (AutoValue) {
+        cConfigItemFloat *newItem = new cConfigItemFloat();
+        newItem->name = vName;
+        newItem->data = def;
+
+        items.push_back((cConfigItem*)newItem);
+    }
+
+    return def;
+}
+
+int Core::cConfig::GetInt(std::string vName, int def) {
+    for (int i = 0; i < items.size(); i++) {
+        if ((items[i]->name == vName)&&(items[i]->type == CIT_INT)) {
+            return ((cConfigItemInt*)items[i])->data;
+        }
+    }
+
+    if (AutoValue) {
+        cConfigItemInt *newItem = new cConfigItemInt();
+        newItem->name = vName;
+        newItem->data = def;
+
+        items.push_back((cConfigItem*)newItem);
+    }
+
+    return def;
 }

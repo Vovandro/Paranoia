@@ -46,6 +46,16 @@ bool Paranoia::Engine::Init(std::string cfName) {
 
     this->cfName = cfName;
 
+    Core::cConfig *conf = configs->AddObject(cfName, 1, true);
+
+    if (conf == NULL) {
+        log->AddMessage("Config file not found: " + cfName, LOG_WARNING);
+        log->AddMessage("Load default value from engine", LOG_WARNING);
+
+        conf = new Core::cConfig(this, cfName, 1, true);
+    }
+
+    conf->OnAutoCreate();
 
     window->Init(2, 2, 0);
     render->Init();

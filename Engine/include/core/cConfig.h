@@ -44,6 +44,7 @@ namespace Core {
     protected:
         std::vector<cConfigItem*> items;
         std::string GetLine(std::string *text, std::string split, int &start);
+        bool AutoValue;
 
     public:
         cConfig(Paranoia::Engine *engine, std::string name, int id, bool lock = false);
@@ -57,6 +58,13 @@ namespace Core {
 
         // Добавление нового параметра
         void Add(cConfigItem* item);
+
+        // Включение режима автоматического создания переменной при ее отсутствии с дефолтным параметром
+        void OnAutoCreate();
+
+        std::string GetString(std::string vName, std::string def);
+        float GetFloat(std::string vName, float def);
+        int GetInt(std::string vName, int def);
     };
 }
 
