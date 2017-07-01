@@ -21,6 +21,9 @@ namespace Core {
         virtual cConfig* AddObject(std::string cfName, int id = 0, bool lock = false);
         //virtual cConfig* AddObject(std::string afName, std::string cfName, int id = 0, bool lock = false);
         //virtual cConfig* CreateObject(std::string config, std::string name, int id = 0, bool lock = false);
+
+        // Сохраняет файл конфигурации в файл
+        void SaveToFile(std::string cfName);
     };
 }
 

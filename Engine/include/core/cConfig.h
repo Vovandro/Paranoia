@@ -12,6 +12,7 @@ enum CONFIG_ITEM_TYPE {
     CIT_STRING,
     CIT_INT,
     CIT_FLOAT,
+    CIT_BOOL,
 };
 
 namespace Core {
@@ -37,6 +38,12 @@ namespace Core {
     public:
         cConfigItemInt() {type = CIT_INT;};
         int data;
+    };
+
+    class cConfigItemBool : public cConfigItem {
+    public:
+        cConfigItemBool() {type = CIT_BOOL;};
+        bool data;
     };
 
     /* Класс для работы с конфигурациями для всех объектов записанных в файлах */
@@ -65,6 +72,7 @@ namespace Core {
         std::string GetString(std::string vName, std::string def);
         float GetFloat(std::string vName, float def);
         int GetInt(std::string vName, int def);
+        bool GetBool(std::string vName, bool def);
     };
 }
 

@@ -57,8 +57,12 @@ bool Paranoia::Engine::Init(std::string cfName) {
 
     conf->OnAutoCreate();
 
-    window->Init(2, 2, 0);
+    window->Init(conf->GetInt("glMajor", 2), conf->GetInt("glMinor", 0), conf->GetInt("antialiasing", 0), false, conf->GetInt("width", 640), conf->GetInt("height", 480), !conf->GetBool("window", true));
     render->Init();
+
+
+
+    configs->SaveToFile(cfName);
 
     run = true;
     return true;

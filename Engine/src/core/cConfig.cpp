@@ -34,12 +34,19 @@ std::string Core::cConfig::ToString() {
         if (items[i]->type == CIT_INT) {
             ret += std::to_string(CIT_INT) + "==" + std::to_string(((cConfigItemInt*)items[i])->data);
         }
+
+        if (items[i]->type == CIT_BOOL) {
+            ret += std::to_string(CIT_BOOL) + "==" + ((((cConfigItemBool*)items[i])->data)?"1":"0");
+        }
     }
 
     return ret;
 }
 
 void Core::cConfig::FromString(std::string text) {
+    if (text.size() <= 1)
+        return;
+
     int j = 0;
     int size = std::stoi(GetLine(&text, "|?|", j));
 
@@ -83,6 +90,16 @@ void Core::cConfig::FromString(std::string text) {
                     items.push_back((cConfigItem*)newItem);
                 }
                 break;
+
+                case CIT_BOOL: {
+                    cConfigItemBool *newItem = new cConfigItemBool();
+
+                    newItem->name = name;
+                    newItem->data = std::stoi(GetLine(&text, "|?|", j));
+
+                    items.push_back((cConfigItem*)newItem);
+                }
+                    break;
 
                 default:
                     break;
@@ -157,5 +174,22 @@ int Core::cConfig::GetInt(std::string vName, int def) {
         items.push_back((cConfigItem*)newItem);
     }
 
+    return def;
+}
+
+bool Core::cConfig::GetBool(std::string vName, bool def) {
+    for (int i = 0; i < items.size(); i++) {
+        if ((items[i]->name == vName)&&(items[i]->type == CIT_BOOL)) {
+            return ((cConfigItemBool*)items[i])->data;
+        }
+    }
+
+    if (AutoValue) {
+        cConfigItemBool *newItem = new cConfigItemBool();
+        newItem->name = vName;
+        newItem->data = def;
+
+        items.push_back((cConfigItem*)newItem);
+    }
     return def;
 }

@@ -19,7 +19,8 @@ Core::cConfig* Core::cConfigFactory::AddObject(std::string cfName, int id, bool 
     if (engine) {
         if (engine->files->Open(cfName, OPEN_READ)) {
             newItem = new cConfig(engine, cfName, (id==0)?GetNewID():id, lock);
-            newItem->FromString(engine->files->Read(cfName)->toStr());
+            System::cFileData *tmp = engine->files->Read(cfName);
+            newItem->FromString((tmp==NULL)?"":tmp->toStr());
 
             AddObject(newItem);
         }
@@ -30,4 +31,15 @@ Core::cConfig* Core::cConfigFactory::AddObject(std::string cfName, int id, bool 
 
 void Core::cConfigFactory::AddObject(Core::cConfig *newObj) {
     cFactory::AddObject(newObj);
+}
+
+void Core::cConfigFactory::SaveToFile(std::string cfName) {
+    if (engine->files->Open(cfName, OPEN_RW_CLEAR)) {
+        cConfig *newItem = FindObject(cfName);
+
+        if (newItem) {
+            engine->files->SetPos(cfName, 0);
+            engine->files->Write(cfName, newItem->ToString());
+        }
+    }
 }

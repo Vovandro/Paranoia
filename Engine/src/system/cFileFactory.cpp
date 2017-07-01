@@ -12,6 +12,8 @@ bool System::cFileFactory::Open(std::string fName, FILE_OPEN_TYPE type) {
 
     if (newFile == NULL) {
         newFile = new cFile(engine, fName, GetNewID());
+
+        AddObject(newFile);
     }
 
     newFile->Open(type);
