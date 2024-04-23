@@ -5,6 +5,7 @@ import (
 	"goServer"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Env struct {
@@ -40,8 +41,12 @@ func (t *Env) ParseFile(data []byte) {
 	rows := bytes.Split(data, []byte("\n"))
 
 	for _, row := range rows {
+		if len(row) <= 2 {
+			continue
+		}
+
 		key = key[:0]
-		val = key[:0]
+		val = val[:0]
 		isKey = true
 
 		for _, c := range row {
@@ -55,18 +60,20 @@ func (t *Env) ParseFile(data []byte) {
 					continue
 				}
 
-				key = append(val, c)
+				key = append(key, c)
 			} else {
 				val = append(val, c)
 			}
 		}
 
 		if !isKey && len(key) != 0 && len(val) != 0 {
+			val = bytes.Trim(val, " \t")
+
 			if val[0] == '"' && val[len(val)-1] == '"' {
 				val = val[1 : len(val)-1]
 			}
 
-			t.data[string(key)] = string(val)
+			t.data[strings.Trim(string(key), " \t")] = string(val)
 		}
 	}
 }
