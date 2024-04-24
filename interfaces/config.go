@@ -1,7 +1,7 @@
-package Paranoia
+package interfaces
 
 type IConfig interface {
-	Init(app *Service) error
+	Init(app IService) error
 	Has(key string) bool
 	GetString(key string, def string) string
 	GetBool(key string, def bool) bool

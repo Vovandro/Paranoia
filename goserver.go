@@ -1,49 +1,50 @@
 package Paranoia
 
 import (
+	"Paranoia/interfaces"
 	"fmt"
 )
 
 type Service struct {
 	name string
 
-	config IConfig
-	logger ILogger
+	config interfaces.IConfig
+	logger interfaces.ILogger
 
-	cache       map[string]ICache
-	brokers     map[string]IBroker
-	database    map[string]IDatabase
-	controllers map[string]IController
-	modules     map[string]IModules
-	repository  map[string]IRepository
-	servers     map[string]IServer
-	store       map[string]IStore
+	cache       map[string]interfaces.ICache
+	brokers     map[string]interfaces.IBroker
+	database    map[string]interfaces.IDatabase
+	controllers map[string]interfaces.IController
+	modules     map[string]interfaces.IModules
+	repository  map[string]interfaces.IRepository
+	servers     map[string]interfaces.IServer
+	store       map[string]interfaces.IStore
 }
 
-func (t *Service) New(name string, config IConfig, logger ILogger) *Service {
+func (t *Service) New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
 	t.name = name
 	t.config = config
 	t.logger = logger
 
-	t.cache = make(map[string]ICache)
-	t.brokers = make(map[string]IBroker)
+	t.cache = make(map[string]interfaces.ICache)
+	t.brokers = make(map[string]interfaces.IBroker)
 
 	return t
 }
 
-func (t *Service) GetLogger() ILogger {
+func (t *Service) GetLogger() interfaces.ILogger {
 	return t.logger
 }
 
-func (t *Service) PushCache(c ICache) {
+func (t *Service) PushCache(c interfaces.ICache) {
 	t.cache[c.String()] = c
 }
 
-func (t *Service) GetCache(key string) ICache {
+func (t *Service) GetCache(key string) interfaces.ICache {
 	return t.cache[key]
 }
 
-func (t *Service) PushBroker(b IBroker) {
+func (t *Service) PushBroker(b interfaces.IBroker) {
 	t.brokers[b.String()] = b
 }
 

@@ -1,7 +1,7 @@
-package Paranoia
+package interfaces
 
 type IBroker interface {
-	Init(app *Service) error
+	Init(app IService) error
 	Stop() error
 	String() string
 

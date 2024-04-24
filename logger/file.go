@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"Paranoia"
+	"Paranoia/interfaces"
 	"fmt"
 	"os"
 	"time"
@@ -9,14 +9,14 @@ import (
 
 type File struct {
 	FName  string
-	Parent Paranoia.ILogger
-	Level  Paranoia.LogLevel
+	Parent interfaces.ILogger
+	Level  interfaces.LogLevel
 	queue  chan string
 	done   chan interface{}
 	f      *os.File
 }
 
-func (t *File) Init(app *Paranoia.Service) error {
+func (t *File) Init(app interfaces.IService) error {
 	t.queue = make(chan string, 1000)
 	t.done = make(chan interface{})
 
@@ -76,7 +76,7 @@ func (t *File) write(m string) {
 	}
 }
 
-func (t *File) SetLevel(level Paranoia.LogLevel) {
+func (t *File) SetLevel(level interfaces.LogLevel) {
 	t.Level = level
 
 	if t.Parent != nil {
@@ -85,7 +85,7 @@ func (t *File) SetLevel(level Paranoia.LogLevel) {
 }
 
 func (t *File) Debug(args ...interface{}) {
-	if t.Level <= Paranoia.DEBUG {
+	if t.Level <= interfaces.DEBUG {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -95,7 +95,7 @@ func (t *File) Debug(args ...interface{}) {
 }
 
 func (t *File) Info(args ...interface{}) {
-	if t.Level <= Paranoia.INFO {
+	if t.Level <= interfaces.INFO {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -105,7 +105,7 @@ func (t *File) Info(args ...interface{}) {
 }
 
 func (t *File) Warn(args ...interface{}) {
-	if t.Level <= Paranoia.WARNING {
+	if t.Level <= interfaces.WARNING {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -115,7 +115,7 @@ func (t *File) Warn(args ...interface{}) {
 }
 
 func (t *File) Message(args ...interface{}) {
-	if t.Level <= Paranoia.MESSAGE {
+	if t.Level <= interfaces.MESSAGE {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -125,7 +125,7 @@ func (t *File) Message(args ...interface{}) {
 }
 
 func (t *File) Error(err error) {
-	if t.Level <= Paranoia.ERROR {
+	if t.Level <= interfaces.ERROR {
 		t.queue <- fmt.Sprint(err)
 
 		if t.Parent != nil {
@@ -135,7 +135,7 @@ func (t *File) Error(err error) {
 }
 
 func (t *File) Fatal(err error) {
-	if t.Level <= Paranoia.CRITICAL {
+	if t.Level <= interfaces.CRITICAL {
 		t.queue <- fmt.Sprint(err)
 
 		if t.Parent != nil {
@@ -145,7 +145,7 @@ func (t *File) Fatal(err error) {
 }
 
 func (t *File) Panic(err error) {
-	if t.Level <= Paranoia.CRITICAL {
+	if t.Level <= interfaces.CRITICAL {
 		t.queue <- fmt.Sprint(err)
 
 		if t.Parent != nil {

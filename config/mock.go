@@ -1,7 +1,7 @@
 package config
 
 import (
-	"Paranoia"
+	"Paranoia/interfaces"
 	"strconv"
 )
 
@@ -9,7 +9,7 @@ type Mock struct {
 	Data map[string]string
 }
 
-func (t *Mock) Init(app *Paranoia.Service) error {
+func (t *Mock) Init(app interfaces.IService) error {
 	if t.Data == nil {
 		t.Data = make(map[string]string)
 	}

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"Paranoia"
+	"Paranoia/interfaces"
 	"bytes"
 	"os"
 	"strconv"
@@ -11,10 +11,10 @@ import (
 type Env struct {
 	FName string
 	data  map[string]string
-	app   *Paranoia.Service
+	app   interfaces.IService
 }
 
-func (t *Env) Init(app *Paranoia.Service) error {
+func (t *Env) Init(app interfaces.IService) error {
 	t.data = make(map[string]string, 20)
 	t.app = app
 

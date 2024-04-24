@@ -1,6 +1,8 @@
-package Paranoia
+package interfaces
 
-import "strings"
+import (
+	"strings"
+)
 
 type LogLevel int
 
@@ -14,7 +16,7 @@ const (
 )
 
 type ILogger interface {
-	Init(app *Service) error
+	Init(app IService) error
 	Stop() error
 	SetLevel(level LogLevel)
 	Debug(args ...interface{})
@@ -26,7 +28,7 @@ type ILogger interface {
 	Panic(err error)
 }
 
-func (t LogLevel) GetLogName() string {
+func (t LogLevel) String() string {
 	switch t {
 	case DEBUG:
 		return "DEBUG"

@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"Paranoia"
+	"Paranoia/interfaces"
 	"fmt"
 	"sync"
 	"time"
@@ -12,7 +12,7 @@ type Memory struct {
 	data sync.Map
 }
 
-func (t *Memory) Init(app *Paranoia.Service) error {
+func (t *Memory) Init(app interfaces.IService) error {
 	return nil
 }
 

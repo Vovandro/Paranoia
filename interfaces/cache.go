@@ -1,11 +1,11 @@
-package Paranoia
+package interfaces
 
 import (
 	"time"
 )
 
 type ICache interface {
-	Init(app *Service) error
+	Init(app IService) error
 	Stop() error
 	String() string
 

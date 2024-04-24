@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"Paranoia"
+	"Paranoia/interfaces"
 	"fmt"
 	"time"
 )
@@ -10,7 +10,7 @@ type Mock struct {
 	Name string
 }
 
-func (t *Mock) Init(app *Paranoia.Service) error {
+func (t *Mock) Init(app interfaces.IService) error {
 	return nil
 }
 
