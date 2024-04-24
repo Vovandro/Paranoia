@@ -13,7 +13,6 @@ format:
 
 coverage:
   stage: test
-  extends: .go-cache
   script:
     - go install
     - go test $(go list ./... | grep -v vendor) -race -coverprofile=coverage.out
