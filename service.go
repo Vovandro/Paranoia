@@ -38,16 +38,20 @@ func (t *Service) GetLogger() interfaces.ILogger {
 	return t.logger
 }
 
-func (t *Service) PushCache(c interfaces.ICache) {
+func (t *Service) PushCache(c interfaces.ICache) interfaces.IService {
 	t.cache[c.String()] = c
+
+	return t
 }
 
 func (t *Service) GetCache(key string) interfaces.ICache {
 	return t.cache[key]
 }
 
-func (t *Service) PushBroker(b interfaces.IBroker) {
+func (t *Service) PushBroker(b interfaces.IBroker) interfaces.IService {
 	t.brokers[b.String()] = b
+
+	return t
 }
 
 func (t *Service) Init() error {

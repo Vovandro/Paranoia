@@ -2,6 +2,7 @@ package config
 
 import (
 	"Paranoia"
+	"Paranoia/interfaces"
 	"Paranoia/logger"
 	"os"
 	"testing"
@@ -10,15 +11,14 @@ import (
 func TestEnv_GetBool(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *Paranoia.Service
+		app  interfaces.IService
 	}
 	type args struct {
 		key string
 		def bool
 	}
 
-	app := Paranoia.Service{}
-	app.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
 		name   string
@@ -30,7 +30,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 			"base get bool",
 			fields{
 				map[string]string{"k1": "true"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -42,7 +42,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 			"base get bool string",
 			fields{
 				map[string]string{"k1": "1"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -54,7 +54,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 			"base get bool string false",
 			fields{
 				map[string]string{"k1": "false"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -66,7 +66,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 			"base get bool default",
 			fields{
 				map[string]string{"k1": "false"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -78,7 +78,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 			"get invalid bool",
 			fields{
 				map[string]string{"k1": "test"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -90,7 +90,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 			"get invalid bool 2",
 			fields{
 				map[string]string{"k1": "test"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -114,15 +114,14 @@ func TestEnv_GetBool(t1 *testing.T) {
 func TestEnv_GetFloat(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *Paranoia.Service
+		app  interfaces.IService
 	}
 	type args struct {
 		key string
 		def float32
 	}
 
-	app := Paranoia.Service{}
-	app.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
 		name   string
@@ -134,7 +133,7 @@ func TestEnv_GetFloat(t1 *testing.T) {
 			"base get float",
 			fields{
 				map[string]string{"k1": "1.0"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -146,7 +145,7 @@ func TestEnv_GetFloat(t1 *testing.T) {
 			"base get big float",
 			fields{
 				map[string]string{"k1": "0.000001"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -158,7 +157,7 @@ func TestEnv_GetFloat(t1 *testing.T) {
 			"base get float from int",
 			fields{
 				map[string]string{"k1": "1"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -170,7 +169,7 @@ func TestEnv_GetFloat(t1 *testing.T) {
 			"base get float default",
 			fields{
 				map[string]string{"k1": "1.0"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -182,7 +181,7 @@ func TestEnv_GetFloat(t1 *testing.T) {
 			"get invalid float",
 			fields{
 				map[string]string{"k1": "test"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -206,15 +205,14 @@ func TestEnv_GetFloat(t1 *testing.T) {
 func TestEnv_GetInt(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *Paranoia.Service
+		app  interfaces.IService
 	}
 	type args struct {
 		key string
 		def int
 	}
 
-	app := Paranoia.Service{}
-	app.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
 		name   string
@@ -226,7 +224,7 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"base get int",
 			fields{
 				map[string]string{"k1": "1"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -238,7 +236,7 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"base get int from float",
 			fields{
 				map[string]string{"k1": "1.1"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -250,7 +248,7 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"base get int default",
 			fields{
 				map[string]string{"k1": "1"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -262,7 +260,7 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"get invalid int",
 			fields{
 				map[string]string{"k1": "test"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -288,15 +286,14 @@ func TestEnv_GetInt(t1 *testing.T) {
 func TestEnv_GetString(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *Paranoia.Service
+		app  interfaces.IService
 	}
 	type args struct {
 		key string
 		def string
 	}
 
-	app := Paranoia.Service{}
-	app.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
 		name   string
@@ -308,7 +305,7 @@ func TestEnv_GetString(t1 *testing.T) {
 			"base get string",
 			fields{
 				map[string]string{"k1": "1r"},
-				&app,
+				app,
 			},
 			args{
 				"k1",
@@ -320,7 +317,7 @@ func TestEnv_GetString(t1 *testing.T) {
 			"base get string default",
 			fields{
 				map[string]string{"k1": "1"},
-				&app,
+				app,
 			},
 			args{
 				"k2",
@@ -393,7 +390,7 @@ func TestEnv_Init(t1 *testing.T) {
 		FName string
 	}
 	type args struct {
-		app *Paranoia.Service
+		app interfaces.IService
 	}
 	type file struct {
 		FName    string
@@ -404,8 +401,7 @@ func TestEnv_Init(t1 *testing.T) {
 		value string
 	}
 
-	app := Paranoia.Service{}
-	app.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
 		name    string
@@ -421,7 +417,7 @@ func TestEnv_Init(t1 *testing.T) {
 				"./.env.test",
 			},
 			args{
-				&app,
+				app,
 			},
 			file{
 				"./.env.test",
@@ -439,7 +435,7 @@ func TestEnv_Init(t1 *testing.T) {
 				"./.env.test",
 			},
 			args{
-				&app,
+				app,
 			},
 			file{
 				"./.env.test",
@@ -457,7 +453,7 @@ func TestEnv_Init(t1 *testing.T) {
 				"./.env.test",
 			},
 			args{
-				&app,
+				app,
 			},
 			file{
 				"./.env.test",
