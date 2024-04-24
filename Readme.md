@@ -12,7 +12,7 @@ add to main.go
 
 ```
 	s := Paranoia.
-		New("test", &config.Env{}, &logger.File{Parent: &logger.Std{}}).
+		New("test", &config.Env{}, &logger.File{&logger.Std{}}).
 		PushCache(&cache.Memory{}).
 		PushRepository(&myRepository{}).
 		PushController(&myController{}).

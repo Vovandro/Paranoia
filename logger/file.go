@@ -8,9 +8,9 @@ import (
 )
 
 type File struct {
-	FName  string
 	Parent interfaces.ILogger
 	Level  interfaces.LogLevel
+	FName  string
 	queue  chan string
 	done   chan interface{}
 	f      *os.File
@@ -27,7 +27,7 @@ func (t *File) Init(app interfaces.IService) error {
 	}
 
 	t.f, err = os.OpenFile(
-		fmt.Sprintf("./log/%s.log", time.Now().Format("2006_01_02")),
+		fmt.Sprintf("./log/%s%s.log", t.FName, time.Now().Format("2006_01_02")),
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE,
 		0666)
 
@@ -73,7 +73,7 @@ func (t *File) run(done chan interface{}) {
 				}
 
 				t.f, err = os.OpenFile(
-					fmt.Sprintf("./log/%s.log", time.Now().Format("2006_01_02")),
+					fmt.Sprintf("./log/%s%s.log", t.FName, time.Now().Format("2006_01_02")),
 					os.O_WRONLY|os.O_APPEND|os.O_CREATE,
 					0666)
 
