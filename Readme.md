@@ -12,10 +12,10 @@ add to main.go
 
 ```
 	s := Paranoia.
-		New("test", &config.Env{}, &logger.File{&logger.Std{}}).
-		PushCache(&cache.Memory{}).
-		PushRepository(&myRepository{}).
-		PushController(&myController{}).
+		New("base paranoia app", &config.Env{}, &logger.File{&logger.Std{}}).
+		PushCache(&cache.Memory{Name: "cache"}).
+		PushRepository(&myRepository{Name: "repository"}).
+		PushController(&myController{Name: "controller"}).
 		Init()
 		
 	s.Run()
