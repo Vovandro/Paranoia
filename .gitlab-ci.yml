@@ -1,0 +1,30 @@
+image: golang:latest
+
+stages:
+  - test
+
+format:
+  stage: test
+  script:
+    - go install
+    - go fmt $(go list ./... | grep -v /vendor/)
+    - go vet $(go list ./... | grep -v /vendor/)
+    - go test -race $(go list ./... | grep -v /vendor/)
+
+coverage:
+  stage: test
+  extends: .go-cache
+  script:
+    - go install
+    - go test $(go list ./... | grep -v vendor) -race -coverprofile=coverage.out
+    - go get github.com/boumenot/gocover-cobertura
+    - go run github.com/boumenot/gocover-cobertura < coverage.out > coverage.xml
+    - go tool cover -func=coverage.out
+  artifacts:
+    paths:
+      - coverage.xml
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  coverage: /total:\s+\(statements\)\s+(\d+.\d+\%)/
