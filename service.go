@@ -21,7 +21,9 @@ type Service struct {
 	store       map[string]interfaces.IStore
 }
 
-func (t *Service) New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
+func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
+	t := &Service{}
+
 	t.name = name
 	t.config = config
 	t.logger = logger

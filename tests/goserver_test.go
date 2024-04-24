@@ -7,8 +7,7 @@ import (
 )
 
 func TestService_PushCache(t1 *testing.T) {
-	s := Paranoia.Service{}
-	s.New("test", nil, nil)
+	s := Paranoia.New("test", nil, nil)
 
 	mockCache := cache.Mock{Name: "mock"}
 

@@ -3,6 +3,7 @@ package logger
 import (
 	"Paranoia/interfaces"
 	"fmt"
+	"time"
 )
 
 type Std struct {
@@ -34,9 +35,17 @@ func (t *Std) SetLevel(level interfaces.LogLevel) {
 	}
 }
 
+func (t *Std) Push(level interfaces.LogLevel, msg string, toParent bool) {
+	fmt.Printf("%s [%v] %s", level.String(), time.Now(), msg)
+
+	if toParent && t.Parent != nil {
+		t.Parent.Push(level, msg, true)
+	}
+}
+
 func (t *Std) Debug(args ...interface{}) {
 	if t.Level <= interfaces.DEBUG {
-		fmt.Println(args...)
+		t.Push(interfaces.DEBUG, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
 			t.Parent.Debug(args)
@@ -46,7 +55,7 @@ func (t *Std) Debug(args ...interface{}) {
 
 func (t *Std) Info(args ...interface{}) {
 	if t.Level <= interfaces.INFO {
-		fmt.Println(args...)
+		t.Push(interfaces.INFO, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
 			t.Parent.Info(args)
@@ -56,7 +65,7 @@ func (t *Std) Info(args ...interface{}) {
 
 func (t *Std) Warn(args ...interface{}) {
 	if t.Level <= interfaces.WARNING {
-		fmt.Println(args...)
+		t.Push(interfaces.WARNING, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
 			t.Parent.Warn(args)
@@ -66,7 +75,7 @@ func (t *Std) Warn(args ...interface{}) {
 
 func (t *Std) Message(args ...interface{}) {
 	if t.Level <= interfaces.MESSAGE {
-		fmt.Println(args...)
+		t.Push(interfaces.MESSAGE, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
 			t.Parent.Message(args)
@@ -76,7 +85,7 @@ func (t *Std) Message(args ...interface{}) {
 
 func (t *Std) Error(err error) {
 	if t.Level <= interfaces.ERROR {
-		fmt.Println(err)
+		t.Push(interfaces.DEBUG, err.Error(), false)
 
 		if t.Parent != nil {
 			t.Parent.Error(err)
@@ -86,7 +95,7 @@ func (t *Std) Error(err error) {
 
 func (t *Std) Fatal(err error) {
 	if t.Level <= interfaces.CRITICAL {
-		fmt.Println(err)
+		t.Push(interfaces.DEBUG, err.Error(), false)
 
 		if t.Parent != nil {
 			t.Parent.Fatal(err)
@@ -96,7 +105,7 @@ func (t *Std) Fatal(err error) {
 
 func (t *Std) Panic(err error) {
 	if t.Level <= interfaces.CRITICAL {
-		fmt.Println(err)
+		t.Push(interfaces.DEBUG, err.Error(), false)
 
 		if t.Parent != nil {
 			t.Parent.Panic(err)

@@ -16,11 +16,12 @@ func (t *Mock) Stop() error {
 	return nil
 }
 
-func (t *Mock) SetLevel(level interfaces.LogLevel) {}
-func (t *Mock) Debug(args ...interface{})          {}
-func (t *Mock) Info(args ...interface{})           {}
-func (t *Mock) Warn(args ...interface{})           {}
-func (t *Mock) Message(args ...interface{})        {}
+func (t *Mock) Push(level interfaces.LogLevel, msg string, toParent bool) {}
+func (t *Mock) SetLevel(level interfaces.LogLevel)                        {}
+func (t *Mock) Debug(args ...interface{})                                 {}
+func (t *Mock) Info(args ...interface{})                                  {}
+func (t *Mock) Warn(args ...interface{})                                  {}
+func (t *Mock) Message(args ...interface{})                               {}
 func (t *Mock) Error(err error) {
 	fmt.Println(err)
 }
