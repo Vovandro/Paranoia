@@ -1,4 +1,4 @@
-package goServer
+package Paranoia
 
 type IDatabase interface {
 	Init(app *Service) error

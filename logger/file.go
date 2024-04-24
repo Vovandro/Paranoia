@@ -1,22 +1,22 @@
 package logger
 
 import (
+	"Paranoia"
 	"fmt"
-	"goServer"
 	"os"
 	"time"
 )
 
 type File struct {
 	FName  string
-	Parent goServer.ILogger
-	Level  goServer.LogLevel
+	Parent Paranoia.ILogger
+	Level  Paranoia.LogLevel
 	queue  chan string
 	done   chan interface{}
 	f      *os.File
 }
 
-func (t *File) Init(app *goServer.Service) error {
+func (t *File) Init(app *Paranoia.Service) error {
 	t.queue = make(chan string, 1000)
 	t.done = make(chan interface{})
 
@@ -76,7 +76,7 @@ func (t *File) write(m string) {
 	}
 }
 
-func (t *File) SetLevel(level goServer.LogLevel) {
+func (t *File) SetLevel(level Paranoia.LogLevel) {
 	t.Level = level
 
 	if t.Parent != nil {
@@ -85,7 +85,7 @@ func (t *File) SetLevel(level goServer.LogLevel) {
 }
 
 func (t *File) Debug(args ...interface{}) {
-	if t.Level <= goServer.DEBUG {
+	if t.Level <= Paranoia.DEBUG {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -95,7 +95,7 @@ func (t *File) Debug(args ...interface{}) {
 }
 
 func (t *File) Info(args ...interface{}) {
-	if t.Level <= goServer.INFO {
+	if t.Level <= Paranoia.INFO {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -105,7 +105,7 @@ func (t *File) Info(args ...interface{}) {
 }
 
 func (t *File) Warn(args ...interface{}) {
-	if t.Level <= goServer.WARNING {
+	if t.Level <= Paranoia.WARNING {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -115,7 +115,7 @@ func (t *File) Warn(args ...interface{}) {
 }
 
 func (t *File) Message(args ...interface{}) {
-	if t.Level <= goServer.MESSAGE {
+	if t.Level <= Paranoia.MESSAGE {
 		t.queue <- fmt.Sprint(args...)
 
 		if t.Parent != nil {
@@ -125,7 +125,7 @@ func (t *File) Message(args ...interface{}) {
 }
 
 func (t *File) Error(err error) {
-	if t.Level <= goServer.ERROR {
+	if t.Level <= Paranoia.ERROR {
 		t.queue <- fmt.Sprint(err)
 
 		if t.Parent != nil {
@@ -135,7 +135,7 @@ func (t *File) Error(err error) {
 }
 
 func (t *File) Fatal(err error) {
-	if t.Level <= goServer.CRITICAL {
+	if t.Level <= Paranoia.CRITICAL {
 		t.queue <- fmt.Sprint(err)
 
 		if t.Parent != nil {
@@ -145,7 +145,7 @@ func (t *File) Fatal(err error) {
 }
 
 func (t *File) Panic(err error) {
-	if t.Level <= goServer.CRITICAL {
+	if t.Level <= Paranoia.CRITICAL {
 		t.queue <- fmt.Sprint(err)
 
 		if t.Parent != nil {

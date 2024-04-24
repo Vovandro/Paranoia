@@ -1,13 +1,13 @@
 package tests
 
 import (
-	"goServer"
-	"goServer/cache"
+	"Paranoia"
+	"Paranoia/cache"
 	"testing"
 )
 
 func TestService_PushCache(t1 *testing.T) {
-	s := goServer.Service{}
+	s := Paranoia.Service{}
 	s.New("test", nil, nil)
 
 	mockCache := cache.Mock{Name: "mock"}

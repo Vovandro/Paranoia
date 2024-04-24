@@ -1,14 +1,14 @@
 package logger
 
 import (
+	"Paranoia"
 	"fmt"
-	"goServer"
 )
 
 type Mock struct {
 }
 
-func (t *Mock) Init(app *goServer.Service) error {
+func (t *Mock) Init(app *Paranoia.Service) error {
 	return nil
 }
 
@@ -16,7 +16,7 @@ func (t *Mock) Stop() error {
 	return nil
 }
 
-func (t *Mock) SetLevel(level goServer.LogLevel) {}
+func (t *Mock) SetLevel(level Paranoia.LogLevel) {}
 func (t *Mock) Debug(args ...interface{})        {}
 func (t *Mock) Info(args ...interface{})         {}
 func (t *Mock) Warn(args ...interface{})         {}

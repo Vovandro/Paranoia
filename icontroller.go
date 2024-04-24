@@ -1,4 +1,4 @@
-package goServer
+package Paranoia
 
 type IController interface {
 	Init(app *Service) error

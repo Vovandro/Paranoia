@@ -1,8 +1,8 @@
 package config
 
 import (
+	"Paranoia"
 	"bytes"
-	"goServer"
 	"os"
 	"strconv"
 	"strings"
@@ -11,10 +11,10 @@ import (
 type Env struct {
 	FName string
 	data  map[string]string
-	app   *goServer.Service
+	app   *Paranoia.Service
 }
 
-func (t *Env) Init(app *goServer.Service) error {
+func (t *Env) Init(app *Paranoia.Service) error {
 	t.data = make(map[string]string, 20)
 	t.app = app
 

@@ -1,8 +1,8 @@
 package cache
 
 import (
+	"Paranoia"
 	"fmt"
-	"goServer"
 	"sync"
 	"time"
 )
@@ -12,7 +12,7 @@ type Memory struct {
 	data sync.Map
 }
 
-func (t *Memory) Init(app *goServer.Service) error {
+func (t *Memory) Init(app *Paranoia.Service) error {
 	return nil
 }
 

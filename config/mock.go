@@ -1,7 +1,7 @@
 package config
 
 import (
-	"goServer"
+	"Paranoia"
 	"strconv"
 )
 
@@ -9,7 +9,7 @@ type Mock struct {
 	Data map[string]string
 }
 
-func (t *Mock) Init(app *goServer.Service) error {
+func (t *Mock) Init(app *Paranoia.Service) error {
 	if t.Data == nil {
 		t.Data = make(map[string]string)
 	}

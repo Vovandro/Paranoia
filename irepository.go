@@ -1,4 +1,4 @@
-package goServer
+package Paranoia
 
 type IRepository interface {
 	Init(app *Service) error

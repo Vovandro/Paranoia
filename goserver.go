@@ -1,4 +1,4 @@
-package goServer
+package Paranoia
 
 import (
 	"fmt"

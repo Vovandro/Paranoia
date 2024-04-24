@@ -1,8 +1,8 @@
 package config
 
 import (
-	"goServer"
-	"goServer/logger"
+	"Paranoia"
+	"Paranoia/logger"
 	"os"
 	"testing"
 )
@@ -10,14 +10,14 @@ import (
 func TestEnv_GetBool(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *goServer.Service
+		app  *Paranoia.Service
 	}
 	type args struct {
 		key string
 		def bool
 	}
 
-	app := goServer.Service{}
+	app := Paranoia.Service{}
 	app.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
@@ -114,14 +114,14 @@ func TestEnv_GetBool(t1 *testing.T) {
 func TestEnv_GetFloat(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *goServer.Service
+		app  *Paranoia.Service
 	}
 	type args struct {
 		key string
 		def float32
 	}
 
-	app := goServer.Service{}
+	app := Paranoia.Service{}
 	app.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
@@ -206,14 +206,14 @@ func TestEnv_GetFloat(t1 *testing.T) {
 func TestEnv_GetInt(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *goServer.Service
+		app  *Paranoia.Service
 	}
 	type args struct {
 		key string
 		def int
 	}
 
-	app := goServer.Service{}
+	app := Paranoia.Service{}
 	app.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
@@ -288,14 +288,14 @@ func TestEnv_GetInt(t1 *testing.T) {
 func TestEnv_GetString(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  *goServer.Service
+		app  *Paranoia.Service
 	}
 	type args struct {
 		key string
 		def string
 	}
 
-	app := goServer.Service{}
+	app := Paranoia.Service{}
 	app.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
@@ -393,7 +393,7 @@ func TestEnv_Init(t1 *testing.T) {
 		FName string
 	}
 	type args struct {
-		app *goServer.Service
+		app *Paranoia.Service
 	}
 	type file struct {
 		FName    string
@@ -404,7 +404,7 @@ func TestEnv_Init(t1 *testing.T) {
 		value string
 	}
 
-	app := goServer.Service{}
+	app := Paranoia.Service{}
 	app.New("test", nil, &logger.Mock{})
 
 	tests := []struct {

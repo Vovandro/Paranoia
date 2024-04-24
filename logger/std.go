@@ -1,16 +1,16 @@
 package logger
 
 import (
+	"Paranoia"
 	"fmt"
-	"goServer"
 )
 
 type Std struct {
-	Parent goServer.ILogger
-	Level  goServer.LogLevel
+	Parent Paranoia.ILogger
+	Level  Paranoia.LogLevel
 }
 
-func (t *Std) Init(app *goServer.Service) error {
+func (t *Std) Init(app *Paranoia.Service) error {
 	if t.Parent != nil {
 		return t.Parent.Init(app)
 	}
@@ -26,7 +26,7 @@ func (t *Std) Stop() error {
 	return nil
 }
 
-func (t *Std) SetLevel(level goServer.LogLevel) {
+func (t *Std) SetLevel(level Paranoia.LogLevel) {
 	t.Level = level
 
 	if t.Parent != nil {
@@ -35,7 +35,7 @@ func (t *Std) SetLevel(level goServer.LogLevel) {
 }
 
 func (t *Std) Debug(args ...interface{}) {
-	if t.Level <= goServer.DEBUG {
+	if t.Level <= Paranoia.DEBUG {
 		fmt.Println(args)
 
 		if t.Parent != nil {
@@ -45,7 +45,7 @@ func (t *Std) Debug(args ...interface{}) {
 }
 
 func (t *Std) Info(args ...interface{}) {
-	if t.Level <= goServer.INFO {
+	if t.Level <= Paranoia.INFO {
 		fmt.Println(args)
 
 		if t.Parent != nil {
@@ -55,7 +55,7 @@ func (t *Std) Info(args ...interface{}) {
 }
 
 func (t *Std) Warn(args ...interface{}) {
-	if t.Level <= goServer.WARNING {
+	if t.Level <= Paranoia.WARNING {
 		fmt.Println(args)
 
 		if t.Parent != nil {
@@ -65,7 +65,7 @@ func (t *Std) Warn(args ...interface{}) {
 }
 
 func (t *Std) Message(args ...interface{}) {
-	if t.Level <= goServer.MESSAGE {
+	if t.Level <= Paranoia.MESSAGE {
 		fmt.Println(args)
 
 		if t.Parent != nil {
@@ -75,7 +75,7 @@ func (t *Std) Message(args ...interface{}) {
 }
 
 func (t *Std) Error(err error) {
-	if t.Level <= goServer.ERROR {
+	if t.Level <= Paranoia.ERROR {
 		fmt.Println(err)
 
 		if t.Parent != nil {
@@ -85,7 +85,7 @@ func (t *Std) Error(err error) {
 }
 
 func (t *Std) Fatal(err error) {
-	if t.Level <= goServer.CRITICAL {
+	if t.Level <= Paranoia.CRITICAL {
 		fmt.Println(err)
 
 		if t.Parent != nil {
@@ -95,7 +95,7 @@ func (t *Std) Fatal(err error) {
 }
 
 func (t *Std) Panic(err error) {
-	if t.Level <= goServer.CRITICAL {
+	if t.Level <= Paranoia.CRITICAL {
 		fmt.Println(err)
 
 		if t.Parent != nil {

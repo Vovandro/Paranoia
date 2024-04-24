@@ -1,4 +1,4 @@
-package goServer
+package Paranoia
 
 type IServer interface {
 	Init(app *Service) error

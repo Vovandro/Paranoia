@@ -1,8 +1,8 @@
 package cache
 
 import (
+	"Paranoia"
 	"fmt"
-	"goServer"
 	"time"
 )
 
@@ -10,7 +10,7 @@ type Mock struct {
 	Name string
 }
 
-func (t *Mock) Init(app *goServer.Service) error {
+func (t *Mock) Init(app *Paranoia.Service) error {
 	return nil
 }
 

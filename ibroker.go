@@ -1,4 +1,4 @@
-package goServer
+package Paranoia
 
 type IBroker interface {
 	Init(app *Service) error
