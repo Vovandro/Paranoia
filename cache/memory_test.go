@@ -37,7 +37,7 @@ func TestMemory_Delete(t1 *testing.T) {
 			t := &Memory{
 				Name: "test",
 			}
-			t.data.Store(tt.fields, "test")
+			t.data.Store(tt.fields, &cacheItem{"test", time.Now().Add(time.Minute)})
 
 			if err := t.Delete(tt.args); (err != nil) != tt.wantErr {
 				t1.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
@@ -92,8 +92,9 @@ func TestMemory_Get(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{}
+			t.Init(nil)
 
-			t.data.Store(tt.fields.key, tt.fields.val)
+			t.data.Store(tt.fields.key, &cacheItem{tt.fields.val, time.Now().Add(time.Minute)})
 
 			got, err := t.Get(tt.args)
 			if (err != nil) != tt.wantErr {
@@ -131,7 +132,7 @@ func TestMemory_Has(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{}
 
-			t.data.Store(tt.fields, "test")
+			t.data.Store(tt.fields, &cacheItem{"test", time.Now().Add(time.Minute)})
 
 			if got := t.Has(tt.args); got != tt.want {
 				t1.Errorf("Has() = %v, want %v", got, tt.want)
@@ -148,7 +149,7 @@ func TestMemory_Set(t1 *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		args       args
+		args       []args
 		sleep      time.Duration
 		want       any
 		wantErr    bool
@@ -156,10 +157,12 @@ func TestMemory_Set(t1 *testing.T) {
 	}{
 		{
 			"base test string",
-			args{
-				"k1",
-				"test",
-				time.Minute,
+			[]args{
+				{
+					"k1",
+					"test",
+					time.Minute,
+				},
 			},
 			time.Microsecond,
 			"test",
@@ -168,10 +171,12 @@ func TestMemory_Set(t1 *testing.T) {
 		},
 		{
 			"base test array string",
-			args{
-				"k1",
-				[]string{"test"},
-				time.Minute,
+			[]args{
+				{
+					"k1",
+					[]string{"test"},
+					time.Minute,
+				},
 			},
 			time.Microsecond,
 			[]string{"test"},
@@ -180,12 +185,52 @@ func TestMemory_Set(t1 *testing.T) {
 		},
 		{
 			"base test timeout",
-			args{
-				"k1",
-				"test",
-				time.Second,
+			[]args{
+				{
+					"k1",
+					"test",
+					time.Millisecond,
+				},
 			},
-			time.Second * 2,
+			time.Millisecond * 10,
+			nil,
+			false,
+			false,
+		},
+		{
+			"base test replace",
+			[]args{
+				{
+					"k1",
+					"test",
+					time.Minute,
+				},
+				{
+					"k1",
+					"test2",
+					time.Minute,
+				},
+			},
+			time.Millisecond,
+			"test2",
+			false,
+			true,
+		},
+		{
+			"base test replace timeout",
+			[]args{
+				{
+					"k1",
+					"test",
+					time.Minute,
+				},
+				{
+					"k1",
+					"test2",
+					time.Millisecond,
+				},
+			},
+			time.Millisecond * 10,
 			nil,
 			false,
 			false,
@@ -194,15 +239,19 @@ func TestMemory_Set(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{}
-			if err := t.Set(tt.args.key, tt.args.args, tt.args.timeout); (err != nil) != tt.wantErr {
-				t1.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
+			t.Init(nil)
+
+			for i := 0; i < len(tt.args); i++ {
+				if err := t.Set(tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
+					t1.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
+				}
 			}
 
 			time.Sleep(tt.sleep)
 
-			got, ok := t.data.Load(tt.args.key)
+			got, ok := t.Get(tt.args[0].key)
 
-			if ok != tt.wantExists || !reflect.DeepEqual(got, tt.want) {
+			if (ok == nil) != tt.wantExists || !reflect.DeepEqual(got, tt.want) {
 				t1.Errorf("Get() got = %v, want %v", got, tt.want)
 			}
 		})
