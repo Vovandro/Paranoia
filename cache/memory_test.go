@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -284,5 +285,113 @@ func TestMemory_String(t1 *testing.T) {
 				t1.Errorf("String() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func BenchmarkStore(b *testing.B) {
+	t := Memory{}
+	t.Init(nil)
+
+	for i := 0; i < b.N; i++ {
+		k := fmt.Sprintf("%d", i)
+		err := t.Set(k, k, time.Hour)
+
+		if err != nil {
+			b.Fatalf("Unexpected error: %s", err)
+		}
+
+		if val, ok := t.data.Load(k); !ok || val.(*cacheItem).data != k {
+			b.Fatalf("Unexpected error data")
+		}
+	}
+}
+
+func BenchmarkStoreMutex(b *testing.B) {
+	t := Memory2{}
+	t.Init(nil)
+
+	for i := 0; i < b.N; i++ {
+		k := fmt.Sprintf("%d", i)
+		err := t.Set(k, k, time.Hour)
+
+		if err != nil {
+			b.Fatalf("Unexpected error: %s", err)
+		}
+
+		if val, ok := t.data[k]; !ok || val.data != k {
+			b.Fatalf("Unexpected error data")
+		}
+	}
+}
+
+func BenchmarkCheckAndStore(b *testing.B) {
+	t := Memory{}
+	t.Init(nil)
+
+	for i := 0; i < b.N; i++ {
+		k := fmt.Sprintf("%d", i)
+		err := t.Set(k, k, time.Hour)
+
+		if err != nil {
+			b.Fatalf("Unexpected error: %s", err)
+		}
+
+		if val, ok := t.Get(k); ok != nil || val.(string) != k {
+			b.Fatalf("Unexpected error data")
+		}
+	}
+}
+
+func BenchmarkCheckAndStoreMutex(b *testing.B) {
+	t := Memory2{}
+	t.Init(nil)
+
+	for i := 0; i < b.N; i++ {
+		k := fmt.Sprintf("%d", i)
+		err := t.Set(k, k, time.Hour)
+
+		if err != nil {
+			b.Fatalf("Unexpected error: %s", err)
+		}
+
+		if val, ok := t.Get(k); ok != nil || val.(string) != k {
+			b.Fatalf("Unexpected error data")
+		}
+	}
+}
+
+func BenchmarkCheckAndStoreArray(b *testing.B) {
+	t := Memory{}
+	t.Init(nil)
+
+	for i := 0; i < b.N; i++ {
+		k := fmt.Sprintf("%d", i)
+		err := t.Set(k, []string{k}, time.Hour)
+
+		if err != nil {
+			b.Fatalf("Unexpected error: %s", err)
+		}
+
+		if val, ok := t.Get(k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
+			b.Fatalf("Unexpected error data")
+		}
+	}
+}
+
+func BenchmarkCheckAndStoreArrayMutex(b *testing.B) {
+	t := Memory2{}
+	t.Init(nil)
+
+	for i := 0; i < b.N; i++ {
+		k := fmt.Sprintf("%d", i)
+		err := t.Set(k, []string{k}, time.Hour)
+
+		if err != nil {
+			b.Fatalf("Unexpected error: %s", err)
+		}
+
+		if val, ok := t.Get(k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
+			b.Fatalf("Unexpected error data")
+		}
 	}
 }
