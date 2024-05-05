@@ -8,9 +8,10 @@ import (
 )
 
 type Memory struct {
-	Name string
-	data sync.Map
-	pool sync.Pool
+	Name  string
+	data  map[string]*cacheItem
+	pool  sync.Pool
+	mutex sync.RWMutex
 }
 
 type cacheItem struct {
@@ -22,6 +23,8 @@ func (t *Memory) Init(app interfaces.IService) error {
 	t.pool.New = func() any {
 		return &cacheItem{}
 	}
+
+	t.data = make(map[string]*cacheItem, 100)
 
 	return nil
 }
@@ -35,11 +38,16 @@ func (t *Memory) String() string {
 }
 
 func (t *Memory) Has(key string) bool {
-	val, ok := t.data.Load(key)
+	t.mutex.RLock()
+	defer t.mutex.RUnlock()
+	val, ok := t.data[key]
 
 	if ok {
-		if val.(*cacheItem).timeout.Before(time.Now()) {
-			t.data.Delete(key)
+		if val.timeout.Before(time.Now()) {
+			t.mutex.Lock()
+			defer t.mutex.Unlock()
+
+			delete(t.data, key)
 			t.pool.Put(val)
 		}
 	}
@@ -48,29 +56,38 @@ func (t *Memory) Has(key string) bool {
 }
 
 func (t *Memory) Set(key string, args any, timeout time.Duration) error {
-	val, ok := t.data.Load(key)
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	val, ok := t.data[key]
 
 	if ok {
-		val.(*cacheItem).timeout = time.Now().Add(timeout)
-		val.(*cacheItem).data = args
+		val.timeout = time.Now().Add(timeout)
+		val.data = args
 	} else {
 		val = t.pool.Get().(*cacheItem)
-		val.(*cacheItem).timeout = time.Now().Add(timeout)
-		val.(*cacheItem).data = args
-		t.data.Store(key, val)
+		val.timeout = time.Now().Add(timeout)
+		val.data = args
+		t.data[key] = val
 	}
 
 	return nil
 }
 
 func (t *Memory) Get(key string) (any, error) {
-	val, ok := t.data.Load(key)
+	t.mutex.RLock()
+	defer t.mutex.RUnlock()
+
+	val, ok := t.data[key]
 
 	if ok {
-		if val.(*cacheItem).timeout.After(time.Now()) {
-			return val.(*cacheItem).data, nil
+		if val.timeout.After(time.Now()) {
+			return val.data, nil
 		} else {
-			t.data.Delete(key)
+			t.mutex.Lock()
+			defer t.mutex.Unlock()
+
+			delete(t.data, key)
 			t.pool.Put(val)
 		}
 	}
@@ -79,10 +96,13 @@ func (t *Memory) Get(key string) (any, error) {
 }
 
 func (t *Memory) Delete(key string) error {
-	val, ok := t.data.Load(key)
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	val, ok := t.data[key]
 
 	if ok {
-		t.data.Delete(key)
+		delete(t.data, key)
 		t.pool.Put(val)
 	}
 

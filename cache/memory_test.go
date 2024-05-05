@@ -38,7 +38,7 @@ func TestMemory_Delete(t1 *testing.T) {
 			t := &Memory{
 				Name: "test",
 			}
-			t.data.Store(tt.fields, &cacheItem{"test", time.Now().Add(time.Minute)})
+			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
 			if err := t.Delete(tt.args); (err != nil) != tt.wantErr {
 				t1.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
@@ -94,8 +94,9 @@ func TestMemory_Get(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{}
 			t.Init(nil)
+			defer t.Stop()
 
-			t.data.Store(tt.fields.key, &cacheItem{tt.fields.val, time.Now().Add(time.Minute)})
+			t.data[tt.fields.key] = &cacheItem{tt.fields.val, time.Now().Add(time.Minute)}
 
 			got, err := t.Get(tt.args)
 			if (err != nil) != tt.wantErr {
@@ -133,7 +134,7 @@ func TestMemory_Has(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{}
 
-			t.data.Store(tt.fields, &cacheItem{"test", time.Now().Add(time.Minute)})
+			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
 			if got := t.Has(tt.args); got != tt.want {
 				t1.Errorf("Has() = %v, want %v", got, tt.want)
@@ -241,6 +242,7 @@ func TestMemory_Set(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{}
 			t.Init(nil)
+			defer t.Stop()
 
 			for i := 0; i < len(tt.args); i++ {
 				if err := t.Set(tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
@@ -291,6 +293,7 @@ func TestMemory_String(t1 *testing.T) {
 func BenchmarkStore(b *testing.B) {
 	t := Memory{}
 	t.Init(nil)
+	defer t.Stop()
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
@@ -300,15 +303,16 @@ func BenchmarkStore(b *testing.B) {
 			b.Fatalf("Unexpected error: %s", err)
 		}
 
-		if val, ok := t.data.Load(k); !ok || val.(*cacheItem).data != k {
+		if val, ok := t.data[k]; !ok || val.data != k {
 			b.Fatalf("Unexpected error data")
 		}
 	}
 }
 
 func BenchmarkStoreMutex(b *testing.B) {
-	t := Memory2{}
+	t := Memory{}
 	t.Init(nil)
+	defer t.Stop()
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
@@ -327,6 +331,7 @@ func BenchmarkStoreMutex(b *testing.B) {
 func BenchmarkCheckAndStore(b *testing.B) {
 	t := Memory{}
 	t.Init(nil)
+	defer t.Stop()
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
@@ -343,8 +348,9 @@ func BenchmarkCheckAndStore(b *testing.B) {
 }
 
 func BenchmarkCheckAndStoreMutex(b *testing.B) {
-	t := Memory2{}
+	t := Memory{}
 	t.Init(nil)
+	defer t.Stop()
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
@@ -363,6 +369,7 @@ func BenchmarkCheckAndStoreMutex(b *testing.B) {
 func BenchmarkCheckAndStoreArray(b *testing.B) {
 	t := Memory{}
 	t.Init(nil)
+	defer t.Stop()
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
@@ -379,8 +386,9 @@ func BenchmarkCheckAndStoreArray(b *testing.B) {
 }
 
 func BenchmarkCheckAndStoreArrayMutex(b *testing.B) {
-	t := Memory2{}
+	t := Memory{}
 	t.Init(nil)
+	defer t.Stop()
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
