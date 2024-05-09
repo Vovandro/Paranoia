@@ -38,6 +38,9 @@ func TestMemory_Delete(t1 *testing.T) {
 			t := &Memory{
 				Name: "test",
 			}
+			t.Init(nil)
+			defer t.Stop()
+
 			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
 			if err := t.Delete(tt.args); (err != nil) != tt.wantErr {
@@ -133,6 +136,8 @@ func TestMemory_Has(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{}
+			t.Init(nil)
+			defer t.Stop()
 
 			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
@@ -259,6 +264,30 @@ func TestMemory_Set(t1 *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMemory_ClearTimeout(t1 *testing.T) {
+	t1.Run("test timeout clear", func(t1 *testing.T) {
+		t := &Memory{
+			TimeClear: time.Millisecond * 10,
+		}
+		t.Init(nil)
+		defer t.Stop()
+
+		err := t.Set("test", "test", time.Millisecond)
+
+		if err != nil {
+			t1.Errorf("Set() error = %v", err)
+		}
+
+		time.Sleep(time.Second)
+
+		_, ok := t.data["test"]
+
+		if ok {
+			t1.Errorf("Get() exists")
+		}
+	})
 }
 
 func TestMemory_String(t1 *testing.T) {
