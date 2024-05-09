@@ -282,7 +282,9 @@ func TestMemory_ClearTimeout(t1 *testing.T) {
 
 		time.Sleep(time.Second)
 
+		t.mutex.RLock()
 		_, ok := t.data["test"]
+		t.mutex.RUnlock()
 
 		if ok {
 			t1.Errorf("Get() exists")
