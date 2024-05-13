@@ -1,6 +1,6 @@
 package interfaces
 
-type IStore interface {
+type IStorage interface {
 	Init(app IService) error
 	Stop() error
 	String() string
