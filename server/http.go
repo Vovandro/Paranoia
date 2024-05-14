@@ -85,6 +85,9 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
 	} else {
 		route(ctx)
+
+		w.Write(ctx.Response.Body)
+		w.WriteHeader(ctx.Response.StatusCode)
 	}
 }
 

@@ -40,11 +40,7 @@ var ContextPool = sync.Pool{
 func FromHttp(request *http.Request) *Context {
 	ctx := ContextPool.Get().(*Context)
 
-	_, err := request.Body.Read(ctx.Request.Body)
-
-	if err != nil {
-		return nil
-	}
+	request.Body.Read(ctx.Request.Body)
 
 	ctx.Request.Headers = request.Header
 
