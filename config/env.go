@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"os"
 	"strconv"
@@ -25,6 +26,10 @@ func (t *Env) Init(app interfaces.IService) error {
 	f, err := os.ReadFile(t.FName)
 
 	if err != nil || len(f) == 0 {
+		if err == nil {
+			err = fmt.Errorf("file %s is empty", t.FName)
+		}
+
 		t.app.GetLogger().Error(err)
 	} else {
 		t.ParseFile(f)

@@ -32,6 +32,11 @@ func (t *Http) Init(app interfaces.IService) error {
 		IdleTimeout:                  5 * time.Second,
 	}
 
+	return nil
+
+}
+
+func (t *Http) Start() error {
 	listenErr := make(chan error, 1)
 
 	go func() {
@@ -48,7 +53,6 @@ func (t *Http) Init(app interfaces.IService) error {
 	}
 
 	return nil
-
 }
 
 func (t *Http) Stop() error {

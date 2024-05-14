@@ -21,6 +21,10 @@ func (t *Mock) Init(app interfaces.IService) error {
 	return nil
 }
 
+func (t *Mock) Start() error {
+	return nil
+}
+
 func (t *Mock) Stop() error {
 	return nil
 }

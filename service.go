@@ -168,6 +168,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	for _, server := range t.servers {
+		err = server.Init(t)
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
 	for _, repository := range t.repository {
 		err = repository.Init(t)
 
@@ -205,7 +214,7 @@ func (t *Service) Init() error {
 	}
 
 	for _, server := range t.servers {
-		err = server.Init(t)
+		err = server.Start()
 
 		if err != nil {
 			t.logger.Fatal(err)
