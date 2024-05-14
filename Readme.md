@@ -15,8 +15,14 @@ add to main.go
 		New("base paranoia app", &config.Env{}, &logger.File{&logger.Std{}}).
 		PushCache(&cache.Memory{Name: "cache"}).
 		PushRepository(&myRepository{Name: "repository"}).
-		PushController(&myController{Name: "controller"}).
-		Init()
+		PushController(&myController{Name: "controller"})
+	
+	err := s.Init()
+
+	if err != nil {
+		panic(err)
+		return
+	}
 	
 	defer s.Stop()
 ```
