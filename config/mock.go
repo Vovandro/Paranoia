@@ -17,6 +17,10 @@ func (t *Mock) Init(app interfaces.IService) error {
 	return nil
 }
 
+func (t *Mock) Stop() error {
+	return nil
+}
+
 func (t *Mock) Has(key string) bool {
 	val, ok := t.Data[key]
 

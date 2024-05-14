@@ -33,6 +33,10 @@ func (t *Env) Init(app interfaces.IService) error {
 	return nil
 }
 
+func (t *Env) Stop() error {
+	return nil
+}
+
 func (t *Env) ParseFile(data []byte) {
 	key := make([]byte, 0, 20)
 	val := make([]byte, 0, 20)

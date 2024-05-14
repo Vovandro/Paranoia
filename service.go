@@ -215,3 +215,95 @@ func (t *Service) Init() error {
 
 	return err
 }
+
+func (t *Service) Stop() error {
+	var err error = nil
+
+	for _, server := range t.servers {
+		err = server.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, broker := range t.brokers {
+		err = broker.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, controller := range t.controllers {
+		err = controller.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, module := range t.modules {
+		err = module.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, repository := range t.repository {
+		err = repository.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, st := range t.storage {
+		err = st.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, db := range t.database {
+		err = db.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, cache := range t.cache {
+		err = cache.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	err = t.config.Stop()
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	err = t.logger.Stop()
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return err
+}
