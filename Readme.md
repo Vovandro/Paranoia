@@ -17,8 +17,6 @@ add to main.go
 		PushRepository(&myRepository{Name: "repository"}).
 		PushController(&myController{Name: "controller"}).
 		Init()
-		
-	s.Run()
 	
 	defer s.Stop()
 ```
