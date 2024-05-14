@@ -1,6 +1,8 @@
 package interfaces
 
 type IService interface {
+	Init() error
+	Stop() error
 	GetLogger() ILogger
 	PushCache(c ICache) IService
 	GetCache(key string) ICache
