@@ -6,7 +6,7 @@
 
 
 ## Simple start:
-Import to project `go get https://gitlab.com/devpro_studio/Paranoia.git`
+Import to project `go get gitlab.com/devpro_studio/Paranoia`
 
 add to main.go
 
