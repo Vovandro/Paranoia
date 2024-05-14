@@ -3,15 +3,15 @@ package server
 import (
 	"context"
 	"fmt"
+	context2 "gitlab.com/devpro_studio/Paranoia/context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"net/http"
 	"time"
 )
 
 type Http struct {
-	Name          string
-	Port          string
-	RouteRegister func(router *Router)
+	Name string
+	Port string
 
 	app    interfaces.IService
 	router *Router
@@ -31,8 +31,6 @@ func (t *Http) Init(app interfaces.IService) error {
 		WriteTimeout:                 10 * time.Second,
 		IdleTimeout:                  5 * time.Second,
 	}
-
-	t.RouteRegister(t.router)
 
 	listenErr := make(chan error, 1)
 
@@ -71,7 +69,7 @@ func (t *Http) String() string {
 }
 
 func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	ctx := FromHttp(req)
+	ctx := context2.FromHttp(req)
 	defer func(tm time.Time) {
 		t.app.GetLogger().Debug(fmt.Sprintf("[%d] [%v] %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
 	}(time.Now())
@@ -84,4 +82,8 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		route(ctx)
 	}
+}
+
+func (t *Http) PushRoute(method string, path string, handler interfaces.RouteFunc) {
+	t.router.PushRoute(method, path, handler)
 }

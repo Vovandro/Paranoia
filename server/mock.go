@@ -28,3 +28,7 @@ func (t *Mock) Stop() error {
 func (t *Mock) String() string {
 	return t.Name
 }
+
+func (t *Mock) PushRoute(method string, path string, handler interfaces.RouteFunc) {
+	t.router.PushRoute(method, path, handler)
+}

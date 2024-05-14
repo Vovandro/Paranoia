@@ -1,26 +1,26 @@
 package server
 
-type RouteFunc func(ctx *Context)
+import "gitlab.com/devpro_studio/Paranoia/interfaces"
 
 type Router struct {
-	data map[string]map[string]RouteFunc
+	data map[string]map[string]interfaces.RouteFunc
 }
 
 func NewRouter() *Router {
 	return &Router{
-		data: make(map[string]map[string]RouteFunc, 5),
+		data: make(map[string]map[string]interfaces.RouteFunc, 5),
 	}
 }
 
-func (t *Router) PushRoute(method string, path string, handler RouteFunc) {
+func (t *Router) PushRoute(method string, path string, handler interfaces.RouteFunc) {
 	if _, ok := t.data[method]; !ok {
-		t.data[method] = make(map[string]RouteFunc, 20)
+		t.data[method] = make(map[string]interfaces.RouteFunc, 20)
 	}
 
 	t.data[method][path] = handler
 }
 
-func (t *Router) Find(method string, path string) RouteFunc {
+func (t *Router) Find(method string, path string) interfaces.RouteFunc {
 	if _, ok := t.data[method]; !ok {
 		return nil
 	}
@@ -30,24 +30,4 @@ func (t *Router) Find(method string, path string) RouteFunc {
 	}
 
 	return nil
-}
-
-func (t *Router) Get(path string, handler RouteFunc) {
-	t.PushRoute("GET", path, handler)
-}
-
-func (t *Router) Post(path string, handler RouteFunc) {
-	t.PushRoute("POST", path, handler)
-}
-
-func (t *Router) Put(path string, handler RouteFunc) {
-	t.PushRoute("PUT", path, handler)
-}
-
-func (t *Router) Delete(path string, handler RouteFunc) {
-	t.PushRoute("DELETE", path, handler)
-}
-
-func (t *Router) Rpc(path string, handler RouteFunc) {
-	t.PushRoute("RPC", path, handler)
 }
