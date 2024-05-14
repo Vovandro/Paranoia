@@ -1,7 +1,7 @@
 package config
 
 import (
-	"Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"strconv"
 )
 

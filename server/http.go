@@ -1,9 +1,9 @@
 package server
 
 import (
-	"Paranoia/interfaces"
 	"context"
 	"fmt"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"net/http"
 	"time"
 )

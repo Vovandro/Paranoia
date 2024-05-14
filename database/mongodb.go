@@ -1,9 +1,9 @@
 package database
 
 import (
-	"Paranoia/interfaces"
 	"context"
 	"fmt"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

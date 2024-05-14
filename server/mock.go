@@ -1,7 +1,7 @@
 package server
 
 import (
-	"Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type Mock struct {

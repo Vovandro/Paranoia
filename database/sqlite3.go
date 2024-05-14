@@ -1,10 +1,10 @@
 package database
 
 import (
-	"Paranoia/interfaces"
 	"context"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type Sqlite3 struct {

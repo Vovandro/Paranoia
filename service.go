@@ -1,8 +1,8 @@
 package Paranoia
 
 import (
-	"Paranoia/interfaces"
 	"fmt"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type Service struct {

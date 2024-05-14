@@ -1,9 +1,9 @@
 package config
 
 import (
-	"Paranoia"
-	"Paranoia/interfaces"
-	"Paranoia/logger"
+	"gitlab.com/devpro_studio/Paranoia"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/logger"
 	"os"
 	"testing"
 )

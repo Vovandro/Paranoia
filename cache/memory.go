@@ -1,9 +1,9 @@
 package cache
 
 import (
-	"Paranoia/interfaces"
 	"container/heap"
 	"fmt"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"sync"
 	"time"
 )

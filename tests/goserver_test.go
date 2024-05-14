@@ -1,8 +1,8 @@
 package tests
 
 import (
-	"Paranoia"
-	"Paranoia/cache"
+	"gitlab.com/devpro_studio/Paranoia"
+	"gitlab.com/devpro_studio/Paranoia/cache"
 	"testing"
 )
 

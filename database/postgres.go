@@ -1,9 +1,9 @@
 package database
 
 import (
-	"Paranoia/interfaces"
 	"context"
 	"github.com/jackc/pgx/v5"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type Postgres struct {

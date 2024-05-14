@@ -1,4 +1,4 @@
-module Paranoia
+module gitlab.com/devpro_studio/Paranoia
 
 go 1.22.0
 

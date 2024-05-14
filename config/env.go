@@ -1,8 +1,8 @@
 package config
 
 import (
-	"Paranoia/interfaces"
 	"bytes"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"os"
 	"strconv"
 	"strings"
