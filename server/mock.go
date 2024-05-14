@@ -2,21 +2,19 @@ package server
 
 import (
 	"Paranoia/interfaces"
-	"github.com/fasthttp/router"
-	"github.com/valyala/fasthttp"
 )
 
 type Mock struct {
 	Name          string
-	RouteRegister func(router *router.Router)
+	RouteRegister func(router *Router)
 
 	app    interfaces.IService
-	router *router.Router
+	router *Router
 }
 
 func (t *Mock) Init(app interfaces.IService) error {
 	t.app = app
-	t.router = router.New()
+	t.router = NewRouter()
 
 	t.RouteRegister(t.router)
 
@@ -29,19 +27,4 @@ func (t *Mock) Stop() error {
 
 func (t *Mock) String() string {
 	return t.Name
-}
-
-func (t *Mock) Handle(next fasthttp.RequestHandler) fasthttp.RequestHandler {
-	return next
-}
-
-func (t *Mock) Get(body []byte, header []string) {
-	r := fasthttp.RequestCtx{
-		Request:  fasthttp.Request{},
-		Response: fasthttp.Response{},
-	}
-
-	r.Request.SetBody(body)
-
-	t.Handle(func(ctx *fasthttp.RequestCtx) {})(&r)
 }

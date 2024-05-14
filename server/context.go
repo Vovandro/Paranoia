@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/valyala/fasthttp"
 	"net"
+	"net/http"
 	"sync"
 )
 
@@ -13,7 +13,7 @@ type Context struct {
 
 type Request struct {
 	Body    []byte
-	Headers map[string]string
+	Headers http.Header
 	Ip      net.IP
 }
 
@@ -26,7 +26,8 @@ var ContextPool = sync.Pool{
 	New: func() interface{} {
 		return &Context{
 			Request: Request{
-				Headers: make(map[string]string, 10),
+				Body:    make([]byte, 0),
+				Headers: http.Header{},
 			},
 			Response: Response{
 				Body:       make([]byte, 0),
@@ -36,18 +37,16 @@ var ContextPool = sync.Pool{
 	},
 }
 
-func FromHttp(request *fasthttp.RequestCtx) *Context {
+func FromHttp(request *http.Request) *Context {
 	ctx := ContextPool.Get().(*Context)
 
-	ctx.Request = Request{
-		Body: request.Request.Body(),
+	_, err := request.Body.Read(ctx.Request.Body)
+
+	if err != nil {
+		return nil
 	}
 
-	ctx.Request.Headers = make(map[string]string, request.Request.Header.Len())
-
-	request.Request.Header.VisitAll(func(key, value []byte) {
-		ctx.Request.Headers[string(key)] = string(value)
-	})
+	ctx.Request.Headers = request.Header
 
 	return ctx
 }

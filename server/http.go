@@ -2,8 +2,9 @@ package server
 
 import (
 	"Paranoia/interfaces"
+	"context"
 	"fmt"
-	"github.com/valyala/fasthttp"
+	"net/http"
 	"time"
 )
 
@@ -14,7 +15,7 @@ type Http struct {
 
 	app    interfaces.IService
 	router *Router
-	server *fasthttp.Server
+	server *http.Server
 }
 
 func (t *Http) Init(app interfaces.IService) error {
@@ -22,11 +23,13 @@ func (t *Http) Init(app interfaces.IService) error {
 
 	t.router = NewRouter()
 
-	t.server = &fasthttp.Server{
-		Handler:      t.Handle(),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  5 * time.Second,
+	t.server = &http.Server{
+		Addr:                         ":" + t.Port,
+		Handler:                      t,
+		DisableGeneralOptionsHandler: false,
+		ReadTimeout:                  5 * time.Second,
+		WriteTimeout:                 10 * time.Second,
+		IdleTimeout:                  5 * time.Second,
 	}
 
 	t.RouteRegister(t.router)
@@ -34,7 +37,7 @@ func (t *Http) Init(app interfaces.IService) error {
 	listenErr := make(chan error, 1)
 
 	go func() {
-		listenErr <- t.server.ListenAndServe(t.Port)
+		listenErr <- t.server.ListenAndServe()
 	}()
 
 	select {
@@ -51,9 +54,7 @@ func (t *Http) Init(app interfaces.IService) error {
 }
 
 func (t *Http) Stop() error {
-	t.server.DisableKeepalive = true
-
-	err := t.server.Shutdown()
+	err := t.server.Shutdown(context.TODO())
 
 	if err != nil {
 		t.app.GetLogger().Error(err)
@@ -69,19 +70,18 @@ func (t *Http) String() string {
 	return t.Name
 }
 
-func (t *Http) Handle() fasthttp.RequestHandler {
-	return fasthttp.CompressHandler(
-		func(ctx *fasthttp.RequestCtx) {
-			defer func(tm time.Time) {
-				t.app.GetLogger().Debug(fmt.Sprintf("[%d] [%v] %s: %s", ctx.Response.StatusCode(), time.Now().Sub(tm), ctx.Method(), ctx.RequestURI()))
-			}(time.Now())
+func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	ctx := FromHttp(req)
+	defer func(tm time.Time) {
+		t.app.GetLogger().Debug(fmt.Sprintf("[%d] [%v] %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
+	}(time.Now())
 
-			route := t.router.Find(string(ctx.Method()), string(ctx.RequestURI()))
+	route := t.router.Find(req.Method, req.RequestURI)
 
-			if route == nil {
-				ctx.Response.SetStatusCode(404)
-			} else {
-				route(FromHttp(ctx))
-			}
-		})
+	if route == nil {
+		ctx.Response.StatusCode = 404
+		w.WriteHeader(404)
+	} else {
+		route(ctx)
+	}
 }
