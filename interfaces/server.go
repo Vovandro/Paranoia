@@ -1,8 +1,8 @@
 package interfaces
 
-import "gitlab.com/devpro_studio/Paranoia/context"
+import "gitlab.com/devpro_studio/Paranoia/srvCtx"
 
-type RouteFunc func(ctx *context.Context)
+type RouteFunc func(ctx *srvCtx.Ctx)
 
 type IServer interface {
 	Init(app IService) error

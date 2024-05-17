@@ -1,4 +1,4 @@
-package database
+package noSql
 
 import (
 	"context"
@@ -253,6 +253,42 @@ func (t *MongoDB) Delete(ctx context.Context, query interface{}, args ...interfa
 	}
 
 	return res.DeletedCount
+}
+
+/*
+Batch
+
+typeOp in [bulk]
+
+query []mongo.WriteModel
+
+args[0] - collection name
+*/
+func (t *MongoDB) Batch(ctx context.Context, typeOp string, query interface{}, args ...interface{}) (int64, error) {
+	var opt *options.BulkWriteOptions
+	var col string
+
+	if len(args) > 0 {
+		col = args[0].(string)
+	} else {
+		return 0, fmt.Errorf("batch query collection is empty")
+	}
+
+	switch typeOp {
+	case "bulk":
+		write, err := t.db.Collection(col).BulkWrite(ctx, query.([]mongo.WriteModel), opt)
+
+		if err != nil {
+			return 0, err
+		}
+
+		return write.ModifiedCount + write.InsertedCount, nil
+
+	default:
+		break
+	}
+
+	return 0, fmt.Errorf("batch query usupported type")
 }
 
 func (t *MongoDB) GetDb() interface{} {

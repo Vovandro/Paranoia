@@ -14,6 +14,7 @@ type Service struct {
 	cache       map[string]interfaces.ICache
 	brokers     map[string]interfaces.IBroker
 	database    map[string]interfaces.IDatabase
+	noSql       map[string]interfaces.INoSql
 	controllers map[string]interfaces.IController
 	modules     map[string]interfaces.IModules
 	repository  map[string]interfaces.IRepository
@@ -31,6 +32,7 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.cache = make(map[string]interfaces.ICache)
 	t.brokers = make(map[string]interfaces.IBroker)
 	t.database = make(map[string]interfaces.IDatabase)
+	t.noSql = make(map[string]interfaces.INoSql)
 	t.controllers = make(map[string]interfaces.IController)
 	t.modules = make(map[string]interfaces.IModules)
 	t.repository = make(map[string]interfaces.IRepository)
@@ -72,6 +74,16 @@ func (t *Service) PushDatabase(b interfaces.IDatabase) interfaces.IService {
 
 func (t *Service) GetDatabase(key string) interfaces.IDatabase {
 	return t.database[key]
+}
+
+func (t *Service) PushNoSql(b interfaces.INoSql) interfaces.IService {
+	t.noSql[b.String()] = b
+
+	return t
+}
+
+func (t *Service) GetNoSql(key string) interfaces.INoSql {
+	return t.noSql[key]
 }
 
 func (t *Service) PushController(b interfaces.IController) interfaces.IService {

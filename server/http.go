@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	context2 "gitlab.com/devpro_studio/Paranoia/context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/srvCtx"
 	"net/http"
 	"time"
 )
@@ -73,7 +73,7 @@ func (t *Http) String() string {
 }
 
 func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	ctx := context2.FromHttp(req)
+	ctx := srvCtx.FromHttp(req)
 	defer func(tm time.Time) {
 		t.app.GetLogger().Debug(fmt.Sprintf("[%d] [%v] %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
 	}(time.Now())

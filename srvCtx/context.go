@@ -1,4 +1,4 @@
-package context
+package srvCtx
 
 import (
 	"net"
@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-type Context struct {
+type Ctx struct {
 	Request  Request
 	Response Response
 }
@@ -24,7 +24,7 @@ type Response struct {
 
 var ContextPool = sync.Pool{
 	New: func() interface{} {
-		return &Context{
+		return &Ctx{
 			Request: Request{
 				Body:    make([]byte, 0),
 				Headers: http.Header{},
@@ -37,8 +37,8 @@ var ContextPool = sync.Pool{
 	},
 }
 
-func FromHttp(request *http.Request) *Context {
-	ctx := ContextPool.Get().(*Context)
+func FromHttp(request *http.Request) *Ctx {
+	ctx := ContextPool.Get().(*Ctx)
 
 	request.Body.Read(ctx.Request.Body)
 
