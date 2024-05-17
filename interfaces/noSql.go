@@ -9,6 +9,7 @@ type INoSql interface {
 
 	Count(ctx context.Context, query interface{}, args ...interface{}) int64
 	Exists(ctx context.Context, query interface{}, args ...interface{}) bool
+	Insert(ctx context.Context, query interface{}, args ...interface{}) (interface{}, error)
 	FindOne(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error
 	Find(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error
 	Exec(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error

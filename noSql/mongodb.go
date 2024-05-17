@@ -197,6 +197,31 @@ func (t *MongoDB) Exec(ctx context.Context, query interface{}, model interface{}
 	return nil
 }
 
+func (t *MongoDB) Insert(ctx context.Context, query interface{}, args ...interface{}) (interface{}, error) {
+	var opt *options.InsertOneOptions
+	var col string
+
+	if len(args) > 0 {
+		col = args[0].(string)
+	} else {
+		return nil, fmt.Errorf("exec query collection is empty")
+	}
+
+	if len(args) > 1 {
+		if val, ok := args[1].(*options.InsertOneOptions); ok {
+			opt = val
+		}
+	}
+
+	res, err := t.db.Collection(col).InsertOne(ctx, query, opt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res.InsertedID, nil
+}
+
 func (t *MongoDB) Update(ctx context.Context, query interface{}, args ...interface{}) error {
 	var opt *options.UpdateOptions
 	var col string
