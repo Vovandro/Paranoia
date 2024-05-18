@@ -68,15 +68,8 @@ func (t *Aerospike) String() string {
 	return t.Name
 }
 
-func (t *Aerospike) Exists(ctx context.Context, query interface{}, args ...interface{}) bool {
+func (t *Aerospike) Exists(ctx context.Context, key interface{}, query interface{}, args ...interface{}) bool {
 	var opt *aerospike.BasePolicy
-	var key *aerospike.Key
-
-	if len(args) > 0 {
-		key = args[0].(*aerospike.Key)
-	} else {
-		return false
-	}
 
 	if len(args) > 1 {
 		if val, ok := args[1].(*aerospike.BasePolicy); ok {
@@ -89,7 +82,7 @@ func (t *Aerospike) Exists(ctx context.Context, query interface{}, args ...inter
 		opt.SendKey = true
 	}
 
-	find, err := t.client.Exists(opt, key)
+	find, err := t.client.Exists(opt, key.(*aerospike.Key))
 
 	if err != nil {
 		return false
@@ -98,12 +91,16 @@ func (t *Aerospike) Exists(ctx context.Context, query interface{}, args ...inter
 	return find
 }
 
-func (t *Aerospike) Count(ctx context.Context, query interface{}, args ...interface{}) int64 {
+func (t *Aerospike) Count(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
+	if t.Exists(ctx, key, query, args...) {
+		return 1
+	}
+
 	return 0
 }
 
-func (t *Aerospike) FindOne(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error {
-	if key, ok := query.(*aerospike.Key); ok {
+func (t *Aerospike) FindOne(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
+	if key != nil {
 		bins := make([]string, len(args))
 		var opt *aerospike.BasePolicy
 
@@ -127,7 +124,7 @@ func (t *Aerospike) FindOne(ctx context.Context, query interface{}, model interf
 			}
 		}
 
-		find, err := t.client.Get(opt, key, bins...)
+		find, err := t.client.Get(opt, key.(*aerospike.Key), bins...)
 
 		if err != nil {
 			return err
@@ -179,7 +176,7 @@ func (t *Aerospike) FindOne(ctx context.Context, query interface{}, model interf
 	return nil
 }
 
-func (t *Aerospike) Find(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error {
+func (t *Aerospike) Find(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
 	var opt *aerospike.QueryPolicy
 
 	if len(args) > 0 {
@@ -214,7 +211,7 @@ func (t *Aerospike) Find(ctx context.Context, query interface{}, model interface
 	return nil
 }
 
-func (t *Aerospike) Exec(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error {
+func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
 	var opt *aerospike.WritePolicy
 	var arg1, arg2 string
 
@@ -243,7 +240,7 @@ func (t *Aerospike) Exec(ctx context.Context, query interface{}, model interface
 		arg2 = args[2].(string)
 	}
 
-	q, err := t.client.Execute(opt, query.(*aerospike.Key), arg1, arg2)
+	q, err := t.client.Execute(opt, key.(*aerospike.Key), arg1, arg2)
 
 	if err != nil {
 		return err
@@ -254,7 +251,7 @@ func (t *Aerospike) Exec(ctx context.Context, query interface{}, model interface
 	return nil
 }
 
-func (t *Aerospike) Insert(ctx context.Context, query interface{}, args ...interface{}) (interface{}, error) {
+func (t *Aerospike) Insert(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interface{}, error) {
 	var opt *aerospike.WritePolicy
 
 	if len(args) > 0 {
@@ -270,16 +267,15 @@ func (t *Aerospike) Insert(ctx context.Context, query interface{}, args ...inter
 
 	var bins []*aerospike.Bin
 
-	for i := 0; i < len(args); i++ {
-		if val, ok := args[i].(*aerospike.Bin); ok {
-			bins[i] = val
-		} else if val, ok := args[i].([]*aerospike.Bin); ok {
-			bins = val
-			break
-		}
+	if val, ok := query.(*aerospike.Bin); ok {
+		bins = append(bins, val)
+	} else if val, ok := query.([]*aerospike.Bin); ok {
+		bins = val
+	} else {
+		return nil, fmt.Errorf("invalid query type")
 	}
 
-	err := t.client.PutBins(opt, query.(*aerospike.Key), bins...)
+	err := t.client.PutBins(opt, key.(*aerospike.Key), bins...)
 
 	if err != nil {
 		return nil, err
@@ -288,7 +284,7 @@ func (t *Aerospike) Insert(ctx context.Context, query interface{}, args ...inter
 	return query, nil
 }
 
-func (t *Aerospike) Update(ctx context.Context, query interface{}, args ...interface{}) error {
+func (t *Aerospike) Update(ctx context.Context, key interface{}, query interface{}, args ...interface{}) error {
 	var opt *aerospike.WritePolicy
 
 	if len(args) > 0 {
@@ -304,16 +300,15 @@ func (t *Aerospike) Update(ctx context.Context, query interface{}, args ...inter
 
 	var bins []*aerospike.Bin
 
-	for i := 0; i < len(args); i++ {
-		if val, ok := args[i].(*aerospike.Bin); ok {
-			bins[i] = val
-		} else if val, ok := args[i].([]*aerospike.Bin); ok {
-			bins = val
-			break
-		}
+	if val, ok := query.(*aerospike.Bin); ok {
+		bins = append(bins, val)
+	} else if val, ok := query.([]*aerospike.Bin); ok {
+		bins = val
+	} else {
+		return fmt.Errorf("invalid query type")
 	}
 
-	err := t.client.PutBins(opt, query.(*aerospike.Key), bins...)
+	err := t.client.PutBins(opt, key.(*aerospike.Key), bins...)
 
 	if err != nil {
 		return err
@@ -323,30 +318,53 @@ func (t *Aerospike) Update(ctx context.Context, query interface{}, args ...inter
 
 }
 
-func (t *Aerospike) Delete(ctx context.Context, query interface{}, args ...interface{}) int64 {
-	var opt *aerospike.WritePolicy
+func (t *Aerospike) Delete(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
+	if _, ok := key.(*aerospike.Key); ok {
+		var opt *aerospike.WritePolicy
 
-	if len(args) > 0 {
-		if val, ok := args[0].(*aerospike.WritePolicy); ok {
-			opt = val
+		if len(args) > 0 {
+			if val, ok := args[0].(*aerospike.WritePolicy); ok {
+				opt = val
+			}
 		}
-	}
 
-	if opt == nil {
-		opt = &aerospike.WritePolicy{}
-		opt.SendKey = true
-	}
+		if opt == nil {
+			opt = &aerospike.WritePolicy{}
+			opt.SendKey = true
+		}
 
-	_, err := t.client.Delete(opt, query.(*aerospike.Key))
+		_, err := t.client.Delete(opt, key.(*aerospike.Key))
 
-	if err != nil {
+		if err != nil {
+			return 0
+		}
+	} else if keys, ok := key.([]*aerospike.Key); ok {
+		var opt *aerospike.BatchPolicy
+
+		if len(args) > 0 {
+			if val, ok := args[0].(*aerospike.BatchPolicy); ok {
+				opt = val
+			}
+		}
+
+		if opt == nil {
+			opt = &aerospike.BatchPolicy{}
+			opt.SendKey = true
+		}
+
+		_, err := t.client.BatchDelete(opt, nil, keys)
+
+		if err != nil {
+			return 0
+		}
+	} else {
 		return 0
 	}
 
 	return 1
 }
 
-func (t *Aerospike) Batch(ctx context.Context, typeOp string, query interface{}, args ...interface{}) (int64, error) {
+func (t *Aerospike) Batch(ctx context.Context, key interface{}, query interface{}, typeOp string, args ...interface{}) (int64, error) {
 	var opt *aerospike.BatchPolicy
 
 	switch typeOp {
