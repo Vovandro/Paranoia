@@ -74,6 +74,8 @@ func (t *Http) String() string {
 
 func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := srvCtx.FromHttp(req)
+	defer srvCtx.ContextPool.Put(ctx)
+
 	defer func(tm time.Time) {
 		t.app.GetLogger().Debug(fmt.Sprintf("[%d] [%v] %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
 	}(time.Now())
