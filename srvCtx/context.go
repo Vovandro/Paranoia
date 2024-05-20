@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+	"time"
 )
 
 type Ctx struct {
@@ -26,7 +27,30 @@ type Response struct {
 	Body        []byte
 	ContentType string
 	StatusCode  int
-	Headers     http.Header
+	Headers     map[string]string
+	Cookie      []Cookie
+}
+
+type Cookie struct {
+	Name    string
+	Value   string
+	Path    string
+	Expires time.Duration
+}
+
+func (t Cookie) String(domain string, sameSite string, httpOnly bool, secure bool) string {
+	s := t.Name + "=" + t.Value + "; Expires=" + time.Now().Add(t.Expires).String() + "; Path=" + t.Path +
+		"; Domain=" + domain + "; SameSite=" + sameSite
+
+	if httpOnly {
+		s += "; HttpOnly"
+	}
+
+	if secure {
+		s += "; Secure"
+	}
+
+	return s
 }
 
 var ContextPool = sync.Pool{
@@ -60,6 +84,7 @@ func FromHttp(request *http.Request) *Ctx {
 	ctx.Values = map[string]interface{}{}
 
 	ctx.Response.Body = ctx.Response.Body[:0]
+	ctx.Response.StatusCode = 200
 
 	return ctx
 }
