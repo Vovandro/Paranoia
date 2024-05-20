@@ -4,6 +4,7 @@ type IService interface {
 	Init() error
 	Stop() error
 	GetLogger() ILogger
+	GetConfig() IConfig
 	PushCache(c ICache) IService
 	GetCache(key string) ICache
 	PushBroker(c IBroker) IService

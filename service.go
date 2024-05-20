@@ -39,11 +39,33 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.servers = make(map[string]interfaces.IServer)
 	t.storage = make(map[string]interfaces.IStorage)
 
+	if t.config != nil {
+		err := t.config.Init(t)
+
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+	}
+
+	if t.logger != nil {
+		err := t.logger.Init(t)
+
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+	}
+
 	return t
 }
 
 func (t *Service) GetLogger() interfaces.ILogger {
 	return t.logger
+}
+
+func (t *Service) GetConfig() interfaces.IConfig {
+	return t.config
 }
 
 func (t *Service) PushCache(c interfaces.ICache) interfaces.IService {
@@ -138,20 +160,6 @@ func (t *Service) GetStorage(key string) interfaces.IStorage {
 
 func (t *Service) Init() error {
 	var err error = nil
-
-	err = t.config.Init(t)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	err = t.logger.Init(t)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
 
 	for _, cache := range t.cache {
 		err = cache.Init(t)
