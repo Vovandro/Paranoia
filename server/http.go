@@ -13,6 +13,11 @@ type Http struct {
 	Name string
 	Port string
 
+	CookieDomain   string
+	CookieSameSite string
+	CookieHttpOnly bool
+	CookieSecure   bool
+
 	app    interfaces.IService
 	router *Router
 	server *http.Server
@@ -74,6 +79,8 @@ func (t *Http) String() string {
 
 func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := srvCtx.FromHttp(req)
+	defer srvCtx.ContextPool.Put(ctx)
+
 	defer func(tm time.Time) {
 		t.app.GetLogger().Debug(fmt.Sprintf("[%d] [%v] %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
 	}(time.Now())
@@ -85,6 +92,16 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
 	} else {
 		route(ctx)
+
+		w.Header().Add("Content-Type", ctx.Response.ContentType)
+
+		for k, v := range ctx.Response.Headers {
+			w.Header().Set(k, v)
+		}
+
+		for i := 0; i < len(ctx.Response.Cookie); i++ {
+			w.Header().Add("Set-Cookie", ctx.Response.Cookie[i].String(t.CookieDomain, t.CookieSameSite, t.CookieHttpOnly, t.CookieSecure))
+		}
 
 		w.Write(ctx.Response.Body)
 		w.WriteHeader(ctx.Response.StatusCode)
