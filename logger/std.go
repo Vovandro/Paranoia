@@ -36,7 +36,7 @@ func (t *Std) SetLevel(level interfaces.LogLevel) {
 }
 
 func (t *Std) Push(level interfaces.LogLevel, msg string, toParent bool) {
-	fmt.Printf("%s [%v] %s", level.String(), time.Now(), msg)
+	fmt.Printf("%s [%s] %s\n", level.String(), time.Now().Format("2006-01-02 15:04.05"), msg)
 
 	if toParent && t.Parent != nil {
 		t.Parent.Push(level, msg, true)
@@ -48,7 +48,7 @@ func (t *Std) Debug(args ...interface{}) {
 		t.Push(interfaces.DEBUG, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Debug(args)
+			t.Parent.Debug(args...)
 		}
 	}
 }
@@ -58,7 +58,7 @@ func (t *Std) Info(args ...interface{}) {
 		t.Push(interfaces.INFO, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Info(args)
+			t.Parent.Info(args...)
 		}
 	}
 }
@@ -68,7 +68,7 @@ func (t *Std) Warn(args ...interface{}) {
 		t.Push(interfaces.WARNING, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Warn(args)
+			t.Parent.Warn(args...)
 		}
 	}
 }
@@ -78,7 +78,7 @@ func (t *Std) Message(args ...interface{}) {
 		t.Push(interfaces.MESSAGE, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Message(args)
+			t.Parent.Message(args...)
 		}
 	}
 }

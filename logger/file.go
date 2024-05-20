@@ -27,7 +27,7 @@ func (t *File) Init(app interfaces.IService) error {
 	}
 
 	t.f, err = os.OpenFile(
-		fmt.Sprintf("./log/%s%s.log", t.FName, time.Now().Format("2006_01_02")),
+		fmt.Sprintf("./log/%s_%s.log", t.FName, time.Now().Format("2006_01_02")),
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE,
 		0666)
 
@@ -73,7 +73,7 @@ func (t *File) run(done chan interface{}) {
 				}
 
 				t.f, err = os.OpenFile(
-					fmt.Sprintf("./log/%s%s.log", t.FName, time.Now().Format("2006_01_02")),
+					fmt.Sprintf("./log/%s_%s.log", t.FName, time.Now().Format("2006_01_02")),
 					os.O_WRONLY|os.O_APPEND|os.O_CREATE,
 					0666)
 
@@ -109,7 +109,7 @@ func (t *File) SetLevel(level interfaces.LogLevel) {
 }
 
 func (t *File) Push(level interfaces.LogLevel, msg string, toParent bool) {
-	t.queue <- fmt.Sprintf("%s [%v] %s", level.String(), time.Now(), msg)
+	t.queue <- fmt.Sprintf("%s [%s] %s\n", level.String(), time.Now().Format("2006-01-02 15:04.05"), msg)
 
 	if toParent && t.Parent != nil {
 		t.Parent.Push(level, msg, true)
@@ -121,7 +121,7 @@ func (t *File) Debug(args ...interface{}) {
 		t.Push(interfaces.DEBUG, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Debug(args)
+			t.Parent.Debug(args...)
 		}
 	}
 }
@@ -131,7 +131,7 @@ func (t *File) Info(args ...interface{}) {
 		t.Push(interfaces.INFO, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Info(args)
+			t.Parent.Info(args...)
 		}
 	}
 }
@@ -141,7 +141,7 @@ func (t *File) Warn(args ...interface{}) {
 		t.Push(interfaces.WARNING, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Warn(args)
+			t.Parent.Warn(args...)
 		}
 	}
 }
@@ -151,7 +151,7 @@ func (t *File) Message(args ...interface{}) {
 		t.Push(interfaces.MESSAGE, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
-			t.Parent.Message(args)
+			t.Parent.Message(args...)
 		}
 	}
 }
