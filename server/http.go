@@ -82,7 +82,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer srvCtx.ContextPool.Put(ctx)
 
 	defer func(tm time.Time) {
-		t.app.GetLogger().Debug(fmt.Sprintf("[%d] [%v] %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
+		t.app.GetLogger().Debug(fmt.Sprintf("%d - %v, %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
 	}(time.Now())
 
 	route := t.router.Find(req.Method, req.RequestURI)
@@ -103,8 +103,8 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			w.Header().Add("Set-Cookie", ctx.Response.Cookie[i].String(t.CookieDomain, t.CookieSameSite, t.CookieHttpOnly, t.CookieSecure))
 		}
 
-		w.Write(ctx.Response.Body)
 		w.WriteHeader(ctx.Response.StatusCode)
+		w.Write(ctx.Response.Body)
 	}
 }
 
