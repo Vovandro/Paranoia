@@ -39,18 +39,22 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.servers = make(map[string]interfaces.IServer)
 	t.storage = make(map[string]interfaces.IStorage)
 
-	err := t.config.Init(t)
+	if t.config != nil {
+		err := t.config.Init(t)
 
-	if err != nil {
-		fmt.Println(err)
-		return nil
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
 	}
 
-	err = t.logger.Init(t)
+	if t.logger != nil {
+		err := t.logger.Init(t)
 
-	if err != nil {
-		fmt.Println(err)
-		return nil
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
 	}
 
 	return t
