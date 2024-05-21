@@ -50,20 +50,28 @@ func (t *ClickHouse) String() string {
 	return t.Name
 }
 
-func (t *ClickHouse) Query(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error {
-	find, err := t.client.Query(ctx, query.(string), args)
+func (t *ClickHouse) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+	find, err := t.client.Query(ctx, query, args...)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = find.Scan(model)
-
-	return err
+	return find, nil
 }
 
-func (t *ClickHouse) Exec(ctx context.Context, query interface{}, args ...interface{}) error {
-	err := t.client.Exec(ctx, query.(string), args)
+func (t *ClickHouse) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+	find := t.client.QueryRow(ctx, query, args...)
+
+	if find.Err() != nil {
+		return nil, find.Err()
+	}
+
+	return find, nil
+}
+
+func (t *ClickHouse) Exec(ctx context.Context, query string, args ...interface{}) error {
+	err := t.client.Exec(ctx, query, args...)
 
 	return err
 }
