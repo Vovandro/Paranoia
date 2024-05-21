@@ -60,7 +60,7 @@ func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{
 }
 
 func (t *Sqlite3) Exec(ctx context.Context, query string, args ...interface{}) error {
-	_, err := t.client.Query(query, args...)
+	_, err := t.client.Exec(query, args...)
 
 	return err
 }
