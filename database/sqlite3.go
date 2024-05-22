@@ -39,20 +39,28 @@ func (t *Sqlite3) String() string {
 	return t.Name
 }
 
-func (t *Sqlite3) Query(ctx context.Context, query interface{}, model interface{}, args ...interface{}) error {
-	find, err := t.client.Query(query.(string), args)
+func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+	find, err := t.client.QueryContext(ctx, query, args...)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = find.Scan(model)
-
-	return err
+	return find, nil
 }
 
-func (t *Sqlite3) Exec(ctx context.Context, query interface{}, args ...interface{}) error {
-	_, err := t.client.Query(query.(string), args)
+func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+	find := t.client.QueryRowContext(ctx, query, args...)
+
+	if find.Err() != nil {
+		return nil, find.Err()
+	}
+
+	return find, nil
+}
+
+func (t *Sqlite3) Exec(ctx context.Context, query string, args ...interface{}) error {
+	_, err := t.client.ExecContext(ctx, query, args...)
 
 	return err
 }

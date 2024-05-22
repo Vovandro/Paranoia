@@ -87,7 +87,7 @@ func (t *MongoDB) Count(ctx context.Context, key interface{}, query interface{},
 	return find
 }
 
-func (t *MongoDB) FindOne(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
+func (t *MongoDB) FindOne(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRow, error) {
 	var opt *options.FindOneOptions
 
 	if len(args) > 0 {
@@ -99,19 +99,13 @@ func (t *MongoDB) FindOne(ctx context.Context, key interface{}, query interface{
 	find := t.db.Collection(key.(string)).FindOne(ctx, query, opt)
 
 	if err := find.Err(); err != nil {
-		return err
+		return nil, err
 	}
 
-	err := find.Decode(model)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return &MongoRow{find}, nil
 }
 
-func (t *MongoDB) Find(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
+func (t *MongoDB) Find(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
 	var opt *options.FindOptions
 
 	if len(args) > 0 {
@@ -123,19 +117,13 @@ func (t *MongoDB) Find(ctx context.Context, key interface{}, query interface{}, 
 	find, err := t.db.Collection(key.(string)).Find(ctx, query, opt)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = find.Decode(model)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return &MongoRows{find}, nil
 }
 
-func (t *MongoDB) Exec(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
+func (t *MongoDB) Exec(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
 	var opt *options.AggregateOptions
 
 	if len(args) > 0 {
@@ -147,18 +135,10 @@ func (t *MongoDB) Exec(ctx context.Context, key interface{}, query interface{}, 
 	aggregate, err := t.db.Collection(key.(string)).Aggregate(ctx, query, opt)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if model != nil {
-		err = aggregate.Decode(model)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return &MongoRows{aggregate}, nil
 }
 
 func (t *MongoDB) Insert(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interface{}, error) {

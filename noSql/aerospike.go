@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go/v7"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -99,84 +98,40 @@ func (t *Aerospike) Count(ctx context.Context, key interface{}, query interface{
 	return 0
 }
 
-func (t *Aerospike) FindOne(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
-	if key != nil {
-		bins := make([]string, len(args))
-		var opt *aerospike.BasePolicy
+func (t *Aerospike) FindOne(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRow, error) {
+	bins := make([]string, len(args))
+	var opt *aerospike.BasePolicy
 
-		if len(args) > 0 {
-			if val, ok := args[0].(*aerospike.BasePolicy); ok {
-				opt = val
-			}
+	if len(args) > 0 {
+		if val, ok := args[0].(*aerospike.BasePolicy); ok {
+			opt = val
 		}
-
-		if opt == nil {
-			opt = &aerospike.BasePolicy{}
-			opt.SendKey = true
-		}
-
-		for i := 0; i < len(args); i++ {
-			if val, ok := args[i].(string); ok {
-				bins[i] = val
-			} else if val, ok := args[i].([]string); ok {
-				bins = val
-				break
-			}
-		}
-
-		find, err := t.client.Get(opt, key.(*aerospike.Key), bins...)
-
-		if err != nil {
-			return err
-		}
-
-		if _, ok := model.(map[string]interface{}); ok {
-			for k, v := range find.Bins {
-				model.(map[string]interface{})[k] = v
-			}
-		} else {
-			err := t.Scan(find.Bins, model)
-
-			if err != nil {
-				return err
-			}
-		}
-	} else if q, ok := query.(*aerospike.Statement); ok {
-		var opt *aerospike.QueryPolicy
-
-		if len(args) > 0 {
-			if val, ok := args[0].(*aerospike.QueryPolicy); ok {
-				opt = val
-			}
-		}
-
-		if opt == nil {
-			opt = &aerospike.QueryPolicy{}
-			opt.SendKey = true
-		}
-
-		query, err := t.client.Query(opt, q)
-
-		if err != nil {
-			return err
-		}
-		defer query.Close()
-
-		res := <-query.Results()
-
-		e := t.Scan(res.Record.Bins, model)
-
-		if e != nil {
-			return e
-		}
-	} else {
-		return fmt.Errorf("invalid query type: %T", query)
 	}
 
-	return nil
+	if opt == nil {
+		opt = &aerospike.BasePolicy{}
+		opt.SendKey = true
+	}
+
+	for i := 0; i < len(args); i++ {
+		if val, ok := args[i].(string); ok {
+			bins[i] = val
+		} else if val, ok := args[i].([]string); ok {
+			bins = val
+			break
+		}
+	}
+
+	find, err := t.client.Get(opt, key.(*aerospike.Key), bins...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ASRow{find}, nil
 }
 
-func (t *Aerospike) Find(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
+func (t *Aerospike) Find(ctx context.Context, _ interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
 	var opt *aerospike.QueryPolicy
 
 	if len(args) > 0 {
@@ -193,25 +148,13 @@ func (t *Aerospike) Find(ctx context.Context, key interface{}, query interface{}
 	q, err := t.client.Query(opt, query.(*aerospike.Statement))
 
 	if err != nil {
-		return err
-	}
-	defer q.Close()
-
-	for r := range q.Results() {
-		item := reflect.New(reflect.TypeOf(model))
-		e := t.Scan(r.Record.Bins, item)
-
-		if e != nil {
-			return e
-		}
-
-		model = append(model.([]interface{}), item.Interface())
+		return nil, err
 	}
 
-	return nil
+	return &ASRows{rows: q}, nil
 }
 
-func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}, model interface{}, args ...interface{}) error {
+func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
 	var opt *aerospike.WritePolicy
 	var arg1, arg2 string
 
@@ -223,7 +166,7 @@ func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}
 
 	if opt == nil {
 		if len(args) < 2 {
-			return fmt.Errorf("invalid query args")
+			return nil, fmt.Errorf("invalid query args")
 		}
 
 		opt = &aerospike.WritePolicy{}
@@ -233,22 +176,20 @@ func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}
 		arg2 = args[1].(string)
 	} else {
 		if len(args) < 3 {
-			return fmt.Errorf("invalid query args")
+			return nil, fmt.Errorf("invalid query args")
 		}
 
 		arg1 = args[1].(string)
 		arg2 = args[2].(string)
 	}
 
-	q, err := t.client.Execute(opt, key.(*aerospike.Key), arg1, arg2)
+	_, err := t.client.Execute(opt, key.(*aerospike.Key), arg1, arg2)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	model = q
-
-	return nil
+	return nil, nil
 }
 
 func (t *Aerospike) Insert(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interface{}, error) {
@@ -386,20 +327,4 @@ func (t *Aerospike) Batch(ctx context.Context, key interface{}, query interface{
 
 func (t *Aerospike) GetDb() interface{} {
 	return t.client
-}
-
-func (t *Aerospike) Scan(from aerospike.BinMap, to interface{}) error {
-	vv := reflect.TypeOf(to)
-	vv2 := reflect.ValueOf(to)
-
-	for i := 0; i < vv.NumField(); i++ {
-		tag, ok2 := vv.Field(i).Tag.Lookup("db")
-		if ok2 {
-			if v, ok3 := from[tag]; ok3 {
-				vv2.Field(i).Send(reflect.ValueOf(v))
-			}
-		}
-	}
-
-	return nil
 }
