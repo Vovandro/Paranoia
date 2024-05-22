@@ -8,11 +8,10 @@ import (
 )
 
 type Postgres struct {
-	Name     string
-	Database string
-	URI      string
-	app      interfaces.IService
-	client   *pgx.Conn
+	Name   string
+	URI    string
+	app    interfaces.IService
+	client *pgx.Conn
 }
 
 func (t *Postgres) Init(app interfaces.IService) error {
