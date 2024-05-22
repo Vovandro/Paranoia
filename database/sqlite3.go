@@ -40,7 +40,7 @@ func (t *Sqlite3) String() string {
 }
 
 func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
-	find, err := t.client.Query(query, args...)
+	find, err := t.client.QueryContext(ctx, query, args...)
 
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) 
 }
 
 func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
-	find := t.client.QueryRow(query, args...)
+	find := t.client.QueryRowContext(ctx, query, args...)
 
 	if find.Err() != nil {
 		return nil, find.Err()
@@ -60,7 +60,7 @@ func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{
 }
 
 func (t *Sqlite3) Exec(ctx context.Context, query string, args ...interface{}) error {
-	_, err := t.client.Exec(query, args...)
+	_, err := t.client.ExecContext(ctx, query, args...)
 
 	return err
 }
