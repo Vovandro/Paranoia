@@ -1,0 +1,90 @@
+package client
+
+import (
+	"fmt"
+	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"net/http"
+)
+
+type HTTPClient struct {
+	Name       string
+	RetryCount int
+	app        interfaces.IService
+	client     http.Client
+}
+
+func (t *HTTPClient) Init(app interfaces.IService) error {
+	t.app = app
+	t.client = http.Client{}
+
+	return nil
+}
+
+func (t *HTTPClient) Stop() error {
+	return nil
+}
+
+func (t *HTTPClient) String() string {
+	return t.Name
+}
+
+func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[string][]string) chan interfaces.IClientResponse {
+	resp := make(chan interfaces.IClientResponse)
+
+	go func(resp chan interfaces.IClientResponse, method string, host string, data []byte, headers map[string][]string) {
+		res := ResponsePool.Get().(*Response)
+		request, _ := http.NewRequest(method, host, nil)
+		request.Body.Read(data)
+
+		for i := 0; i <= t.RetryCount; i++ {
+			do, err := t.client.Do(request)
+			if err != nil {
+				res.Err = err
+				res.RetryCount = i + 1
+				break
+			}
+
+			if do.StatusCode == 200 {
+				res.Err = nil
+				res.RetryCount = i + 1
+				res.Header = map[string][]string{}
+				do.Body.Read(res.Body)
+				for s, strings := range do.Header {
+					res.Header[s] = strings
+				}
+				do.Body.Close()
+				break
+			}
+
+			if do.StatusCode > 200 && do.StatusCode < 300 {
+				res.Err = nil
+				res.RetryCount = i + 1
+				res.Header = map[string][]string{}
+				res.Body = res.Body[:0]
+				for s, strings := range do.Header {
+					res.Header[s] = strings
+				}
+				do.Body.Close()
+				break
+			}
+
+			if (do.StatusCode >= 500 && do.StatusCode < 600) || do.StatusCode == 499 {
+				if i+1 == t.RetryCount {
+					res.RetryCount = i + 1
+					res.Err = fmt.Errorf("max retry count exceeded")
+				}
+				do.Body.Close()
+				continue
+			}
+
+			res.RetryCount = i + 1
+			res.Err = fmt.Errorf("request status code %d", do.StatusCode)
+			do.Body.Close()
+			break
+		}
+
+		resp <- res
+	}(resp, method, host, data, headers)
+
+	return resp
+}

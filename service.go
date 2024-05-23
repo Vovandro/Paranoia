@@ -19,6 +19,7 @@ type Service struct {
 	modules     map[string]interfaces.IModules
 	repository  map[string]interfaces.IRepository
 	servers     map[string]interfaces.IServer
+	clients     map[string]interfaces.IClient
 	storage     map[string]interfaces.IStorage
 }
 
@@ -38,6 +39,7 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.repository = make(map[string]interfaces.IRepository)
 	t.servers = make(map[string]interfaces.IServer)
 	t.storage = make(map[string]interfaces.IStorage)
+	t.clients = make(map[string]interfaces.IClient)
 
 	if t.config != nil {
 		err := t.config.Init(t)
@@ -146,6 +148,16 @@ func (t *Service) PushServer(b interfaces.IServer) interfaces.IService {
 
 func (t *Service) GetServer(key string) interfaces.IServer {
 	return t.servers[key]
+}
+
+func (t *Service) PushClient(b interfaces.IClient) interfaces.IService {
+	t.clients[b.String()] = b
+
+	return t
+}
+
+func (t *Service) GetClient(key string) interfaces.IClient {
+	return t.clients[key]
 }
 
 func (t *Service) PushStorage(b interfaces.IStorage) interfaces.IService {
