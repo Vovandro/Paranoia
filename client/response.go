@@ -1,23 +1,10 @@
 package client
 
-import "sync"
-
 type Response struct {
 	Body       []byte
 	Header     map[string][]string
 	Err        error
 	RetryCount int
-}
-
-var ResponsePool = sync.Pool{
-	New: func() interface{} {
-		return &Response{
-			Body:       make([]byte, 100),
-			Header:     make(map[string][]string, 10),
-			Err:        nil,
-			RetryCount: 0,
-		}
-	},
 }
 
 func (t *Response) GetBody() []byte {
