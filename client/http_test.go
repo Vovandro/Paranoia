@@ -42,6 +42,22 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				1,
 			},
 		},
+		{
+			name:       "base test post",
+			RetryCount: 5,
+			args: args{
+				"POST",
+				"http://127.0.0.1:8008/test",
+				[]byte("{\"id\":1}"),
+				nil,
+			},
+			want: &Response{
+				[]byte("{\"id\":1}"),
+				map[string][]string{},
+				nil,
+				1,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
@@ -54,6 +70,10 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 
 			s.PushRoute("GET", "/", func(ctx *srvCtx.Ctx) {
 				ctx.Response.Body = []byte("{}")
+			})
+
+			s.PushRoute("POST", "/test", func(ctx *srvCtx.Ctx) {
+				ctx.Response.Body = ctx.Request.Body
 			})
 			s.Start()
 

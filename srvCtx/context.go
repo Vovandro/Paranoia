@@ -1,6 +1,7 @@
 package srvCtx
 
 import (
+	"io"
 	"net/http"
 	"net/url"
 	"sync"
@@ -72,8 +73,7 @@ var ContextPool = sync.Pool{
 
 func FromHttp(request *http.Request) *Ctx {
 	ctx := ContextPool.Get().(*Ctx)
-
-	request.Body.Read(ctx.Request.Body)
+	ctx.Request.Body, _ = io.ReadAll(request.Body)
 	ctx.Request.Headers = request.Header
 	ctx.Request.Ip = request.RemoteAddr
 	ctx.Request.URI = request.RequestURI

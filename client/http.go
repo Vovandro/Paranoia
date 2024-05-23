@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"net/http"
@@ -35,11 +36,7 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 
 	go func(resp chan interfaces.IClientResponse, method string, host string, data []byte, headers map[string][]string) {
 		res := &Response{}
-		request, _ := http.NewRequest(method, host, nil)
-
-		if data != nil {
-			request.Body.Read(data)
-		}
+		request, _ := http.NewRequest(method, host, bytes.NewBuffer(data))
 
 		for i := 0; i <= t.RetryCount; i++ {
 			do, err := t.client.Do(request)
