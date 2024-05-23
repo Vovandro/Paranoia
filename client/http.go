@@ -1,9 +1,11 @@
 package client
 
 import (
+	"bytes"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"net/http"
+	"strconv"
 )
 
 type HTTPClient struct {
@@ -21,6 +23,7 @@ func (t *HTTPClient) Init(app interfaces.IService) error {
 }
 
 func (t *HTTPClient) Stop() error {
+	t.client.CloseIdleConnections()
 	return nil
 }
 
@@ -32,9 +35,8 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 	resp := make(chan interfaces.IClientResponse)
 
 	go func(resp chan interfaces.IClientResponse, method string, host string, data []byte, headers map[string][]string) {
-		res := ResponsePool.Get().(*Response)
-		request, _ := http.NewRequest(method, host, nil)
-		request.Body.Read(data)
+		res := &Response{}
+		request, _ := http.NewRequest(method, host, bytes.NewBuffer(data))
 
 		for i := 0; i <= t.RetryCount; i++ {
 			do, err := t.client.Do(request)
@@ -45,9 +47,10 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 			}
 
 			if do.StatusCode == 200 {
-				res.Err = nil
 				res.RetryCount = i + 1
 				res.Header = map[string][]string{}
+				size, _ := strconv.ParseInt(do.Header.Get("Content-Length"), 10, 64)
+				res.Body = make([]byte, size)
 				do.Body.Read(res.Body)
 				for s, strings := range do.Header {
 					res.Header[s] = strings
@@ -57,10 +60,8 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 			}
 
 			if do.StatusCode > 200 && do.StatusCode < 300 {
-				res.Err = nil
 				res.RetryCount = i + 1
 				res.Header = map[string][]string{}
-				res.Body = res.Body[:0]
 				for s, strings := range do.Header {
 					res.Header[s] = strings
 				}
