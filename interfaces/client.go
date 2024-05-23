@@ -1,0 +1,16 @@
+package interfaces
+
+type IClient interface {
+	Init(app IService) error
+	Stop() error
+	String() string
+
+	Fetch(method string, host string, data []byte, headers map[string][]string) chan IClientResponse
+}
+
+type IClientResponse interface {
+	GetBody() []byte
+	GetHeader() map[string][]string
+	Error() error
+	GetRetries() int
+}

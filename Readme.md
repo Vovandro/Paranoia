@@ -26,3 +26,25 @@ add to main.go
 	
 	defer s.Stop()
 ```
+
+## Supported:
+
+### Database
+
+- Postgres
+- SQLite
+- Clickhouse
+- MongoDB
+- Aerospike
+
+### Cache
+
+- Memory
+
+### Servers
+
+- http
+
+### Clients
+
+- http

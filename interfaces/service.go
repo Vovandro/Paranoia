@@ -19,6 +19,8 @@ type IService interface {
 	GetRepository(key string) IRepository
 	PushServer(c IServer) IService
 	GetServer(key string) IServer
+	PushClient(c IClient) IService
+	GetClient(key string) IClient
 	PushStorage(c IStorage) IService
 	GetStorage(key string) IStorage
 }
