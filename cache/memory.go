@@ -114,6 +114,40 @@ func (t *Memory) Set(key string, args any, timeout time.Duration) error {
 	return nil
 }
 
+func (t *Memory) SetIn(key string, key2 string, args any, timeout time.Duration) error {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	val, ok := t.data[key]
+
+	if ok {
+		if _, ok := val.data.(map[string]any); ok {
+			val.data.(map[string]any)[key2] = args
+		} else {
+			return fmt.Errorf("type mismatch")
+		}
+
+		val.timeout = time.Now().Add(timeout)
+	} else {
+		val = t.pool.Get().(*cacheItem)
+		val.timeout = time.Now().Add(timeout)
+		val.data = make(map[string]any)
+		val.data.(map[string]any)[key2] = args
+		t.data[key] = val
+	}
+
+	heap.Push(&t.timeHeap, &TimeHeapItem{
+		key:  key,
+		time: val.timeout,
+	})
+
+	return nil
+}
+
+func (t *Memory) SetMap(key string, args any, timeout time.Duration) error {
+	return t.Set(key, args, timeout)
+}
+
 func (t *Memory) Get(key string) (any, error) {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
@@ -125,6 +159,106 @@ func (t *Memory) Get(key string) (any, error) {
 	}
 
 	return nil, fmt.Errorf("key not found")
+}
+
+func (t *Memory) GetIn(key string, key2 string) (any, error) {
+	t.mutex.RLock()
+	defer t.mutex.RUnlock()
+
+	val, ok := t.data[key]
+
+	if ok && val.timeout.After(time.Now()) {
+		if val2, ok := val.data.(map[string]any); ok {
+			if v, ok := val2[key2]; ok {
+				return v, nil
+			} else {
+				return nil, fmt.Errorf("key not found")
+			}
+		} else {
+			return nil, fmt.Errorf("type mismatch")
+		}
+	}
+
+	return nil, fmt.Errorf("key not found")
+}
+
+func (t *Memory) GetMap(key string) (any, error) {
+	return t.Get(key)
+}
+
+func (t *Memory) Increment(key string, val int64, timeout time.Duration) error {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	v, ok := t.data[key]
+
+	if ok {
+		v.timeout = time.Now().Add(timeout)
+
+		if _, ok := v.data.(int64); ok {
+			v.data = v.data.(int64) + val
+		} else {
+			return fmt.Errorf("type mismatch")
+		}
+	} else {
+		v = t.pool.Get().(*cacheItem)
+		v.timeout = time.Now().Add(timeout)
+		v.data = val
+		t.data[key] = v
+	}
+
+	heap.Push(&t.timeHeap, &TimeHeapItem{
+		key:  key,
+		time: v.timeout,
+	})
+
+	return nil
+}
+
+func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Duration) error {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	v, ok := t.data[key]
+
+	if ok {
+		v.timeout = time.Now().Add(timeout)
+
+		if _, ok := v.data.(map[string]any); ok {
+			if _, ok := v.data.(map[string]any)[key2]; ok {
+				if v2, ok := v.data.(map[string]any)[key2].(int64); ok {
+					v.data.(map[string]any)[key2] = v2 + val
+				} else {
+					return fmt.Errorf("type mismatch")
+				}
+			} else {
+				v.data.(map[string]any)[key2] = val
+			}
+		} else {
+			return fmt.Errorf("type mismatch")
+		}
+	} else {
+		v = t.pool.Get().(*cacheItem)
+		v.timeout = time.Now().Add(timeout)
+		v.data = make(map[string]any)
+		v.data.(map[string]any)[key2] = val
+		t.data[key] = v
+	}
+
+	heap.Push(&t.timeHeap, &TimeHeapItem{
+		key:  key,
+		time: v.timeout,
+	})
+
+	return nil
+}
+
+func (t *Memory) Decrement(key string, val int64, timeout time.Duration) error {
+	return t.Increment(key, val*-1, timeout)
+}
+
+func (t *Memory) DecrementIn(key string, key2 string, val int64, timeout time.Duration) error {
+	return t.IncrementIn(key, key, val*-1, timeout)
 }
 
 func (t *Memory) Delete(key string) error {
