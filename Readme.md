@@ -40,6 +40,7 @@ add to main.go
 ### Cache
 
 - Memory
+- Redis
 
 ### Servers
 
