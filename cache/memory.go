@@ -2,7 +2,6 @@ package cache
 
 import (
 	"container/heap"
-	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"sync"
 	"time"
@@ -124,7 +123,7 @@ func (t *Memory) SetIn(key string, key2 string, args any, timeout time.Duration)
 		if _, ok := val.data.(map[string]any); ok {
 			val.data.(map[string]any)[key2] = args
 		} else {
-			return fmt.Errorf("type mismatch")
+			return ErrTypeMismatch
 		}
 
 		val.timeout = time.Now().Add(timeout)
@@ -158,7 +157,7 @@ func (t *Memory) Get(key string) (any, error) {
 		return val.data, nil
 	}
 
-	return nil, fmt.Errorf("key not found")
+	return nil, ErrKeyNotFound
 }
 
 func (t *Memory) GetIn(key string, key2 string) (any, error) {
@@ -172,14 +171,14 @@ func (t *Memory) GetIn(key string, key2 string) (any, error) {
 			if v, ok := val2[key2]; ok {
 				return v, nil
 			} else {
-				return nil, fmt.Errorf("key not found")
+				return nil, ErrKeyNotFound
 			}
 		} else {
-			return nil, fmt.Errorf("type mismatch")
+			return nil, ErrTypeMismatch
 		}
 	}
 
-	return nil, fmt.Errorf("key not found")
+	return nil, ErrKeyNotFound
 }
 
 func (t *Memory) GetMap(key string) (any, error) {
@@ -198,7 +197,7 @@ func (t *Memory) Increment(key string, val int64, timeout time.Duration) error {
 		if _, ok := v.data.(int64); ok {
 			v.data = v.data.(int64) + val
 		} else {
-			return fmt.Errorf("type mismatch")
+			return ErrTypeMismatch
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)
@@ -229,13 +228,13 @@ func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Du
 				if v2, ok := v.data.(map[string]any)[key2].(int64); ok {
 					v.data.(map[string]any)[key2] = v2 + val
 				} else {
-					return fmt.Errorf("type mismatch")
+					return ErrTypeMismatch
 				}
 			} else {
 				v.data.(map[string]any)[key2] = val
 			}
 		} else {
-			return fmt.Errorf("type mismatch")
+			return ErrTypeMismatch
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)

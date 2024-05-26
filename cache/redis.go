@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"github.com/redis/go-redis/v9"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"strings"
@@ -101,27 +102,60 @@ func (t *Redis) SetMap(key string, args any, timeout time.Duration) error {
 }
 
 func (t *Redis) Get(key string) (any, error) {
+	var v string
+	var err error
+
 	if t.UseCluster {
-		return t.cluster.Get(context.Background(), key).Result()
+		v, err = t.cluster.Get(context.Background(), key).Result()
+	} else {
+		v, err = t.client.Get(context.Background(), key).Result()
 	}
 
-	return t.client.Get(context.Background(), key).Result()
+	if errors.Is(err, redis.Nil) {
+		return nil, ErrKeyNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return v, nil
 }
 
 func (t *Redis) GetIn(key string, key2 string) (any, error) {
+	var v string
+	var err error
+
 	if t.UseCluster {
-		return t.cluster.HGet(context.Background(), key, key2).Result()
+		v, err = t.cluster.HGet(context.Background(), key, key2).Result()
+	} else {
+		v, err = t.client.HGet(context.Background(), key, key2).Result()
 	}
 
-	return t.client.HGet(context.Background(), key, key2).Result()
+	if errors.Is(err, redis.Nil) {
+		return nil, ErrKeyNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return v, nil
 }
 
 func (t *Redis) GetMap(key string) (any, error) {
+	var v map[string]string
+	var err error
+
 	if t.UseCluster {
-		return t.cluster.HGetAll(context.Background(), key).Result()
+		v, err = t.cluster.HGetAll(context.Background(), key).Result()
+	} else {
+		v, err = t.client.HGetAll(context.Background(), key).Result()
 	}
 
-	return t.client.HGetAll(context.Background(), key).Result()
+	if errors.Is(err, redis.Nil) {
+		return nil, ErrKeyNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return v, nil
 }
 
 func (t *Redis) Increment(key string, val int64, timeout time.Duration) error {

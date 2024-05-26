@@ -41,6 +41,7 @@ add to main.go
 
 - Memory
 - Redis
+- Memcached
 
 ### Servers
 
