@@ -46,7 +46,9 @@ add to main.go
 ### Servers
 
 - http
+- Kafka
 
 ### Clients
 
 - http
+- Kafka
