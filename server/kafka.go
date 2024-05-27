@@ -5,6 +5,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/srvCtx"
+	"sync"
 	"time"
 )
 
@@ -12,6 +13,8 @@ type Kafka struct {
 	Name              string
 	Hosts             string
 	GroupId           string
+	User              string
+	Password          string
 	Topics            []string
 	LimitMessageCount int64
 
@@ -19,6 +22,7 @@ type Kafka struct {
 	router   *Router
 	consumer *kafka.Consumer
 	done     chan interface{}
+	w        sync.WaitGroup
 }
 
 func (t *Kafka) Init(app interfaces.IService) error {
@@ -28,11 +32,20 @@ func (t *Kafka) Init(app interfaces.IService) error {
 
 	t.router = NewRouter()
 
-	t.consumer, err = kafka.NewConsumer(&kafka.ConfigMap{
+	cfg := kafka.ConfigMap{
 		"bootstrap.servers": t.Hosts,
 		"group.id":          t.GroupId,
 		"auto.offset.reset": "earliest",
-	})
+	}
+
+	if t.User != "" {
+		cfg.SetKey("sasl.mechanisms", "PLAIN")
+		cfg.SetKey("security.protocol", "SASL_SSL")
+		cfg.SetKey("sasl.username", t.User)
+		cfg.SetKey("sasl.password", t.Password)
+	}
+
+	t.consumer, err = kafka.NewConsumer(&cfg)
 
 	if err != nil {
 		return err
@@ -43,20 +56,29 @@ func (t *Kafka) Init(app interfaces.IService) error {
 
 func (t *Kafka) Start() error {
 	go func() {
+		limited := make(chan interface{}, t.LimitMessageCount)
+		defer close(limited)
+
 		for {
 			select {
 			case <-t.done:
-				return
+				break
 
 			default:
 				msg, err := t.consumer.ReadMessage(time.Millisecond * 100)
+				t.w.Add(1)
+				limited <- nil
 
 				if err != nil {
 					t.app.GetLogger().Error(err)
 					continue
 				}
 
-				t.Handle(msg)
+				go func() {
+					t.Handle(msg)
+					t.w.Done()
+					<-limited
+				}()
 			}
 		}
 	}()
@@ -66,6 +88,7 @@ func (t *Kafka) Start() error {
 
 func (t *Kafka) Stop() error {
 	close(t.done)
+	t.w.Wait()
 	err := t.consumer.Close()
 
 	if err != nil {
@@ -91,7 +114,7 @@ func (t *Kafka) Handle(msg *kafka.Message) {
 	defer srvCtx.ContextPool.Put(ctx)
 
 	defer func(tm time.Time) {
-		t.app.GetLogger().Debug(fmt.Sprintf("%d - %v, %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), "kafka", *msg.TopicPartition.Topic))
+		t.app.GetLogger().Debug(fmt.Sprintf("%d - %v, %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), "KAFKA", *msg.TopicPartition.Topic))
 	}(time.Now())
 
 	route := t.router.Find("KAFKA", *msg.TopicPartition.Topic)
