@@ -12,7 +12,6 @@ type Service struct {
 	logger interfaces.ILogger
 
 	cache       map[string]interfaces.ICache
-	brokers     map[string]interfaces.IBroker
 	database    map[string]interfaces.IDatabase
 	noSql       map[string]interfaces.INoSql
 	controllers map[string]interfaces.IController
@@ -31,7 +30,6 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.logger = logger
 
 	t.cache = make(map[string]interfaces.ICache)
-	t.brokers = make(map[string]interfaces.IBroker)
 	t.database = make(map[string]interfaces.IDatabase)
 	t.noSql = make(map[string]interfaces.INoSql)
 	t.controllers = make(map[string]interfaces.IController)
@@ -78,16 +76,6 @@ func (t *Service) PushCache(c interfaces.ICache) interfaces.IService {
 
 func (t *Service) GetCache(key string) interfaces.ICache {
 	return t.cache[key]
-}
-
-func (t *Service) PushBroker(b interfaces.IBroker) interfaces.IService {
-	t.brokers[b.String()] = b
-
-	return t
-}
-
-func (t *Service) GetBroker(key string) interfaces.IBroker {
-	return t.brokers[key]
 }
 
 func (t *Service) PushDatabase(b interfaces.IDatabase) interfaces.IService {
@@ -236,15 +224,6 @@ func (t *Service) Init() error {
 		}
 	}
 
-	for _, broker := range t.brokers {
-		err = broker.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(err)
-			return err
-		}
-	}
-
 	for _, server := range t.servers {
 		err = server.Start()
 
@@ -262,15 +241,6 @@ func (t *Service) Stop() error {
 
 	for _, server := range t.servers {
 		err = server.Stop()
-
-		if err != nil {
-			t.logger.Fatal(err)
-			return err
-		}
-	}
-
-	for _, broker := range t.brokers {
-		err = broker.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)

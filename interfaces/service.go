@@ -7,8 +7,6 @@ type IService interface {
 	GetConfig() IConfig
 	PushCache(c ICache) IService
 	GetCache(key string) ICache
-	PushBroker(c IBroker) IService
-	GetBroker(key string) IBroker
 	PushDatabase(c IDatabase) IService
 	GetDatabase(key string) IDatabase
 	PushController(c IController) IService
