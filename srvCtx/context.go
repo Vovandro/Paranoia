@@ -1,6 +1,7 @@
 package srvCtx
 
 import (
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"io"
 	"net/http"
 	"net/url"
@@ -72,6 +73,24 @@ var ContextPool = sync.Pool{
 }
 
 func FromHttp(request *http.Request) *Ctx {
+	ctx := ContextPool.Get().(*Ctx)
+	ctx.Request.Body, _ = io.ReadAll(request.Body)
+	ctx.Request.Headers = request.Header
+	ctx.Request.Ip = request.RemoteAddr
+	ctx.Request.URI = request.RequestURI
+	ctx.Request.Method = request.Method
+	ctx.Request.Host = request.Host
+	ctx.Request.PostForm = request.PostForm
+
+	ctx.Values = map[string]interface{}{}
+
+	ctx.Response.Body = ctx.Response.Body[:0]
+	ctx.Response.StatusCode = 200
+
+	return ctx
+}
+
+func FromKafka(msg *kafka.Message) *Ctx {
 	ctx := ContextPool.Get().(*Ctx)
 	ctx.Request.Body, _ = io.ReadAll(request.Body)
 	ctx.Request.Headers = request.Header
