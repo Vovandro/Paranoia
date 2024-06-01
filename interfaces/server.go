@@ -9,5 +9,5 @@ type IServer interface {
 	Start() error
 	Stop() error
 	String() string
-	PushRoute(method string, path string, handler RouteFunc)
+	PushRoute(method string, path string, handler RouteFunc, middlewares []string)
 }

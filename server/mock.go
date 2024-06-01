@@ -14,7 +14,7 @@ type Mock struct {
 
 func (t *Mock) Init(app interfaces.IService) error {
 	t.app = app
-	t.router = NewRouter()
+	t.router = NewRouter(app)
 
 	t.RouteRegister(t.router)
 
@@ -33,6 +33,6 @@ func (t *Mock) String() string {
 	return t.Name
 }
 
-func (t *Mock) PushRoute(method string, path string, handler interfaces.RouteFunc) {
-	t.router.PushRoute(method, path, handler)
+func (t *Mock) PushRoute(method string, path string, handler interfaces.RouteFunc, middlewares []string) {
+	t.router.PushRoute(method, path, handler, middlewares)
 }

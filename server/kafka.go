@@ -1,9 +1,9 @@
 package server
 
 import (
-	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/srvCtx"
 	"sync"
 	"time"
@@ -17,12 +17,14 @@ type Kafka struct {
 	Password          string
 	Topics            []string
 	LimitMessageCount int64
+	BaseMiddleware    []string
 
 	app      interfaces.IService
 	router   *Router
 	consumer *kafka.Consumer
 	done     chan interface{}
 	w        sync.WaitGroup
+	md       func(interfaces.RouteFunc) interfaces.RouteFunc
 }
 
 func (t *Kafka) Init(app interfaces.IService) error {
@@ -30,7 +32,21 @@ func (t *Kafka) Init(app interfaces.IService) error {
 	t.app = app
 	t.done = make(chan interface{})
 
-	t.router = NewRouter()
+	t.router = NewRouter(app)
+
+	if t.BaseMiddleware == nil {
+		t.BaseMiddleware = []string{"timing"}
+	}
+
+	if len(t.BaseMiddleware) > 0 {
+		t.md = middleware.HandlerFromStrings(app, t.BaseMiddleware)
+	}
+
+	if t.md == nil {
+		t.md = func(routeFunc interfaces.RouteFunc) interfaces.RouteFunc {
+			return routeFunc
+		}
+	}
 
 	cfg := kafka.ConfigMap{
 		"bootstrap.servers": t.Hosts,
@@ -105,23 +121,19 @@ func (t *Kafka) String() string {
 	return t.Name
 }
 
-func (t *Kafka) PushRoute(method string, path string, handler interfaces.RouteFunc) {
-	t.router.PushRoute(method, path, handler)
+func (t *Kafka) PushRoute(method string, path string, handler interfaces.RouteFunc, middlewares []string) {
+	t.router.PushRoute(method, path, handler, middlewares)
 }
 
 func (t *Kafka) Handle(msg *kafka.Message) {
 	ctx := srvCtx.FromKafka(msg)
 	defer srvCtx.ContextPool.Put(ctx)
 
-	defer func(tm time.Time) {
-		t.app.GetLogger().Debug(fmt.Sprintf("%d - %v, %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), "KAFKA", *msg.TopicPartition.Topic))
-	}(time.Now())
-
 	route := t.router.Find("KAFKA", *msg.TopicPartition.Topic)
 
 	if route == nil {
 		ctx.Response.StatusCode = 404
 	} else {
-		route(ctx)
+		t.md(route)(ctx)
 	}
 }

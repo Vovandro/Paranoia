@@ -48,6 +48,11 @@ add to main.go
 - http
 - Kafka
 
+### Server middlewares
+
+- Restore from panic
+- Register timing middleware (default use)
+
 ### Clients
 
 - http

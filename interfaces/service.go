@@ -21,4 +21,6 @@ type IService interface {
 	GetClient(key string) IClient
 	PushStorage(c IStorage) IService
 	GetStorage(key string) IStorage
+	PushMiddleware(c IMiddleware) IService
+	GetMiddleware(key string) IMiddleware
 }

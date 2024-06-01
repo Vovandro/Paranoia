@@ -70,11 +70,11 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 
 			s.PushRoute("GET", "/", func(ctx *srvCtx.Ctx) {
 				ctx.Response.Body = []byte("{}")
-			})
+			}, nil)
 
 			s.PushRoute("POST", "/test", func(ctx *srvCtx.Ctx) {
 				ctx.Response.Body = ctx.Request.Body
-			})
+			}, nil)
 			s.Start()
 
 			if got := <-t.Fetch(tt.args.method, tt.args.host, tt.args.data, tt.args.headers); !bytes.Equal(got.GetBody(), tt.want.GetBody()) {

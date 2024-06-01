@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/srvCtx"
 	"net/http"
 	"time"
@@ -18,15 +18,32 @@ type Http struct {
 	CookieHttpOnly bool
 	CookieSecure   bool
 
+	BaseMiddleware []string
+
 	app    interfaces.IService
 	router *Router
 	server *http.Server
+	md     func(interfaces.RouteFunc) interfaces.RouteFunc
 }
 
 func (t *Http) Init(app interfaces.IService) error {
 	t.app = app
 
-	t.router = NewRouter()
+	t.router = NewRouter(app)
+
+	if t.BaseMiddleware == nil {
+		t.BaseMiddleware = []string{"timing"}
+	}
+
+	if len(t.BaseMiddleware) > 0 {
+		t.md = middleware.HandlerFromStrings(app, t.BaseMiddleware)
+	}
+
+	if t.md == nil {
+		t.md = func(routeFunc interfaces.RouteFunc) interfaces.RouteFunc {
+			return routeFunc
+		}
+	}
 
 	t.server = &http.Server{
 		Addr:                         ":" + t.Port,
@@ -81,17 +98,13 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := srvCtx.FromHttp(req)
 	defer srvCtx.ContextPool.Put(ctx)
 
-	defer func(tm time.Time) {
-		t.app.GetLogger().Debug(fmt.Sprintf("%d - %v, %s: %s", ctx.Response.StatusCode, time.Now().Sub(tm), req.Method, req.RequestURI))
-	}(time.Now())
-
 	route := t.router.Find(req.Method, req.RequestURI)
 
 	if route == nil {
 		ctx.Response.StatusCode = 404
 		w.WriteHeader(404)
 	} else {
-		route(ctx)
+		t.md(route)(ctx)
 
 		w.Header().Add("Content-Type", ctx.Response.ContentType)
 
@@ -108,6 +121,6 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (t *Http) PushRoute(method string, path string, handler interfaces.RouteFunc) {
-	t.router.PushRoute(method, path, handler)
+func (t *Http) PushRoute(method string, path string, handler interfaces.RouteFunc, middlewares []string) {
+	t.router.PushRoute(method, path, handler, middlewares)
 }
