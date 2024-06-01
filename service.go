@@ -3,6 +3,7 @@ package Paranoia
 import (
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 )
 
 type Service struct {
@@ -20,6 +21,7 @@ type Service struct {
 	servers     map[string]interfaces.IServer
 	clients     map[string]interfaces.IClient
 	storage     map[string]interfaces.IStorage
+	middlewares map[string]interfaces.IMiddleware
 }
 
 func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
@@ -38,6 +40,7 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.servers = make(map[string]interfaces.IServer)
 	t.storage = make(map[string]interfaces.IStorage)
 	t.clients = make(map[string]interfaces.IClient)
+	t.middlewares = make(map[string]interfaces.IMiddleware)
 
 	if t.config != nil {
 		err := t.config.Init(t)
@@ -158,6 +161,16 @@ func (t *Service) GetStorage(key string) interfaces.IStorage {
 	return t.storage[key]
 }
 
+func (t *Service) PushMiddleware(b interfaces.IMiddleware) interfaces.IService {
+	t.middlewares[b.String()] = b
+
+	return t
+}
+
+func (t *Service) GetMiddleware(key string) interfaces.IMiddleware {
+	return t.middlewares[key]
+}
+
 func (t *Service) Init() error {
 	var err error = nil
 
@@ -181,6 +194,19 @@ func (t *Service) Init() error {
 
 	for _, st := range t.storage {
 		err = st.Init(t)
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	if _, ok := t.middlewares["timing"]; !ok {
+		t.PushMiddleware(&middleware.TimingMiddleware{})
+	}
+
+	for _, item := range t.middlewares {
+		err = item.Init(t)
 
 		if err != nil {
 			t.logger.Fatal(err)
@@ -241,6 +267,15 @@ func (t *Service) Stop() error {
 
 	for _, server := range t.servers {
 		err = server.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, item := range t.middlewares {
+		err = item.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
