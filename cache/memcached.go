@@ -40,8 +40,6 @@ func (t *Memcached) String() string {
 	return t.Name
 }
 
-// Has checks if a key exists.
-// It returns true if the key exists, false otherwise.
 func (t *Memcached) Has(key string) bool {
 	item, err := t.client.Get(key)
 
@@ -137,64 +135,64 @@ func (t *Memcached) GetMap(key string) (any, error) {
 	return res, nil
 }
 
-func (t *Memcached) Increment(key string, val int64, timeout time.Duration) error {
-	_, err := t.client.Increment(key, uint64(val))
+func (t *Memcached) Increment(key string, val int64, timeout time.Duration) (int64, error) {
+	v, err := t.client.Increment(key, uint64(val))
 
 	if errors.Is(err, memcache.ErrCacheMiss) {
-		return t.Set(key, val, timeout)
+		return val, t.Set(key, val, timeout)
 	} else if err != nil {
-		return err
+		return 0, err
 	}
 
-	return t.client.Touch(key, int32(timeout.Seconds()))
+	return int64(v), t.client.Touch(key, int32(timeout.Seconds()))
 }
 
-func (t *Memcached) IncrementIn(key string, key2 string, val int64, timeout time.Duration) error {
+func (t *Memcached) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	data, err := t.GetMap(key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
 	} else if err != nil {
-		return err
+		return 0, err
 	}
 
 	if v, ok := data.(map[string]any)[key2]; ok {
-		data.(map[string]any)[key2] = v.(int64) + val
+		data.(map[string]any)[key2] = int64(v.(float64)) + val
 	} else {
 		data.(map[string]any)[key2] = val
 	}
 
-	return t.SetMap(key, data, timeout)
+	return data.(map[string]any)[key2].(int64), t.SetMap(key, data, timeout)
 }
 
-func (t *Memcached) Decrement(key string, val int64, timeout time.Duration) error {
-	_, err := t.client.Decrement(key, uint64(val))
+func (t *Memcached) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
+	v, err := t.client.Decrement(key, uint64(val))
 
 	if errors.Is(err, memcache.ErrCacheMiss) {
-		return ErrKeyNotFound
+		return 0, ErrKeyNotFound
 	} else if err != nil {
-		return err
+		return 0, err
 	}
 
-	return t.client.Touch(key, int32(timeout.Seconds()))
+	return int64(v), t.client.Touch(key, int32(timeout.Seconds()))
 }
 
-func (t *Memcached) DecrementIn(key string, key2 string, val int64, timeout time.Duration) error {
+func (t *Memcached) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	data, err := t.GetMap(key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
 	} else if err != nil {
-		return err
+		return 0, err
 	}
 
 	if v, ok := data.(map[string]any)[key2]; ok {
-		data.(map[string]any)[key2] = v.(int64) - val
+		data.(map[string]any)[key2] = int64(v.(float64)) - val
 	} else {
 		data.(map[string]any)[key2] = val * -1
 	}
 
-	return t.SetMap(key, data, timeout)
+	return data.(map[string]any)[key2].(int64), t.SetMap(key, data, timeout)
 }
 
 func (t *Memcached) Delete(key string) error {

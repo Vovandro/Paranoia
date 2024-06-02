@@ -158,76 +158,76 @@ func (t *Redis) GetMap(key string) (any, error) {
 	return v, nil
 }
 
-func (t *Redis) Increment(key string, val int64, timeout time.Duration) error {
+func (t *Redis) Increment(key string, val int64, timeout time.Duration) (int64, error) {
 	if t.UseCluster {
-		err := t.cluster.IncrBy(context.Background(), key, val).Err()
-		if err != nil {
-			return err
+		v := t.cluster.IncrBy(context.Background(), key, val)
+		if v.Err() != nil {
+			return 0, v.Err()
 		}
 
-		return t.cluster.Expire(context.Background(), key, timeout).Err()
+		return v.Val(), t.cluster.Expire(context.Background(), key, timeout).Err()
 	}
 
-	err := t.client.IncrBy(context.Background(), key, val).Err()
-	if err != nil {
-		return err
+	v := t.client.IncrBy(context.Background(), key, val)
+	if v.Err() != nil {
+		return 0, v.Err()
 	}
 
-	return t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
 }
 
-func (t *Redis) IncrementIn(key string, key2 string, val int64, timeout time.Duration) error {
+func (t *Redis) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	if t.UseCluster {
-		err := t.cluster.HIncrBy(context.Background(), key, key2, val).Err()
-		if err != nil {
-			return err
+		v := t.cluster.HIncrBy(context.Background(), key, key2, val)
+		if v.Err() != nil {
+			return 0, v.Err()
 		}
 
-		return t.cluster.Expire(context.Background(), key, timeout).Err()
+		return v.Val(), t.cluster.Expire(context.Background(), key, timeout).Err()
 	}
 
-	err := t.client.HIncrBy(context.Background(), key, key2, val).Err()
-	if err != nil {
-		return err
+	v := t.client.HIncrBy(context.Background(), key, key2, val)
+	if v.Err() != nil {
+		return 0, v.Err()
 	}
 
-	return t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
 }
 
-func (t *Redis) Decrement(key string, val int64, timeout time.Duration) error {
+func (t *Redis) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
 	if t.UseCluster {
-		err := t.cluster.DecrBy(context.Background(), key, val).Err()
-		if err != nil {
-			return err
+		v := t.cluster.DecrBy(context.Background(), key, val)
+		if v.Err() != nil {
+			return 0, v.Err()
 		}
 
-		return t.cluster.Expire(context.Background(), key, timeout).Err()
+		return v.Val(), t.cluster.Expire(context.Background(), key, timeout).Err()
 	}
 
-	err := t.client.DecrBy(context.Background(), key, val).Err()
-	if err != nil {
-		return err
+	v := t.client.DecrBy(context.Background(), key, val)
+	if v.Err() != nil {
+		return 0, v.Err()
 	}
 
-	return t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
 }
 
-func (t *Redis) DecrementIn(key string, key2 string, val int64, timeout time.Duration) error {
+func (t *Redis) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	if t.UseCluster {
-		err := t.cluster.HIncrBy(context.Background(), key, key2, val*-1).Err()
-		if err != nil {
-			return err
+		v := t.cluster.HIncrBy(context.Background(), key, key2, val*-1)
+		if v.Err() != nil {
+			return 0, v.Err()
 		}
 
-		return t.cluster.Expire(context.Background(), key, timeout).Err()
+		return v.Val(), t.cluster.Expire(context.Background(), key, timeout).Err()
 	}
 
-	err := t.client.HIncrBy(context.Background(), key, key2, val*-1).Err()
-	if err != nil {
-		return err
+	v := t.client.HIncrBy(context.Background(), key, key2, val*-1)
+	if v.Err() != nil {
+		return 0, v.Err()
 	}
 
-	return t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
 }
 
 func (t *Redis) Delete(key string) error {

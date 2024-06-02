@@ -494,7 +494,7 @@ func TestMemory_Increment(t1 *testing.T) {
 			defer t.Stop()
 
 			for i := 0; i < len(tt.args); i++ {
-				if err := t.Increment(tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
+				if _, err := t.Increment(tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
 					t1.Errorf("Increment() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}
@@ -620,7 +620,7 @@ func TestMemory_IncrementIn(t1 *testing.T) {
 			defer t.Stop()
 
 			for i := 0; i < len(tt.args); i++ {
-				if err := t.IncrementIn(tt.args[i].key, tt.args[i].key2, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
+				if _, err := t.IncrementIn(tt.args[i].key, tt.args[i].key2, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
 					t1.Errorf("IncrementIn() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}
