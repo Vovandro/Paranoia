@@ -702,13 +702,13 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 			"base test increment",
 			[]item{
 				{
-					"k1",
+					"k5",
 					"k2",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k5",
 			"k2",
 			1,
 		},
@@ -716,19 +716,19 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 			"test multiple increment",
 			[]item{
 				{
-					"k1",
+					"k6",
 					"k2",
 					1,
 					time.Minute,
 				},
 				{
-					"k1",
+					"k6",
 					"k2",
 					5,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k6",
 			"k2",
 			6,
 		},
@@ -744,8 +744,9 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 
 			got, err := t.GetIn(tt.keyCheck, tt.key2Check)
 
-			if err != nil {
+			if err != nil || got == nil {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
+				return
 			}
 
 			a, err := strconv.ParseInt(got.(string), 10, 64)
@@ -803,7 +804,7 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 			"base test decrement",
 			[]item{
 				{
-					"k1",
+					"k10",
 					"k2",
 					10,
 					time.Minute,
@@ -811,13 +812,13 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 			},
 			[]item{
 				{
-					"k1",
+					"k10",
 					"k2",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k10",
 			"k2",
 			9,
 		},
@@ -825,7 +826,7 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 			"test multiple decrement",
 			[]item{
 				{
-					"k1",
+					"k11",
 					"k2",
 					10,
 					time.Minute,
@@ -833,19 +834,19 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 			},
 			[]item{
 				{
-					"k1",
+					"k11",
 					"k2",
 					1,
 					time.Minute,
 				},
 				{
-					"k1",
+					"k11",
 					"k2",
 					2,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k11",
 			"k2",
 			7,
 		},
@@ -854,13 +855,13 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 			[]item{},
 			[]item{
 				{
-					"k1",
+					"k12",
 					"k2",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k12",
 			"k2",
 			-1,
 		},
@@ -894,7 +895,7 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 				t1.Errorf("Check = %v, last = %v, want %v", got, lastVal, tt.want)
 			}
 
-			for _, v := range tt.store {
+			for _, v := range tt.dec {
 				t.Delete(v.key)
 			}
 		})
