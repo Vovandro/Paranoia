@@ -14,7 +14,7 @@ test:
     reports:
       junit: report.xml
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "merge_request_event" || $CI_COMMIT_BRANCH != "master"'
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_BRANCH != "master"'
       when: always
 
 test_full:
