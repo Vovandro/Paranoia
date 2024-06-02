@@ -185,7 +185,7 @@ func (t *Memory) GetMap(key string) (any, error) {
 	return t.Get(key)
 }
 
-func (t *Memory) Increment(key string, val int64, timeout time.Duration) error {
+func (t *Memory) Increment(key string, val int64, timeout time.Duration) (int64, error) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
@@ -197,7 +197,7 @@ func (t *Memory) Increment(key string, val int64, timeout time.Duration) error {
 		if _, ok := v.data.(int64); ok {
 			v.data = v.data.(int64) + val
 		} else {
-			return ErrTypeMismatch
+			return 0, ErrTypeMismatch
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)
@@ -211,10 +211,10 @@ func (t *Memory) Increment(key string, val int64, timeout time.Duration) error {
 		time: v.timeout,
 	})
 
-	return nil
+	return v.data.(int64), nil
 }
 
-func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Duration) error {
+func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
@@ -228,13 +228,13 @@ func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Du
 				if v2, ok := v.data.(map[string]any)[key2].(int64); ok {
 					v.data.(map[string]any)[key2] = v2 + val
 				} else {
-					return ErrTypeMismatch
+					return 0, ErrTypeMismatch
 				}
 			} else {
 				v.data.(map[string]any)[key2] = val
 			}
 		} else {
-			return ErrTypeMismatch
+			return 0, ErrTypeMismatch
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)
@@ -249,15 +249,15 @@ func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Du
 		time: v.timeout,
 	})
 
-	return nil
+	return v.data.(map[string]any)[key2].(int64), nil
 }
 
-func (t *Memory) Decrement(key string, val int64, timeout time.Duration) error {
+func (t *Memory) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
 	return t.Increment(key, val*-1, timeout)
 }
 
-func (t *Memory) DecrementIn(key string, key2 string, val int64, timeout time.Duration) error {
-	return t.IncrementIn(key, key, val*-1, timeout)
+func (t *Memory) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+	return t.IncrementIn(key, key2, val*-1, timeout)
 }
 
 func (t *Memory) Delete(key string) error {
