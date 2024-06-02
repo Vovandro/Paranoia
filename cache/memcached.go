@@ -40,6 +40,8 @@ func (t *Memcached) String() string {
 	return t.Name
 }
 
+// Has checks if a key exists.
+// It returns true if the key exists, false otherwise.
 func (t *Memcached) Has(key string) bool {
 	item, err := t.client.Get(key)
 
