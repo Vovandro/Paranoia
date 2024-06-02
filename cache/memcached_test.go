@@ -893,3 +893,32 @@ func TestMemcached_DecrementIn(t1 *testing.T) {
 		})
 	}
 }
+
+func TestMemcached_String(t1 *testing.T) {
+	type fields struct {
+		Name string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			"base test",
+			fields{
+				"test",
+			},
+			"test",
+		},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			t := &Memcached{
+				Name: tt.fields.Name,
+			}
+			if got := t.String(); got != tt.want {
+				t1.Errorf("String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
