@@ -38,6 +38,9 @@ test_full:
 
 coverage:
   stage: test
+  variables:
+    PARANOIA_INTEGRATED_TESTS: Y
+    PARANOIA_INTEGRATED_SERVER: $PARANOIA_INTEGRATED_SERVER
   script:
     - go install
     - go test $(go list ./... | grep -v vendor) -race -coverprofile=coverage.out

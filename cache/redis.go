@@ -77,10 +77,22 @@ func (t *Redis) Set(key string, args any, timeout time.Duration) error {
 
 func (t *Redis) SetIn(key string, key2 string, args any, timeout time.Duration) error {
 	if t.UseCluster {
-		return t.cluster.HSet(context.Background(), key, key2, args, timeout).Err()
+		err := t.cluster.HSet(context.Background(), key, map[string]interface{}{key2: args}).Err()
+
+		if err != nil {
+			return err
+		}
+
+		return t.cluster.Expire(context.Background(), key, timeout).Err()
 	}
 
-	return t.client.HSet(context.Background(), key, key, args, timeout).Err()
+	err := t.client.HSet(context.Background(), key, map[string]interface{}{key2: args}).Err()
+
+	if err != nil {
+		return err
+	}
+
+	return t.client.Expire(context.Background(), key, timeout).Err()
 }
 
 func (t *Redis) SetMap(key string, args any, timeout time.Duration) error {
