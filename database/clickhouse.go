@@ -35,7 +35,7 @@ func (t *ClickHouse) Init(app interfaces.IService) error {
 		return err
 	}
 
-	return nil
+	return t.client.Ping(context.Background())
 }
 
 func (t *ClickHouse) Stop() error {
