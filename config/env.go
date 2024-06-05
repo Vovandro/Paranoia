@@ -10,14 +10,14 @@ import (
 )
 
 type Env struct {
-	FName string
-	data  map[string]string
-	app   interfaces.IService
+	FName  string
+	data   map[string]string
+	logger interfaces.ILogger
 }
 
-func (t *Env) Init(app interfaces.IService) error {
+func (t *Env) Init(logger interfaces.ILogger) error {
 	t.data = make(map[string]string, 20)
-	t.app = app
+	t.logger = logger
 
 	if t.FName == "" {
 		t.FName = ".env"
@@ -30,7 +30,7 @@ func (t *Env) Init(app interfaces.IService) error {
 			err = fmt.Errorf("file %s is empty", t.FName)
 		}
 
-		t.app.GetLogger().Error(err)
+		t.logger.Error(err)
 	} else {
 		t.ParseFile(f)
 	}
@@ -128,7 +128,7 @@ func (t *Env) GetBool(key string, def bool) bool {
 		b, err := strconv.ParseBool(val)
 
 		if err != nil {
-			t.app.GetLogger().Error(err)
+			t.logger.Error(err)
 		} else {
 			return b
 		}
@@ -140,7 +140,7 @@ func (t *Env) GetBool(key string, def bool) bool {
 		b, err := strconv.ParseBool(val)
 
 		if err != nil {
-			t.app.GetLogger().Error(err)
+			t.logger.Error(err)
 		} else {
 			t.data[key] = val
 			return b
@@ -158,7 +158,7 @@ func (t *Env) GetInt(key string, def int) int {
 		i, err := strconv.ParseInt(val, 10, 32)
 
 		if err != nil {
-			t.app.GetLogger().Error(err)
+			t.logger.Error(err)
 		} else {
 			return int(i)
 		}
@@ -170,7 +170,7 @@ func (t *Env) GetInt(key string, def int) int {
 		i, err := strconv.ParseInt(val, 10, 32)
 
 		if err != nil {
-			t.app.GetLogger().Error(err)
+			t.logger.Error(err)
 		} else {
 			t.data[key] = val
 			return int(i)
@@ -187,7 +187,7 @@ func (t *Env) GetFloat(key string, def float32) float32 {
 		i, err := strconv.ParseFloat(val, 32)
 
 		if err != nil {
-			t.app.GetLogger().Error(err)
+			t.logger.Error(err)
 		} else {
 			return float32(i)
 		}
@@ -199,7 +199,7 @@ func (t *Env) GetFloat(key string, def float32) float32 {
 		i, err := strconv.ParseFloat(val, 32)
 
 		if err != nil {
-			t.app.GetLogger().Error(err)
+			t.logger.Error(err)
 		} else {
 			t.data[key] = val
 			return float32(i)

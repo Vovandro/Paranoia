@@ -9,7 +9,7 @@ type Mock struct {
 	Data map[string]string
 }
 
-func (t *Mock) Init(app interfaces.IService) error {
+func (t *Mock) Init(logger interfaces.ILogger) error {
 	if t.Data == nil {
 		t.Data = make(map[string]string)
 	}

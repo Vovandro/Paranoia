@@ -16,7 +16,7 @@ const (
 )
 
 type ILogger interface {
-	Init(app IService) error
+	Init() error
 	Stop() error
 	SetLevel(level LogLevel)
 	Push(level LogLevel, msg string, toParent bool)

@@ -205,14 +205,11 @@ func TestEnv_GetFloat(t1 *testing.T) {
 func TestEnv_GetInt(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  interfaces.IService
 	}
 	type args struct {
 		key string
 		def int
 	}
-
-	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
 		name   string
@@ -224,7 +221,6 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"base get int",
 			fields{
 				map[string]string{"k1": "1"},
-				app,
 			},
 			args{
 				"k1",
@@ -236,7 +232,6 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"base get int from float",
 			fields{
 				map[string]string{"k1": "1.1"},
-				app,
 			},
 			args{
 				"k1",
@@ -248,7 +243,6 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"base get int default",
 			fields{
 				map[string]string{"k1": "1"},
-				app,
 			},
 			args{
 				"k2",
@@ -260,7 +254,6 @@ func TestEnv_GetInt(t1 *testing.T) {
 			"get invalid int",
 			fields{
 				map[string]string{"k1": "test"},
-				app,
 			},
 			args{
 				"k2",
@@ -272,8 +265,8 @@ func TestEnv_GetInt(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Env{
-				data: tt.fields.data,
-				app:  tt.fields.app,
+				data:   tt.fields.data,
+				logger: &logger.Mock{},
 			}
 
 			if got := t.GetInt(tt.args.key, tt.args.def); got != tt.want {
@@ -286,14 +279,11 @@ func TestEnv_GetInt(t1 *testing.T) {
 func TestEnv_GetString(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  interfaces.IService
 	}
 	type args struct {
 		key string
 		def string
 	}
-
-	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	tests := []struct {
 		name   string
@@ -305,7 +295,6 @@ func TestEnv_GetString(t1 *testing.T) {
 			"base get string",
 			fields{
 				map[string]string{"k1": "1r"},
-				app,
 			},
 			args{
 				"k1",
@@ -317,7 +306,6 @@ func TestEnv_GetString(t1 *testing.T) {
 			"base get string default",
 			fields{
 				map[string]string{"k1": "1"},
-				app,
 			},
 			args{
 				"k2",
@@ -329,8 +317,8 @@ func TestEnv_GetString(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Env{
-				data: tt.fields.data,
-				app:  tt.fields.app,
+				data:   tt.fields.data,
+				logger: &logger.Mock{},
 			}
 			if got := t.GetString(tt.args.key, tt.args.def); got != tt.want {
 				t1.Errorf("GetString() = %v, want %v", got, tt.want)
@@ -389,9 +377,6 @@ func TestEnv_Init(t1 *testing.T) {
 	type fields struct {
 		FName string
 	}
-	type args struct {
-		app interfaces.IService
-	}
 	type file struct {
 		FName    string
 		FileData string
@@ -401,12 +386,9 @@ func TestEnv_Init(t1 *testing.T) {
 		value string
 	}
 
-	app := Paranoia.New("test", nil, &logger.Mock{})
-
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
 		file    file
 		wantErr bool
 		want    want
@@ -415,9 +397,6 @@ func TestEnv_Init(t1 *testing.T) {
 			"base test",
 			fields{
 				"./.env.test",
-			},
-			args{
-				app,
 			},
 			file{
 				"./.env.test",
@@ -434,9 +413,6 @@ func TestEnv_Init(t1 *testing.T) {
 			fields{
 				"./.env.test",
 			},
-			args{
-				app,
-			},
 			file{
 				"./.env.test",
 				"ENV=test\nAPP=app\n",
@@ -451,9 +427,6 @@ func TestEnv_Init(t1 *testing.T) {
 			"base test with comment",
 			fields{
 				"./.env.test",
-			},
-			args{
-				app,
 			},
 			file{
 				"./.env.test",
@@ -474,7 +447,7 @@ func TestEnv_Init(t1 *testing.T) {
 
 			_ = os.WriteFile(tt.file.FName, []byte(tt.file.FileData), 0666)
 
-			if err := t.Init(tt.args.app); (err != nil) != tt.wantErr {
+			if err := t.Init(&logger.Mock{}); (err != nil) != tt.wantErr {
 				t1.Errorf("Init() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

@@ -11,9 +11,9 @@ type Std struct {
 	Level  interfaces.LogLevel
 }
 
-func (t *Std) Init(app interfaces.IService) error {
+func (t *Std) Init() error {
 	if t.Parent != nil {
-		return t.Parent.Init(app)
+		return t.Parent.Init()
 	}
 
 	return nil

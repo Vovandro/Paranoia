@@ -16,7 +16,7 @@ type File struct {
 	f      *os.File
 }
 
-func (t *File) Init(app interfaces.IService) error {
+func (t *File) Init() error {
 	t.queue = make(chan string, 1000)
 	t.done = make(chan interface{})
 
@@ -39,7 +39,7 @@ func (t *File) Init(app interfaces.IService) error {
 	t.run(t.done)
 
 	if t.Parent != nil {
-		return t.Parent.Init(app)
+		return t.Parent.Init()
 	}
 
 	return nil
