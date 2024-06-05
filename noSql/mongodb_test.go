@@ -8,161 +8,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
-
-func TestMongoDB_Count(t1 *testing.T) {
-	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
-		t1.Skip()
-		return
-	}
-
-	db := initMongoTest("insert_test")
-	defer closeMongoTest(db)
-
-	type fields struct {
-		Name     string
-		Database string
-		Options  *options.ClientOptions
-		app      interfaces.IService
-		client   *mongo.Client
-		db       *mongo.Database
-	}
-	type args struct {
-		ctx   context.Context
-		key   interface{}
-		query interface{}
-		args  []interface{}
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   int64
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MongoDB{
-				Name:     tt.fields.Name,
-				Database: tt.fields.Database,
-				Options:  tt.fields.Options,
-				app:      tt.fields.app,
-				client:   tt.fields.client,
-				db:       tt.fields.db,
-			}
-			if got := t.Count(tt.args.ctx, tt.args.key, tt.args.query, tt.args.args...); got != tt.want {
-				t1.Errorf("Count() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestMongoDB_Delete(t1 *testing.T) {
-	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
-		t1.Skip()
-		return
-	}
-
-	db := initMongoTest("insert_test")
-	defer closeMongoTest(db)
-
-	type fields struct {
-		Name     string
-		Database string
-		Options  *options.ClientOptions
-		app      interfaces.IService
-		client   *mongo.Client
-		db       *mongo.Database
-	}
-	type args struct {
-		ctx   context.Context
-		key   interface{}
-		query interface{}
-		args  []interface{}
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   int64
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MongoDB{
-				Name:     tt.fields.Name,
-				Database: tt.fields.Database,
-				Options:  tt.fields.Options,
-				app:      tt.fields.app,
-				client:   tt.fields.client,
-				db:       tt.fields.db,
-			}
-			if got := t.Delete(tt.args.ctx, tt.args.key, tt.args.query, tt.args.args...); got != tt.want {
-				t1.Errorf("Delete() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestMongoDB_Exec(t1 *testing.T) {
-	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
-		t1.Skip()
-		return
-	}
-
-	db := initMongoTest("insert_test")
-	defer closeMongoTest(db)
-
-	type fields struct {
-		Name     string
-		Database string
-		Options  *options.ClientOptions
-		app      interfaces.IService
-		client   *mongo.Client
-		db       *mongo.Database
-	}
-	type args struct {
-		ctx   context.Context
-		key   interface{}
-		query interface{}
-		args  []interface{}
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    interfaces.NoSQLRows
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MongoDB{
-				Name:     tt.fields.Name,
-				Database: tt.fields.Database,
-				Options:  tt.fields.Options,
-				app:      tt.fields.app,
-				client:   tt.fields.client,
-				db:       tt.fields.db,
-			}
-			got, err := t.Exec(tt.args.ctx, tt.args.key, tt.args.query, tt.args.args...)
-			if (err != nil) != tt.wantErr {
-				t1.Errorf("Exec() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t1.Errorf("Exec() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestMongoDB_Exists(t1 *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
@@ -170,43 +19,54 @@ func TestMongoDB_Exists(t1 *testing.T) {
 		return
 	}
 
-	db := initMongoTest("insert_test")
+	db := initMongoTest("exist_test")
 	defer closeMongoTest(db)
 
-	type fields struct {
-		Name     string
-		Database string
-		Options  *options.ClientOptions
-		app      interfaces.IService
-		client   *mongo.Client
-		db       *mongo.Database
-	}
 	type args struct {
-		ctx   context.Context
-		key   interface{}
-		query interface{}
-		args  []interface{}
+		key         interface{}
+		queryInsert interface{}
+		queryFind   interface{}
+		args        []interface{}
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   bool
+		name    string
+		args    args
+		want    bool
+		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"base test",
+			args{
+				"exist_test",
+				nil,
+				bson.M{"balance": 0},
+				nil,
+			},
+			true,
+			false,
+		},
+		{
+			"test not exists",
+			args{
+				"exist_test",
+				nil,
+				bson.M{"balance": 1000},
+				nil,
+			},
+			false,
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MongoDB{
-				Name:     tt.fields.Name,
-				Database: tt.fields.Database,
-				Options:  tt.fields.Options,
-				app:      tt.fields.app,
-				client:   tt.fields.client,
-				db:       tt.fields.db,
+			if tt.args.queryInsert != nil {
+				db.Insert(context.Background(), tt.args.key, tt.args.queryInsert)
 			}
-			if got := t.Exists(tt.args.ctx, tt.args.key, tt.args.query, tt.args.args...); got != tt.want {
-				t1.Errorf("Exists() = %v, want %v", got, tt.want)
+
+			got := db.Exists(context.Background(), tt.args.key, tt.args.queryFind, tt.args.args...)
+
+			if got != tt.want {
+				t1.Errorf("Exists() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -218,49 +78,76 @@ func TestMongoDB_Find(t1 *testing.T) {
 		return
 	}
 
-	db := initMongoTest("insert_test")
+	db := initMongoTest("find_test")
 	defer closeMongoTest(db)
+	name := "test"
+	name2 := "test2"
 
-	type fields struct {
-		Name     string
-		Database string
-		Options  *options.ClientOptions
-		app      interfaces.IService
-		client   *mongo.Client
-		db       *mongo.Database
-	}
 	type args struct {
-		ctx   context.Context
-		key   interface{}
-		query interface{}
-		args  []interface{}
+		key         interface{}
+		queryInsert interface{}
+		queryFind   interface{}
+		args        []interface{}
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    interfaces.NoSQLRows
+		want    []itemMongo
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"base test",
+			args{
+				"find_test",
+				nil,
+				bson.M{"balance": bson.M{"$lte": 2}},
+				nil,
+			},
+			[]itemMongo{
+				{
+					Id:        primitive.ObjectID{},
+					Name:      &name,
+					Balance:   1,
+					CreatedAt: time.Time{},
+				},
+				{
+					Id:        primitive.ObjectID{},
+					Name:      &name2,
+					Balance:   0,
+					CreatedAt: time.Time{},
+				},
+			},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MongoDB{
-				Name:     tt.fields.Name,
-				Database: tt.fields.Database,
-				Options:  tt.fields.Options,
-				app:      tt.fields.app,
-				client:   tt.fields.client,
-				db:       tt.fields.db,
+			if tt.args.queryInsert != nil {
+				db.Insert(context.Background(), tt.args.key, tt.args.queryInsert)
 			}
-			got, err := t.Find(tt.args.ctx, tt.args.key, tt.args.query, tt.args.args...)
+
+			got, err := db.Find(context.Background(), tt.args.key, tt.args.queryFind, tt.args.args...)
 			if (err != nil) != tt.wantErr {
 				t1.Errorf("Find() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t1.Errorf("Find() got = %v, want %v", got, tt.want)
+
+			var items []itemMongo
+
+			for got.Next() {
+				var item itemMongo
+				got.Scan(&item)
+				items = append(items, item)
+			}
+
+			if len(items) != len(tt.want) {
+				t1.Errorf("Find() got = %v, want %v", items, tt.want)
+			}
+
+			for i, item := range items {
+				if *item.Name != *tt.want[i].Name || item.Balance != tt.want[i].Balance {
+					t1.Errorf("Find() got = %v, want %v", item, tt.want)
+				}
 			}
 		})
 	}
@@ -392,7 +279,7 @@ func TestMongoDB_Update(t1 *testing.T) {
 		return
 	}
 
-	db := initMongoTest("insert_test")
+	db := initMongoTest("update_test")
 	defer closeMongoTest(db)
 
 	type fields struct {
@@ -403,90 +290,20 @@ func TestMongoDB_Update(t1 *testing.T) {
 		client   *mongo.Client
 		db       *mongo.Database
 	}
-	type args struct {
-		ctx   context.Context
-		key   interface{}
-		query interface{}
-		args  []interface{}
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MongoDB{
-				Name:     tt.fields.Name,
-				Database: tt.fields.Database,
-				Options:  tt.fields.Options,
-				app:      tt.fields.app,
-				client:   tt.fields.client,
-				db:       tt.fields.db,
-			}
-			if err := t.Update(tt.args.ctx, tt.args.key, tt.args.query, tt.args.args...); (err != nil) != tt.wantErr {
-				t1.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
 
-func TestMongoDB_Batch(t1 *testing.T) {
-	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
-		t1.Skip()
-		return
-	}
+	t1.Run("base test", func(t1 *testing.T) {
 
-	db := initMongoTest("insert_test")
-	defer closeMongoTest(db)
+		err := db.Update(context.Background(), "update_test", bson.M{"balance": 50}, bson.M{"$set": bson.M{"balance": 100}})
 
-	type fields struct {
-		Name     string
-		Database string
-		Options  *options.ClientOptions
-		app      interfaces.IService
-		client   *mongo.Client
-		db       *mongo.Database
-	}
-	type args struct {
-		ctx    context.Context
-		key    interface{}
-		query  interface{}
-		typeOp string
-		args   []interface{}
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    int64
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MongoDB{
-				Name:     tt.fields.Name,
-				Database: tt.fields.Database,
-				Options:  tt.fields.Options,
-				app:      tt.fields.app,
-				client:   tt.fields.client,
-				db:       tt.fields.db,
-			}
-			got, err := t.Batch(tt.args.ctx, tt.args.key, tt.args.query, tt.args.typeOp, tt.args.args...)
-			if (err != nil) != tt.wantErr {
-				t1.Errorf("Batch() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t1.Errorf("Batch() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
+		if err != nil {
+			t1.Errorf("Update() error = %v", err)
+			return
+		}
+
+		if !db.Exists(context.Background(), "update_test", bson.M{"balance": 100}) {
+			t1.Errorf("Update() want = %v", true)
+		}
+	})
 }
 
 type itemMongo struct {
