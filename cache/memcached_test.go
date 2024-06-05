@@ -243,6 +243,36 @@ func TestMemcached_In(t1 *testing.T) {
 			"v1",
 		},
 		{
+			"test not found",
+			[]item{
+				{
+					"k1",
+					"k2",
+					"v1",
+					time.Minute,
+				},
+			},
+			time.Microsecond,
+			"k2",
+			"k2",
+			nil,
+		},
+		{
+			"test not found key 2",
+			[]item{
+				{
+					"k1",
+					"k2",
+					"v1",
+					time.Minute,
+				},
+			},
+			time.Microsecond,
+			"k1",
+			"k3",
+			nil,
+		},
+		{
 			"base test multiple set one",
 			[]item{
 				{
@@ -446,6 +476,38 @@ func TestMemcached_Map(t1 *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMemcached_GetMapInvalid(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
+
+	t := &Memcached{
+		Name:  "test",
+		Hosts: host + ":11211",
+	}
+	err := t.Init(nil)
+	defer t.Stop()
+
+	if err != nil {
+		t1.Errorf("Init() = %v", err)
+	}
+
+	t1.Run("test get type mismatch", func(t1 *testing.T) {
+		t.Set("k5", "test", time.Minute)
+
+		_, err := t.GetMap("k5")
+
+		if err == nil {
+			t1.Errorf("Failed test type mismatch")
+		}
+
+		t.Delete("k5")
+	})
 }
 
 func TestMemcached_Increment(t1 *testing.T) {
