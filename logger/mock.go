@@ -8,7 +8,7 @@ import (
 type Mock struct {
 }
 
-func (t *Mock) Init(app interfaces.IService) error {
+func (t *Mock) Init() error {
 	return nil
 }
 

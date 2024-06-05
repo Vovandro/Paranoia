@@ -2,10 +2,8 @@ package noSql
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
 	"strings"
@@ -281,15 +279,6 @@ func TestMongoDB_Update(t1 *testing.T) {
 
 	db := initMongoTest("update_test")
 	defer closeMongoTest(db)
-
-	type fields struct {
-		Name     string
-		Database string
-		Options  *options.ClientOptions
-		app      interfaces.IService
-		client   *mongo.Client
-		db       *mongo.Database
-	}
 
 	t1.Run("base test", func(t1 *testing.T) {
 
