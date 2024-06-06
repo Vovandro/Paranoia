@@ -11,17 +11,31 @@ import (
 )
 
 type Memcached struct {
-	Name  string
-	Hosts string
+	Name   string
+	Config MemcachedConfig
 
 	app    interfaces.IService
 	client *memcache.Client
 }
 
+type MemcachedConfig struct {
+	Hosts   string
+	Timeout time.Duration
+}
+
 func (t *Memcached) Init(app interfaces.IService) error {
 	t.app = app
 
-	t.client = memcache.New(strings.Split(t.Hosts, ",")...)
+	if t.Config.Timeout == 0 {
+		t.Config.Timeout = 5 * time.Second
+	}
+
+	if t.Config.Hosts == "" {
+		t.Config.Hosts = "localhost:11211"
+	}
+
+	t.client = memcache.New(strings.Split(t.Config.Hosts, ",")...)
+	t.client.Timeout = t.Config.Timeout
 
 	err := t.client.Ping()
 
