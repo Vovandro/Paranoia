@@ -252,15 +252,12 @@ func TestClickhouse_String(t1 *testing.T) {
 func initClickhouseTest(name string) *ClickHouse {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := &ClickHouse{
-		Name: name,
-		Config: ClickHouseConfig{
-			Database: "test",
-			User:     "test",
-			Password: "test",
-			Hosts:    host + ":8124",
-		},
-	}
+	db := NewClickHouse(name, ClickHouseConfig{
+		Database: "test",
+		Username: "test",
+		Password: "test",
+		Hosts:    host + ":8124",
+	})
 
 	err := db.Init(nil)
 

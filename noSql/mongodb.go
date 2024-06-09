@@ -26,6 +26,13 @@ type MongoDBConfig struct {
 	Mode     readpref.Mode
 }
 
+func NewMongoDB(name string, cfg MongoDBConfig) *MongoDB {
+	return &MongoDB{
+		Name:   name,
+		Config: cfg,
+	}
+}
+
 func (t *MongoDB) Init(app interfaces.IService) error {
 	t.app = app
 	var err error

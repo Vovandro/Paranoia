@@ -239,12 +239,9 @@ type testSQLiteItem struct {
 }
 
 func initSQLite3Test(name string) *Sqlite3 {
-	db := &Sqlite3{
-		Name: name,
-		Config: Sqlite3Config{
-			Database: name + ".db",
-		},
-	}
+	db := NewSqlite3(name, Sqlite3Config{
+		Database: name + ".db",
+	})
 
 	err := db.Init(nil)
 

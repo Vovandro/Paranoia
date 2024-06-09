@@ -14,10 +14,17 @@ type KafkaClient struct {
 }
 
 type KafkaClientConfig struct {
-	Hosts      string
-	User       string
-	Password   string
-	RetryCount int
+	Hosts      string `yaml:"hosts"`
+	Username   string `yaml:"username"`
+	Password   string `yaml:"password"`
+	RetryCount int    `yaml:"retry_count"`
+}
+
+func NewKafkaClient(name string, cfg KafkaClientConfig) *KafkaClient {
+	return &KafkaClient{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *KafkaClient) Init(app interfaces.IService) error {
@@ -28,10 +35,10 @@ func (t *KafkaClient) Init(app interfaces.IService) error {
 		"bootstrap.servers": t.Config.Hosts,
 	}
 
-	if t.Config.User != "" {
+	if t.Config.Username != "" {
 		_ = cfg.SetKey("sasl.mechanisms", "PLAIN")
 		_ = cfg.SetKey("security.protocol", "SASL_SSL")
-		_ = cfg.SetKey("sasl.username", t.Config.User)
+		_ = cfg.SetKey("sasl.username", t.Config.Username)
 		_ = cfg.SetKey("sasl.password", t.Config.Password)
 	}
 

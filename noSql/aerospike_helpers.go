@@ -2,7 +2,7 @@ package noSql
 
 import (
 	"github.com/aerospike/aerospike-client-go/v7"
-	"reflect"
+	"gitlab.com/devpro_studio/Paranoia/utils/decoder"
 )
 
 type ASRow struct {
@@ -20,7 +20,7 @@ func (t *ASRow) Scan(dest any) error {
 			dest.(map[string]interface{})[k] = v
 		}
 	} else {
-		err := asScan(t.row.Bins, dest)
+		err := decoder.Decode(t.row.Bins, &dest, "db", false)
 
 		if err != nil {
 			return err
@@ -42,7 +42,7 @@ func (t *ASRows) Scan(dest any) error {
 			dest.(map[string]interface{})[k] = v
 		}
 	} else {
-		err := asScan(t.row.Record.Bins, dest)
+		err := decoder.Decode(t.row.Record.Bins, &dest, "db", false)
 
 		if err != nil {
 			return err
@@ -54,20 +54,4 @@ func (t *ASRows) Scan(dest any) error {
 
 func (t *ASRows) Close() error {
 	return t.rows.Close()
-}
-
-func asScan(from aerospike.BinMap, to interface{}) error {
-	vv := reflect.TypeOf(to)
-	vv2 := reflect.ValueOf(to)
-
-	for i := 0; i < vv.NumField(); i++ {
-		tag, ok2 := vv.Field(i).Tag.Lookup("db")
-		if ok2 {
-			if v, ok3 := from[tag]; ok3 {
-				vv2.Field(i).Send(reflect.ValueOf(v))
-			}
-		}
-	}
-
-	return nil
 }

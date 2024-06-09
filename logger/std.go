@@ -12,7 +12,13 @@ type Std struct {
 }
 
 type StdConfig struct {
-	Level interfaces.LogLevel
+	Level interfaces.LogLevel `yaml:"level"`
+}
+
+func NewStd(cfg StdConfig) *Std {
+	return &Std{
+		Config: cfg,
+	}
 }
 
 func (t *Std) Init() error {

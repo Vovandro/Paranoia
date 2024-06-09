@@ -441,11 +441,9 @@ func TestEnv_Init(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &Env{
-				Config: EnvConfig{
-					FName: tt.fields.FName,
-				},
-			}
+			t := NewEnv(EnvConfig{
+				FName: tt.fields.FName,
+			})
 
 			_ = os.WriteFile(tt.file.FName, []byte(tt.file.FileData), 0666)
 

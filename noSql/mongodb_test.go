@@ -303,15 +303,12 @@ type itemMongo struct {
 func initMongoTest(name string) *MongoDB {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := &MongoDB{
-		Name: name,
-		Config: MongoDBConfig{
-			Database: "tests",
-			User:     "test",
-			Password: "test",
-			Hosts:    host + ":27017",
-		},
-	}
+	db := NewMongoDB(name, MongoDBConfig{
+		Database: "tests",
+		User:     "test",
+		Password: "test",
+		Hosts:    host + ":27017",
+	})
 
 	err := db.Init(nil)
 

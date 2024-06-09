@@ -16,7 +16,14 @@ type HTTPClient struct {
 }
 
 type HTTPClientConfig struct {
-	RetryCount int
+	RetryCount int `yaml:"retry_count"`
+}
+
+func NewHTTPClient(name string, cfg HTTPClientConfig) *HTTPClient {
+	return &HTTPClient{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *HTTPClient) Init(app interfaces.IService) error {

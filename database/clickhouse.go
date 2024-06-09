@@ -16,10 +16,17 @@ type ClickHouse struct {
 }
 
 type ClickHouseConfig struct {
-	Database string
-	User     string
-	Password string
-	Hosts    string
+	Database string `yaml:"database"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Hosts    string `yaml:"hosts"`
+}
+
+func NewClickHouse(name string, cfg ClickHouseConfig) *ClickHouse {
+	return &ClickHouse{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *ClickHouse) Init(app interfaces.IService) error {
@@ -30,7 +37,7 @@ func (t *ClickHouse) Init(app interfaces.IService) error {
 		Addr: strings.Split(t.Config.Hosts, ","),
 		Auth: clickhouse.Auth{
 			Database: t.Config.Database,
-			Username: t.Config.User,
+			Username: t.Config.Username,
 			Password: t.Config.Password,
 		},
 	})

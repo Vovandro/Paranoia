@@ -15,7 +15,14 @@ type Postgres struct {
 }
 
 type PostgresConfig struct {
-	URI string
+	URI string `yaml:"uri"`
+}
+
+func NewPostgres(name string, cfg PostgresConfig) *Postgres {
+	return &Postgres{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *Postgres) Init(app interfaces.IService) error {
