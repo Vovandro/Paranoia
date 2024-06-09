@@ -63,11 +63,17 @@ func TestHTTP_Fetch(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &client.HTTPClient{
-				RetryCount: tt.RetryCount,
+				Config: client.HTTPClientConfig{
+					RetryCount: tt.RetryCount,
+				},
 			}
 			t.Init(app)
 
-			s := Http{Port: "8009"}
+			s := Http{
+				Config: HttpConfig{
+					Port: "8009",
+				},
+			}
 			s.Init(app)
 
 			s.PushRoute("GET", "/test", func(ctx *srvCtx.Ctx) {
@@ -152,11 +158,18 @@ func TestHTTP_Middleware(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &client.HTTPClient{
-				RetryCount: tt.RetryCount,
+				Config: client.HTTPClientConfig{
+					RetryCount: tt.RetryCount,
+				},
 			}
 			t.Init(app)
 
-			s := Http{Port: "8010", BaseMiddleware: tt.args.middlewares}
+			s := Http{
+				Config: HttpConfig{
+					Port:           "8010",
+					BaseMiddleware: tt.args.middlewares,
+				},
+			}
 			s.Init(app)
 
 			s.PushRoute("GET", "/test", func(ctx *srvCtx.Ctx) {

@@ -6,30 +6,54 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"strings"
 )
 
 type MongoDB struct {
-	Name     string
+	Name   string
+	Config MongoDBConfig
+	app    interfaces.IService
+	client *mongo.Client
+	db     *mongo.Database
+}
+
+type MongoDBConfig struct {
 	Database string
-	Options  *options.ClientOptions
-	app      interfaces.IService
-	client   *mongo.Client
-	db       *mongo.Database
+	User     string
+	Password string
+	Hosts    string
+	Mode     readpref.Mode
 }
 
 func (t *MongoDB) Init(app interfaces.IService) error {
 	t.app = app
 	var err error
 
-	t.client, err = mongo.Connect(context.TODO(), t.Options)
+	m, _ := readpref.New(t.Config.Mode)
+
+	opt := options.ClientOptions{
+		Hosts:          strings.Split(t.Config.Hosts, ","),
+		ReadPreference: m,
+	}
+
+	if t.Config.User != "" {
+		opt.Auth = &options.Credential{
+			Username:   t.Config.User,
+			Password:   t.Config.Password,
+			AuthSource: t.Config.Database,
+		}
+	}
+
+	t.client, err = mongo.Connect(context.TODO(), &opt)
 
 	if err != nil {
 		return err
 	}
 
-	t.db = t.client.Database(t.Database)
+	t.db = t.client.Database(t.Config.Database)
 
-	return nil
+	return t.client.Ping(context.TODO(), nil)
 }
 
 func (t *MongoDB) Stop() error {

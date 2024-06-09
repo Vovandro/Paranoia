@@ -9,10 +9,14 @@ import (
 )
 
 type HTTPClient struct {
-	Name       string
+	Name   string
+	Config HTTPClientConfig
+	app    interfaces.IService
+	client http.Client
+}
+
+type HTTPClientConfig struct {
 	RetryCount int
-	app        interfaces.IService
-	client     http.Client
 }
 
 func (t *HTTPClient) Init(app interfaces.IService) error {
@@ -38,7 +42,7 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 		res := &Response{}
 		request, _ := http.NewRequest(method, host, bytes.NewBuffer(data))
 
-		for i := 0; i <= t.RetryCount; i++ {
+		for i := 0; i <= t.Config.RetryCount; i++ {
 			do, err := t.client.Do(request)
 			if err != nil {
 				res.Err = err
@@ -70,7 +74,7 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 			}
 
 			if (do.StatusCode >= 500 && do.StatusCode < 600) || do.StatusCode == 499 {
-				if i+1 == t.RetryCount {
+				if i+1 == t.Config.RetryCount {
 					res.RetryCount = i + 1
 					res.Err = fmt.Errorf("max retry count exceeded")
 				}

@@ -4,9 +4,7 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
-	"strings"
 	"testing"
 	"time"
 )
@@ -306,15 +304,12 @@ func initMongoTest(name string) *MongoDB {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	db := &MongoDB{
-		Name:     name,
-		Database: "tests",
-		Options: &options.ClientOptions{
-			Hosts: strings.Split(host+":27017", ","),
-			Auth: &options.Credential{
-				Username:   "test",
-				Password:   "test",
-				AuthSource: "tests",
-			},
+		Name: name,
+		Config: MongoDBConfig{
+			Database: "tests",
+			User:     "test",
+			Password: "test",
+			Hosts:    host + ":27017",
 		},
 	}
 

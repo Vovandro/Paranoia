@@ -240,8 +240,10 @@ type testSQLiteItem struct {
 
 func initSQLite3Test(name string) *Sqlite3 {
 	db := &Sqlite3{
-		Name:     name,
-		Database: name + ".db",
+		Name: name,
+		Config: Sqlite3Config{
+			Database: name + ".db",
+		},
 	}
 
 	err := db.Init(nil)

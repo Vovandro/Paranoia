@@ -10,7 +10,16 @@ import (
 )
 
 type Http struct {
-	Name string
+	Name   string
+	Config HttpConfig
+
+	app    interfaces.IService
+	router *Router
+	server *http.Server
+	md     func(interfaces.RouteFunc) interfaces.RouteFunc
+}
+
+type HttpConfig struct {
 	Port string
 
 	CookieDomain   string
@@ -19,11 +28,6 @@ type Http struct {
 	CookieSecure   bool
 
 	BaseMiddleware []string
-
-	app    interfaces.IService
-	router *Router
-	server *http.Server
-	md     func(interfaces.RouteFunc) interfaces.RouteFunc
 }
 
 func (t *Http) Init(app interfaces.IService) error {
@@ -31,12 +35,12 @@ func (t *Http) Init(app interfaces.IService) error {
 
 	t.router = NewRouter(app)
 
-	if t.BaseMiddleware == nil {
-		t.BaseMiddleware = []string{"timing"}
+	if t.Config.BaseMiddleware == nil {
+		t.Config.BaseMiddleware = []string{"timing"}
 	}
 
-	if len(t.BaseMiddleware) > 0 {
-		t.md = middleware.HandlerFromStrings(app, t.BaseMiddleware)
+	if len(t.Config.BaseMiddleware) > 0 {
+		t.md = middleware.HandlerFromStrings(app, t.Config.BaseMiddleware)
 	}
 
 	if t.md == nil {
@@ -46,7 +50,7 @@ func (t *Http) Init(app interfaces.IService) error {
 	}
 
 	t.server = &http.Server{
-		Addr:                         ":" + t.Port,
+		Addr:                         ":" + t.Config.Port,
 		Handler:                      t,
 		DisableGeneralOptionsHandler: false,
 		ReadTimeout:                  5 * time.Second,
@@ -113,7 +117,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 
 		for i := 0; i < len(ctx.Response.Cookie); i++ {
-			w.Header().Add("Set-Cookie", ctx.Response.Cookie[i].String(t.CookieDomain, t.CookieSameSite, t.CookieHttpOnly, t.CookieSecure))
+			w.Header().Add("Set-Cookie", ctx.Response.Cookie[i].String(t.Config.CookieDomain, t.Config.CookieSameSite, t.Config.CookieHttpOnly, t.Config.CookieSecure))
 		}
 
 		w.WriteHeader(ctx.Response.StatusCode)

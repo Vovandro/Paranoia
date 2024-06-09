@@ -251,7 +251,9 @@ func initPostgresTest(name string) *Postgres {
 
 	db := &Postgres{
 		Name: name,
-		URI:  "postgres://test:test@" + host + ":5432/test",
+		Config: PostgresConfig{
+			URI: "postgres://test:test@" + host + ":5432/test",
+		},
 	}
 
 	err := db.Init(nil)

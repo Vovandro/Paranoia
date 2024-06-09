@@ -18,8 +18,10 @@ func TestRedis_Has(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -73,8 +75,10 @@ func TestRedis_Base(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -197,8 +201,10 @@ func TestRedis_In(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -372,8 +378,10 @@ func TestRedis_Map(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -452,8 +460,10 @@ func TestRedis_Increment(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -541,8 +551,10 @@ func TestRedis_Decrement(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -674,8 +686,10 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -775,8 +789,10 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name:  "test",
-		Hosts: host + ":6379",
+		Name: "test",
+		Config: RedisConfig{
+			Hosts: host + ":6379",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()

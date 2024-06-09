@@ -20,8 +20,10 @@ func TestMemcached_Has(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -78,8 +80,10 @@ func TestMemcached_Base(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -202,8 +206,10 @@ func TestMemcached_In(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -407,8 +413,10 @@ func TestMemcached_Map(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -487,8 +495,10 @@ func TestMemcached_GetMapInvalid(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -519,8 +529,10 @@ func TestMemcached_Increment(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -608,8 +620,10 @@ func TestMemcached_Decrement(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -741,8 +755,10 @@ func TestMemcached_IncrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()
@@ -835,8 +851,10 @@ func TestMemcached_DecrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name:  "test",
-		Hosts: host + ":11211",
+		Name: "test",
+		Config: MemcachedConfig{
+			Hosts: host + ":11211",
+		},
 	}
 	err := t.Init(nil)
 	defer t.Stop()

@@ -639,7 +639,9 @@ func TestMemory_IncrementIn(t1 *testing.T) {
 func TestMemory_ClearTimeout(t1 *testing.T) {
 	t1.Run("test timeout clear", func(t1 *testing.T) {
 		t := &Memory{
-			TimeClear: time.Millisecond * 10,
+			Config: MemoryConfig{
+				TimeClear: time.Millisecond * 10,
+			},
 		}
 		t.Init(nil)
 		defer t.Stop()

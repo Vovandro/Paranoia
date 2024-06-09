@@ -62,10 +62,16 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &HTTPClient{
-				RetryCount: tt.RetryCount,
-				client:     http.Client{},
+				Config: HTTPClientConfig{
+					RetryCount: tt.RetryCount,
+				},
+				client: http.Client{},
 			}
-			s := server.Http{Port: "8008"}
+			s := server.Http{
+				Config: server.HttpConfig{
+					Port: "8008",
+				},
+			}
 			s.Init(app)
 
 			s.PushRoute("GET", "/", func(ctx *srvCtx.Ctx) {

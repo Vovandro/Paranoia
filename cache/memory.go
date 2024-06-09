@@ -8,13 +8,17 @@ import (
 )
 
 type Memory struct {
-	Name      string
+	Name     string
+	Config   MemoryConfig
+	data     map[string]*cacheItem
+	pool     sync.Pool
+	mutex    sync.RWMutex
+	timeHeap TimeHeap
+	done     chan interface{}
+}
+
+type MemoryConfig struct {
 	TimeClear time.Duration
-	data      map[string]*cacheItem
-	pool      sync.Pool
-	mutex     sync.RWMutex
-	timeHeap  TimeHeap
-	done      chan interface{}
 }
 
 type cacheItem struct {
@@ -33,8 +37,8 @@ func (t *Memory) Init(app interfaces.IService) error {
 
 	t.done = make(chan interface{})
 
-	if t.TimeClear <= 0 {
-		t.TimeClear = time.Second * 10
+	if t.Config.TimeClear <= 0 {
+		t.Config.TimeClear = time.Second * 10
 	}
 
 	go t.run()
@@ -53,7 +57,7 @@ func (t *Memory) run() {
 		case <-t.done:
 			return
 
-		case <-time.After(t.TimeClear):
+		case <-time.After(t.Config.TimeClear):
 			now := time.Now()
 			t.mutex.Lock()
 			for true {

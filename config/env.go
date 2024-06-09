@@ -10,24 +10,28 @@ import (
 )
 
 type Env struct {
-	FName  string
+	Config EnvConfig
 	data   map[string]string
 	logger interfaces.ILogger
+}
+
+type EnvConfig struct {
+	FName string
 }
 
 func (t *Env) Init(logger interfaces.ILogger) error {
 	t.data = make(map[string]string, 20)
 	t.logger = logger
 
-	if t.FName == "" {
-		t.FName = ".env"
+	if t.Config.FName == "" {
+		t.Config.FName = ".env"
 	}
 
-	f, err := os.ReadFile(t.FName)
+	f, err := os.ReadFile(t.Config.FName)
 
 	if err != nil || len(f) == 0 {
 		if err == nil {
-			err = fmt.Errorf("file %s is empty", t.FName)
+			err = fmt.Errorf("file %s is empty", t.Config.FName)
 		}
 
 		t.logger.Error(err)

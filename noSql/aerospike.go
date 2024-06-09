@@ -12,11 +12,15 @@ import (
 
 type Aerospike struct {
 	Name   string
-	Hosts  string
-	User   string
-	Pass   string
+	Config AerospikeConfig
 	app    interfaces.IService
 	client *aerospike.Client
+}
+
+type AerospikeConfig struct {
+	User     string
+	Password string
+	Hosts    string
 }
 
 func (t *Aerospike) Init(app interfaces.IService) error {
@@ -25,12 +29,12 @@ func (t *Aerospike) Init(app interfaces.IService) error {
 
 	cp := aerospike.NewClientPolicy()
 
-	cp.User = t.User
-	cp.Password = t.Pass
+	cp.User = t.Config.User
+	cp.Password = t.Config.Password
 	cp.Timeout = 3 * time.Second
 	hostsArr := make([]*aerospike.Host, 0)
 
-	for _, s := range strings.Split(t.Hosts, ",") {
+	for _, s := range strings.Split(t.Config.Hosts, ",") {
 		item := strings.Split(s, ":")
 		p, _ := strconv.ParseInt(item[1], 10, 64)
 		hostsArr = append(hostsArr, aerospike.NewHost(item[0], int(p)))

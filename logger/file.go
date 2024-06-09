@@ -9,11 +9,15 @@ import (
 
 type File struct {
 	Parent interfaces.ILogger
-	Level  interfaces.LogLevel
-	FName  string
+	Config FileConfig
 	queue  chan string
 	done   chan interface{}
 	f      *os.File
+}
+
+type FileConfig struct {
+	Level interfaces.LogLevel
+	FName string
 }
 
 func (t *File) Init() error {
@@ -27,7 +31,7 @@ func (t *File) Init() error {
 	}
 
 	t.f, err = os.OpenFile(
-		fmt.Sprintf("./log/%s_%s.log", t.FName, time.Now().Format("2006_01_02")),
+		fmt.Sprintf("./log/%s_%s.log", t.Config.FName, time.Now().Format("2006_01_02")),
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE,
 		0666)
 
@@ -73,7 +77,7 @@ func (t *File) run(done chan interface{}) {
 				}
 
 				t.f, err = os.OpenFile(
-					fmt.Sprintf("./log/%s_%s.log", t.FName, time.Now().Format("2006_01_02")),
+					fmt.Sprintf("./log/%s_%s.log", t.Config.FName, time.Now().Format("2006_01_02")),
 					os.O_WRONLY|os.O_APPEND|os.O_CREATE,
 					0666)
 
@@ -101,7 +105,7 @@ func (t *File) write(m string) {
 }
 
 func (t *File) SetLevel(level interfaces.LogLevel) {
-	t.Level = level
+	t.Config.Level = level
 
 	if t.Parent != nil {
 		t.Parent.SetLevel(level)
@@ -117,7 +121,7 @@ func (t *File) Push(level interfaces.LogLevel, msg string, toParent bool) {
 }
 
 func (t *File) Debug(args ...interface{}) {
-	if t.Level <= interfaces.DEBUG {
+	if t.Config.Level <= interfaces.DEBUG {
 		t.Push(interfaces.DEBUG, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
@@ -127,7 +131,7 @@ func (t *File) Debug(args ...interface{}) {
 }
 
 func (t *File) Info(args ...interface{}) {
-	if t.Level <= interfaces.INFO {
+	if t.Config.Level <= interfaces.INFO {
 		t.Push(interfaces.INFO, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
@@ -137,7 +141,7 @@ func (t *File) Info(args ...interface{}) {
 }
 
 func (t *File) Warn(args ...interface{}) {
-	if t.Level <= interfaces.WARNING {
+	if t.Config.Level <= interfaces.WARNING {
 		t.Push(interfaces.WARNING, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
@@ -147,7 +151,7 @@ func (t *File) Warn(args ...interface{}) {
 }
 
 func (t *File) Message(args ...interface{}) {
-	if t.Level <= interfaces.MESSAGE {
+	if t.Config.Level <= interfaces.MESSAGE {
 		t.Push(interfaces.MESSAGE, fmt.Sprint(args...), false)
 
 		if t.Parent != nil {
@@ -157,7 +161,7 @@ func (t *File) Message(args ...interface{}) {
 }
 
 func (t *File) Error(err error) {
-	if t.Level <= interfaces.ERROR {
+	if t.Config.Level <= interfaces.ERROR {
 		t.Push(interfaces.ERROR, err.Error(), false)
 
 		if t.Parent != nil {
@@ -167,7 +171,7 @@ func (t *File) Error(err error) {
 }
 
 func (t *File) Fatal(err error) {
-	if t.Level <= interfaces.CRITICAL {
+	if t.Config.Level <= interfaces.CRITICAL {
 		t.Push(interfaces.CRITICAL, err.Error(), false)
 
 		if t.Parent != nil {
@@ -177,7 +181,7 @@ func (t *File) Fatal(err error) {
 }
 
 func (t *File) Panic(err error) {
-	if t.Level <= interfaces.CRITICAL {
+	if t.Config.Level <= interfaces.CRITICAL {
 		t.Push(interfaces.CRITICAL, err.Error(), false)
 
 		if t.Parent != nil {
