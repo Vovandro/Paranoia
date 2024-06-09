@@ -23,6 +23,13 @@ type AerospikeConfig struct {
 	Hosts    string
 }
 
+func NewAerospike(name string, cfg AerospikeConfig) *Aerospike {
+	return &Aerospike{
+		Name:   name,
+		Config: cfg,
+	}
+}
+
 func (t *Aerospike) Init(app interfaces.IService) error {
 	t.app = app
 	var err error

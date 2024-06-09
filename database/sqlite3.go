@@ -16,7 +16,14 @@ type Sqlite3 struct {
 }
 
 type Sqlite3Config struct {
-	Database string
+	Database string `yaml:"database"`
+}
+
+func NewSqlite3(name string, cfg Sqlite3Config) *Sqlite3 {
+	return &Sqlite3{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *Sqlite3) Init(app interfaces.IService) error {

@@ -9,6 +9,8 @@ type IService interface {
 	GetCache(key string) ICache
 	PushDatabase(c IDatabase) IService
 	GetDatabase(key string) IDatabase
+	PushNoSql(c INoSql) IService
+	GetNoSql(key string) INoSql
 	PushController(c IController) IService
 	GetController(key string) IController
 	PushModule(c IModules) IService

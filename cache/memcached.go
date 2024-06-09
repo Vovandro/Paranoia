@@ -19,8 +19,15 @@ type Memcached struct {
 }
 
 type MemcachedConfig struct {
-	Hosts   string
-	Timeout time.Duration
+	Hosts   string        `yaml:"hosts"`
+	Timeout time.Duration `yaml:"timeout"`
+}
+
+func NewMemcached(name string, cfg MemcachedConfig) *Memcached {
+	return &Memcached{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *Memcached) Init(app interfaces.IService) error {

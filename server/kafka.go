@@ -23,13 +23,20 @@ type Kafka struct {
 }
 
 type KafkaConfig struct {
-	Hosts             string
-	GroupId           string
-	User              string
-	Password          string
-	Topics            []string
-	LimitMessageCount int64
-	BaseMiddleware    []string
+	Hosts             string   `yaml:"hosts"`
+	GroupId           string   `yaml:"group_id"`
+	User              string   `yaml:"user"`
+	Password          string   `yaml:"password"`
+	Topics            []string `yaml:"topics"`
+	LimitMessageCount int64    `yaml:"limit_message_count"`
+	BaseMiddleware    []string `yaml:"base_middleware"`
+}
+
+func NewKafka(name string, cfg KafkaConfig) *Kafka {
+	return &Kafka{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *Kafka) Init(app interfaces.IService) error {

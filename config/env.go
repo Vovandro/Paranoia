@@ -16,7 +16,13 @@ type Env struct {
 }
 
 type EnvConfig struct {
-	FName string
+	FName string `yaml:"filename"`
+}
+
+func NewEnv(cfg EnvConfig) *Env {
+	return &Env{
+		Config: cfg,
+	}
 }
 
 func (t *Env) Init(logger interfaces.ILogger) error {

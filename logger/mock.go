@@ -12,6 +12,10 @@ func (t *Mock) Init() error {
 	return nil
 }
 
+func NewMock() *Mock {
+	return &Mock{}
+}
+
 func (t *Mock) Stop() error {
 	return nil
 }

@@ -18,12 +18,19 @@ type Memory struct {
 }
 
 type MemoryConfig struct {
-	TimeClear time.Duration
+	TimeClear time.Duration `yaml:"time_clear"`
 }
 
 type cacheItem struct {
 	data    any
 	timeout time.Time
+}
+
+func NewMemory(name string, cfg MemoryConfig) *Memory {
+	return &Memory{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *Memory) Init(app interfaces.IService) error {

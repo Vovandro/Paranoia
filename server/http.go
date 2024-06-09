@@ -20,14 +20,21 @@ type Http struct {
 }
 
 type HttpConfig struct {
-	Port string
+	Port string `yaml:"port"`
 
-	CookieDomain   string
-	CookieSameSite string
-	CookieHttpOnly bool
-	CookieSecure   bool
+	CookieDomain   string `yaml:"cookie_domain"`
+	CookieSameSite string `yaml:"cookie_same_site"`
+	CookieHttpOnly bool   `yaml:"cookie_http_only"`
+	CookieSecure   bool   `yaml:"cookie_secure"`
 
-	BaseMiddleware []string
+	BaseMiddleware []string `yaml:"base_middleware"`
+}
+
+func NewHttp(name string, cfg HttpConfig) *Http {
+	return &Http{
+		Name:   name,
+		Config: cfg,
+	}
 }
 
 func (t *Http) Init(app interfaces.IService) error {

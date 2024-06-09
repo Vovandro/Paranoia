@@ -205,6 +205,10 @@ func (t *Service) Init() error {
 		t.PushMiddleware(&middleware.TimingMiddleware{})
 	}
 
+	if _, ok := t.middlewares["restore"]; !ok {
+		t.PushMiddleware(&middleware.RestoreMiddleware{})
+	}
+
 	for _, item := range t.middlewares {
 		err = item.Init(t)
 

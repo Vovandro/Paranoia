@@ -16,8 +16,15 @@ type File struct {
 }
 
 type FileConfig struct {
-	Level interfaces.LogLevel
-	FName string
+	Level interfaces.LogLevel `yaml:"level"`
+	FName string              `yaml:"filename"`
+}
+
+func NewFile(cfg FileConfig, parent interfaces.ILogger) *File {
+	return &File{
+		Config: cfg,
+		Parent: parent,
+	}
 }
 
 func (t *File) Init() error {

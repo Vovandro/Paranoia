@@ -57,3 +57,7 @@ add to main.go
 
 - http
 - Kafka
+
+### Other
+
+- Initialize base engine module from yaml config file

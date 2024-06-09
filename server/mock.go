@@ -12,6 +12,12 @@ type Mock struct {
 	router *Router
 }
 
+func NewMock(name string) *Mock {
+	return &Mock{
+		Name: name,
+	}
+}
+
 func (t *Mock) Init(app interfaces.IService) error {
 	t.app = app
 	t.router = NewRouter(app)

@@ -249,12 +249,9 @@ func TestPostgres_String(t1 *testing.T) {
 func initPostgresTest(name string) *Postgres {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := &Postgres{
-		Name: name,
-		Config: PostgresConfig{
-			URI: "postgres://test:test@" + host + ":5432/test",
-		},
-	}
+	db := NewPostgres(name, PostgresConfig{
+		URI: "postgres://test:test@" + host + ":5432/test",
+	})
 
 	err := db.Init(nil)
 
