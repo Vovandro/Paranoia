@@ -9,13 +9,17 @@ import (
 )
 
 type ClickHouse struct {
-	Name     string
+	Name   string
+	Config ClickHouseConfig
+	app    interfaces.IService
+	client driver.Conn
+}
+
+type ClickHouseConfig struct {
 	Database string
 	User     string
 	Password string
 	Hosts    string
-	app      interfaces.IService
-	client   driver.Conn
 }
 
 func (t *ClickHouse) Init(app interfaces.IService) error {
@@ -23,11 +27,11 @@ func (t *ClickHouse) Init(app interfaces.IService) error {
 	var err error
 
 	t.client, err = clickhouse.Open(&clickhouse.Options{
-		Addr: strings.Split(t.Hosts, ","),
+		Addr: strings.Split(t.Config.Hosts, ","),
 		Auth: clickhouse.Auth{
-			Database: t.Database,
-			Username: t.User,
-			Password: t.Password,
+			Database: t.Config.Database,
+			Username: t.Config.User,
+			Password: t.Config.Password,
 		},
 	})
 
@@ -39,11 +43,7 @@ func (t *ClickHouse) Init(app interfaces.IService) error {
 }
 
 func (t *ClickHouse) Stop() error {
-	if err := t.client.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return t.client.Close()
 }
 
 func (t *ClickHouse) String() string {

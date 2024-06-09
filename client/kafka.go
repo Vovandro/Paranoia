@@ -7,13 +7,17 @@ import (
 )
 
 type KafkaClient struct {
-	Name       string
+	Name     string
+	Config   KafkaClientConfig
+	app      interfaces.IService
+	producer *kafka.Producer
+}
+
+type KafkaClientConfig struct {
 	Hosts      string
 	User       string
 	Password   string
 	RetryCount int
-	app        interfaces.IService
-	producer   *kafka.Producer
 }
 
 func (t *KafkaClient) Init(app interfaces.IService) error {
@@ -21,14 +25,14 @@ func (t *KafkaClient) Init(app interfaces.IService) error {
 
 	t.app = app
 	cfg := kafka.ConfigMap{
-		"bootstrap.servers": t.Hosts,
+		"bootstrap.servers": t.Config.Hosts,
 	}
 
-	if t.User != "" {
-		cfg.SetKey("sasl.mechanisms", "PLAIN")
-		cfg.SetKey("security.protocol", "SASL_SSL")
-		cfg.SetKey("sasl.username", t.User)
-		cfg.SetKey("sasl.password", t.Password)
+	if t.Config.User != "" {
+		_ = cfg.SetKey("sasl.mechanisms", "PLAIN")
+		_ = cfg.SetKey("security.protocol", "SASL_SSL")
+		_ = cfg.SetKey("sasl.username", t.Config.User)
+		_ = cfg.SetKey("sasl.password", t.Config.Password)
 	}
 
 	t.producer, err = kafka.NewProducer(&cfg)
@@ -72,14 +76,14 @@ func (t *KafkaClient) Fetch(_ string, topic string, data []byte, headers map[str
 			}
 		}
 
-		for i := 0; i <= t.RetryCount; i++ {
+		for i := 0; i <= t.Config.RetryCount; i++ {
 			err := t.producer.Produce(&request, nil)
 
 			if err != nil {
 				res.Err = err
 				res.RetryCount = i + 1
 
-				if i == t.RetryCount {
+				if i == t.Config.RetryCount {
 					res.Err = fmt.Errorf("request kafka to topic %s", topic)
 					break
 				}

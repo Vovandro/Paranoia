@@ -253,11 +253,13 @@ func initClickhouseTest(name string) *ClickHouse {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	db := &ClickHouse{
-		Name:     name,
-		Database: "test",
-		User:     "test",
-		Password: "test",
-		Hosts:    host + ":8124",
+		Name: name,
+		Config: ClickHouseConfig{
+			Database: "test",
+			User:     "test",
+			Password: "test",
+			Hosts:    host + ":8124",
+		},
 	}
 
 	err := db.Init(nil)

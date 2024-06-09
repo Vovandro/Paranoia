@@ -10,14 +10,9 @@ import (
 )
 
 type Kafka struct {
-	Name              string
-	Hosts             string
-	GroupId           string
-	User              string
-	Password          string
-	Topics            []string
-	LimitMessageCount int64
-	BaseMiddleware    []string
+	Name string
+
+	Config KafkaConfig
 
 	app      interfaces.IService
 	router   *Router
@@ -27,6 +22,16 @@ type Kafka struct {
 	md       func(interfaces.RouteFunc) interfaces.RouteFunc
 }
 
+type KafkaConfig struct {
+	Hosts             string
+	GroupId           string
+	User              string
+	Password          string
+	Topics            []string
+	LimitMessageCount int64
+	BaseMiddleware    []string
+}
+
 func (t *Kafka) Init(app interfaces.IService) error {
 	var err error
 	t.app = app
@@ -34,12 +39,12 @@ func (t *Kafka) Init(app interfaces.IService) error {
 
 	t.router = NewRouter(app)
 
-	if t.BaseMiddleware == nil {
-		t.BaseMiddleware = []string{"timing"}
+	if t.Config.BaseMiddleware == nil {
+		t.Config.BaseMiddleware = []string{"timing"}
 	}
 
-	if len(t.BaseMiddleware) > 0 {
-		t.md = middleware.HandlerFromStrings(app, t.BaseMiddleware)
+	if len(t.Config.BaseMiddleware) > 0 {
+		t.md = middleware.HandlerFromStrings(app, t.Config.BaseMiddleware)
 	}
 
 	if t.md == nil {
@@ -49,16 +54,16 @@ func (t *Kafka) Init(app interfaces.IService) error {
 	}
 
 	cfg := kafka.ConfigMap{
-		"bootstrap.servers": t.Hosts,
-		"group.id":          t.GroupId,
+		"bootstrap.servers": t.Config.Hosts,
+		"group.id":          t.Config.GroupId,
 		"auto.offset.reset": "earliest",
 	}
 
-	if t.User != "" {
+	if t.Config.User != "" {
 		cfg.SetKey("sasl.mechanisms", "PLAIN")
 		cfg.SetKey("security.protocol", "SASL_SSL")
-		cfg.SetKey("sasl.username", t.User)
-		cfg.SetKey("sasl.password", t.Password)
+		cfg.SetKey("sasl.username", t.Config.User)
+		cfg.SetKey("sasl.password", t.Config.Password)
 	}
 
 	t.consumer, err = kafka.NewConsumer(&cfg)
@@ -67,12 +72,12 @@ func (t *Kafka) Init(app interfaces.IService) error {
 		return err
 	}
 
-	return t.consumer.SubscribeTopics(t.Topics, nil)
+	return t.consumer.SubscribeTopics(t.Config.Topics, nil)
 }
 
 func (t *Kafka) Start() error {
 	go func() {
-		limited := make(chan interface{}, t.LimitMessageCount)
+		limited := make(chan interface{}, t.Config.LimitMessageCount)
 		defer close(limited)
 
 		for {

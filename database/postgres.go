@@ -9,30 +9,30 @@ import (
 
 type Postgres struct {
 	Name   string
-	URI    string
+	Config PostgresConfig
 	app    interfaces.IService
 	client *pgx.Conn
+}
+
+type PostgresConfig struct {
+	URI string
 }
 
 func (t *Postgres) Init(app interfaces.IService) error {
 	t.app = app
 	var err error
 
-	t.client, err = pgx.Connect(context.TODO(), t.URI)
+	t.client, err = pgx.Connect(context.TODO(), t.Config.URI)
 
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return t.client.Ping(context.TODO())
 }
 
 func (t *Postgres) Stop() error {
-	if err := t.client.Close(context.TODO()); err != nil {
-		return err
-	}
-
-	return nil
+	return t.client.Close(context.TODO())
 }
 
 func (t *Postgres) String() string {

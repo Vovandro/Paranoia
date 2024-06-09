@@ -3,36 +3,41 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type Sqlite3 struct {
-	Name     string
+	Name   string
+	Config Sqlite3Config
+	app    interfaces.IService
+	client *sql.DB
+}
+
+type Sqlite3Config struct {
 	Database string
-	app      interfaces.IService
-	client   *sql.DB
 }
 
 func (t *Sqlite3) Init(app interfaces.IService) error {
 	t.app = app
 	var err error
 
-	t.client, err = sql.Open("sqlite3", t.Database)
+	if t.Config.Database == "" {
+		return fmt.Errorf("database file name is required")
+	}
+
+	t.client, err = sql.Open("sqlite3", t.Config.Database)
 
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return t.client.Ping()
 }
 
 func (t *Sqlite3) Stop() error {
-	if err := t.client.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return t.client.Close()
 }
 
 func (t *Sqlite3) String() string {
