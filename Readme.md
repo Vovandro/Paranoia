@@ -33,6 +33,7 @@ add to main.go
 
 - Postgres
 - SQLite
+- MySQL
 - Clickhouse
 - MongoDB
 - Aerospike
