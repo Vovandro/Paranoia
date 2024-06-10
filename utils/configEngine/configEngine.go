@@ -141,6 +141,15 @@ func (t *ConfigEngine) LoadConfig(app interfaces.IService) error {
 
 						app.PushDatabase(database.NewPostgres(name, cfg))
 
+					case "mysql":
+						cfg := database.MySQLConfig{}
+						err = module.Scan(&cfg)
+						if err != nil {
+							return err
+						}
+
+						app.PushDatabase(database.NewMySQL(name, cfg))
+
 					case "sqlite3":
 						cfg := database.Sqlite3Config{}
 						err = module.Scan(&cfg)
