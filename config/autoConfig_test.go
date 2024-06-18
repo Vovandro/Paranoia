@@ -1,4 +1,4 @@
-package configEngine
+package config
 
 import (
 	"gitlab.com/devpro_studio/Paranoia"
@@ -61,15 +61,15 @@ func TestConfigEngine_LoadConfig(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {
 		_ = os.WriteFile("./test.yaml", []byte("engine:\n cache:\n  -\n   type: memory\n   name: test_cache\n   time_clear: 10s"), 0666)
 
-		t := NewConfigEngine("./test.yaml")
+		t := NewAutoConfig("./test.yaml")
 
-		app := Paranoia.New("test", nil, nil)
+		t.app = Paranoia.New("test", nil, nil)
 
-		if err := t.LoadConfig(app); err != nil {
+		if err := t.loadConfig(); err != nil {
 			t1.Errorf("LoadConfig() error = %v", err)
 		}
 
-		if app.GetCache("test_cache") == nil {
+		if t.app.GetCache("test_cache") == nil {
 			t1.Errorf("LoadConfig() error")
 		}
 
