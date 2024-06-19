@@ -25,9 +25,9 @@ func NewEnv(cfg EnvConfig) *Env {
 	}
 }
 
-func (t *Env) Init(logger interfaces.ILogger) error {
+func (t *Env) Init(app interfaces.IService) error {
 	t.data = make(map[string]string, 20)
-	t.logger = logger
+	t.logger = app.GetLogger()
 
 	if t.Config.FName == "" {
 		t.Config.FName = ".env"

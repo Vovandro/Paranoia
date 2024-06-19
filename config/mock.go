@@ -15,7 +15,7 @@ func NewMock() *Mock {
 	}
 }
 
-func (t *Mock) Init(logger interfaces.ILogger) error {
+func (t *Mock) Init(_ interfaces.IService) error {
 	if t.Data == nil {
 		t.Data = make(map[string]string)
 	}

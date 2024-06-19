@@ -52,7 +52,7 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	}
 
 	if t.config != nil {
-		err := t.config.Init(t.logger)
+		err := t.config.Init(t)
 
 		if err != nil {
 			fmt.Println(err)
