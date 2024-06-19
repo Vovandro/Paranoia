@@ -1,7 +1,7 @@
 package interfaces
 
 type IConfig interface {
-	Init(logger ILogger) error
+	Init(app IService) error
 	Stop() error
 	Has(key string) bool
 	GetString(key string, def string) string

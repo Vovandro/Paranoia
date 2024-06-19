@@ -447,7 +447,7 @@ func TestEnv_Init(t1 *testing.T) {
 
 			_ = os.WriteFile(tt.file.FName, []byte(tt.file.FileData), 0666)
 
-			if err := t.Init(&logger.Mock{}); (err != nil) != tt.wantErr {
+			if err := t.Init(&Paranoia.Service{}); (err != nil) != tt.wantErr {
 				t1.Errorf("Init() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
