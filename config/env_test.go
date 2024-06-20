@@ -4,8 +4,10 @@ import (
 	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
+	"gitlab.com/devpro_studio/Paranoia/telemetry"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestEnv_GetBool(t1 *testing.T) {
@@ -18,7 +20,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 		def bool
 	}
 
-	app := Paranoia.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{}, nil)
 
 	tests := []struct {
 		name   string
@@ -121,7 +123,9 @@ func TestEnv_GetFloat(t1 *testing.T) {
 		def float32
 	}
 
-	app := Paranoia.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{}, telemetry.NewMetricStd(
+		telemetry.MetricStdConfig{"test", time.Second},
+	))
 
 	tests := []struct {
 		name   string

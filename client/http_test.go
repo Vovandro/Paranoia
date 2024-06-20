@@ -12,7 +12,7 @@ import (
 )
 
 func TestHTTPClient_Fetch(t1 *testing.T) {
-	app := Paranoia.New("test", nil, &logger.Mock{})
+	app := Paranoia.New("test", nil, &logger.Mock{}, nil)
 
 	type args struct {
 		method  string

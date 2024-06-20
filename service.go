@@ -9,8 +9,9 @@ import (
 type Service struct {
 	name string
 
-	config interfaces.IConfig
-	logger interfaces.ILogger
+	config         interfaces.IConfig
+	logger         interfaces.ILogger
+	metricExporter interfaces.IMetrics
 
 	cache       map[string]interfaces.ICache
 	database    map[string]interfaces.IDatabase
@@ -24,12 +25,13 @@ type Service struct {
 	middlewares map[string]interfaces.IMiddleware
 }
 
-func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
+func New(name string, config interfaces.IConfig, logger interfaces.ILogger, metricExporter interfaces.IMetrics) *Service {
 	t := &Service{}
 
 	t.name = name
 	t.config = config
 	t.logger = logger
+	t.metricExporter = metricExporter
 
 	t.cache = make(map[string]interfaces.ICache)
 	t.database = make(map[string]interfaces.IDatabase)
@@ -44,6 +46,15 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 
 	if t.logger != nil {
 		err := t.logger.Init()
+
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+	}
+
+	if t.metricExporter != nil {
+		err := t.metricExporter.Init(t)
 
 		if err != nil {
 			fmt.Println(err)
@@ -263,6 +274,14 @@ func (t *Service) Init() error {
 		}
 	}
 
+	if t.metricExporter != nil {
+		err = t.metricExporter.Start()
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return err
 }
 
@@ -339,6 +358,13 @@ func (t *Service) Stop() error {
 			t.logger.Fatal(err)
 			return err
 		}
+	}
+
+	err = t.metricExporter.Stop()
+
+	if err != nil {
+		fmt.Println(err)
+		return err
 	}
 
 	err = t.config.Stop()

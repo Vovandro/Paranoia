@@ -2,18 +2,19 @@ package telemetry
 
 import (
 	"context"
-	"fmt"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	api "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 	"net/http"
 	"time"
 )
 
-type Metrics struct {
-	Name     string
+type MetricPrometheus struct {
 	app      interfaces.IService
 	cfg      MetricsConfig
 	server   *http.Server
@@ -22,17 +23,25 @@ type Metrics struct {
 }
 
 type MetricsConfig struct {
-	Type string
 	Name string
 	Port string
 }
 
-func NewMetrics(name string, cfg MetricsConfig) *Metrics {
-	return &Metrics{Name: name, cfg: cfg}
+func NewMetrics(cfg MetricsConfig) *MetricPrometheus {
+	return &MetricPrometheus{cfg: cfg}
 }
 
-func (t *Metrics) Init(app interfaces.IService) error {
+func (t *MetricPrometheus) Init(app interfaces.IService) error {
 	t.app = app
+
+	res, err := resource.Merge(resource.Default(),
+		resource.NewWithAttributes(semconv.SchemaURL,
+			semconv.ServiceName(t.cfg.Name),
+		))
+
+	if err != nil {
+		return err
+	}
 
 	t.server = &http.Server{
 		Addr:                         ":" + t.cfg.Port,
@@ -43,27 +52,19 @@ func (t *Metrics) Init(app interfaces.IService) error {
 		IdleTimeout:                  5 * time.Second,
 	}
 
-	var err error
-
-	switch t.cfg.Type {
-	case "prometheus":
-		t.exporter, err = prometheus.New()
-		if err != nil {
-			return err
-		}
-
-	default:
-		return fmt.Errorf("unsuported metrics type: %s", t.cfg.Type)
+	t.exporter, err = prometheus.New()
+	if err != nil {
+		return err
 	}
 
-	provider := metric.NewMeterProvider(metric.WithReader(t.exporter))
-	t.meter = provider.Meter(t.cfg.Name)
+	provider := metric.NewMeterProvider(metric.WithResource(res), metric.WithReader(t.exporter))
+	otel.SetMeterProvider(provider)
 
 	return nil
 
 }
 
-func (t *Metrics) Start() error {
+func (t *MetricPrometheus) Start() error {
 	listenErr := make(chan error, 1)
 
 	go func() {
@@ -82,7 +83,7 @@ func (t *Metrics) Start() error {
 	return nil
 }
 
-func (t *Metrics) Stop() error {
+func (t *MetricPrometheus) Stop() error {
 	err := t.server.Shutdown(context.TODO())
 
 	if err != nil {
@@ -97,8 +98,4 @@ func (t *Metrics) Stop() error {
 	}
 
 	return err
-}
-
-func (t *Metrics) String() string {
-	return t.Name
 }
