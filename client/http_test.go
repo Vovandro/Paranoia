@@ -12,7 +12,7 @@ import (
 )
 
 func TestHTTPClient_Fetch(t1 *testing.T) {
-	app := Paranoia.New("test", nil, &logger.Mock{}, nil)
+	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	type args struct {
 		method  string
@@ -67,6 +67,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				},
 				client: http.Client{},
 			}
+			t.Init(app)
 			s := server.Http{
 				Config: server.HttpConfig{
 					Port: "8008",

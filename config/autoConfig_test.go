@@ -63,7 +63,7 @@ func TestConfigEngine_LoadConfig(t1 *testing.T) {
 
 		t := NewAutoConfig("./test.yaml")
 
-		t.app = Paranoia.New("test", nil, nil, nil)
+		t.app = Paranoia.New("test", nil, nil)
 
 		if err := t.loadConfig(); err != nil {
 			t1.Errorf("LoadConfig() error = %v", err)

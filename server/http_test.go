@@ -13,7 +13,7 @@ import (
 )
 
 func TestHTTP_Fetch(t1 *testing.T) {
-	app := Paranoia.New("test", nil, &logger.Mock{}, nil)
+	app := Paranoia.New("test", nil, &logger.Mock{})
 
 	type args struct {
 		method  string
@@ -92,7 +92,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 }
 
 func TestHTTP_Middleware(t1 *testing.T) {
-	app := Paranoia.New("test", nil, &logger.Mock{}, nil).
+	app := Paranoia.New("test", nil, &logger.Mock{}).
 		PushMiddleware(&middleware.TimingMiddleware{}).
 		PushMiddleware(&middleware.RestoreMiddleware{})
 
