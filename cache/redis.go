@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/redis/go-redis/v9"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"strings"
 	"time"
 )
@@ -15,6 +17,11 @@ type Redis struct {
 
 	app    interfaces.IService
 	client iRedis
+
+	counterRead  metric.Int64Counter
+	counterWrite metric.Int64Counter
+	timeRead     metric.Int64Histogram
+	timeWrite    metric.Int64Histogram
 }
 
 type iRedis interface {
@@ -77,6 +84,11 @@ func (t *Redis) Init(app interfaces.IService) error {
 		return err
 	}
 
+	t.counterRead, _ = otel.Meter("").Int64Counter("redis." + t.Name + ".countRead")
+	t.counterWrite, _ = otel.Meter("").Int64Counter("redis." + t.Name + ".countWrite")
+	t.timeRead, _ = otel.Meter("").Int64Histogram("redis." + t.Name + ".timeRead")
+	t.timeWrite, _ = otel.Meter("").Int64Histogram("redis." + t.Name + ".timeWrite")
+
 	return nil
 }
 
@@ -89,14 +101,29 @@ func (t *Redis) String() string {
 }
 
 func (t *Redis) Has(key string) bool {
+	defer func(s time.Time) {
+		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterRead.Add(context.Background(), 1)
+
 	return t.client.Exists(context.Background(), key).Val() != 0
 }
 
 func (t *Redis) Set(key string, args any, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	return t.client.Set(context.Background(), key, args, timeout).Err()
 }
 
 func (t *Redis) SetIn(key string, key2 string, args any, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	err := t.client.HSet(context.Background(), key, map[string]interface{}{key2: args}).Err()
 
 	if err != nil {
@@ -107,6 +134,11 @@ func (t *Redis) SetIn(key string, key2 string, args any, timeout time.Duration) 
 }
 
 func (t *Redis) SetMap(key string, args any, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	err := t.client.HSet(context.Background(), key, args).Err()
 	if err != nil {
 		return err
@@ -116,6 +148,11 @@ func (t *Redis) SetMap(key string, args any, timeout time.Duration) error {
 }
 
 func (t *Redis) Get(key string) (any, error) {
+	defer func(s time.Time) {
+		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterRead.Add(context.Background(), 1)
+
 	v, err := t.client.Get(context.Background(), key).Result()
 
 	if errors.Is(err, redis.Nil) {
@@ -128,6 +165,11 @@ func (t *Redis) Get(key string) (any, error) {
 }
 
 func (t *Redis) GetIn(key string, key2 string) (any, error) {
+	defer func(s time.Time) {
+		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterRead.Add(context.Background(), 1)
+
 	v, err := t.client.HGet(context.Background(), key, key2).Result()
 
 	if errors.Is(err, redis.Nil) {
@@ -140,6 +182,11 @@ func (t *Redis) GetIn(key string, key2 string) (any, error) {
 }
 
 func (t *Redis) GetMap(key string) (any, error) {
+	defer func(s time.Time) {
+		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterRead.Add(context.Background(), 1)
+
 	v, err := t.client.HGetAll(context.Background(), key).Result()
 
 	if errors.Is(err, redis.Nil) {
@@ -152,6 +199,11 @@ func (t *Redis) GetMap(key string) (any, error) {
 }
 
 func (t *Redis) Increment(key string, val int64, timeout time.Duration) (int64, error) {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	v := t.client.IncrBy(context.Background(), key, val)
 	if v.Err() != nil {
 		return 0, v.Err()
@@ -161,6 +213,11 @@ func (t *Redis) Increment(key string, val int64, timeout time.Duration) (int64, 
 }
 
 func (t *Redis) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	v := t.client.HIncrBy(context.Background(), key, key2, val)
 	if v.Err() != nil {
 		return 0, v.Err()
@@ -170,6 +227,11 @@ func (t *Redis) IncrementIn(key string, key2 string, val int64, timeout time.Dur
 }
 
 func (t *Redis) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	v := t.client.DecrBy(context.Background(), key, val)
 	if v.Err() != nil {
 		return 0, v.Err()
@@ -179,6 +241,11 @@ func (t *Redis) Decrement(key string, val int64, timeout time.Duration) (int64, 
 }
 
 func (t *Redis) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	v := t.client.HIncrBy(context.Background(), key, key2, val*-1)
 	if v.Err() != nil {
 		return 0, v.Err()
@@ -188,5 +255,10 @@ func (t *Redis) DecrementIn(key string, key2 string, val int64, timeout time.Dur
 }
 
 func (t *Redis) Delete(key string) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	return t.client.Del(context.Background(), key).Err()
 }

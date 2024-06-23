@@ -6,6 +6,9 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"time"
 )
 
 type MySQL struct {
@@ -13,6 +16,9 @@ type MySQL struct {
 	Config MySQLConfig
 	app    interfaces.IService
 	client *sql.DB
+
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
 }
 
 type MySQLConfig struct {
@@ -40,6 +46,9 @@ func (t *MySQL) Init(app interfaces.IService) error {
 		return err
 	}
 
+	t.counter, _ = otel.Meter("").Int64Counter("mysql." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("mysql." + t.Name + ".time")
+
 	return t.client.Ping()
 }
 
@@ -52,6 +61,11 @@ func (t *MySQL) String() string {
 }
 
 func (t *MySQL) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find, err := t.client.QueryContext(ctx, query, args...)
 
 	if err != nil {
@@ -62,6 +76,11 @@ func (t *MySQL) Query(ctx context.Context, query string, args ...interface{}) (i
 }
 
 func (t *MySQL) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find := t.client.QueryRowContext(ctx, query, args...)
 
 	if find.Err() != nil {
@@ -72,6 +91,11 @@ func (t *MySQL) QueryRow(ctx context.Context, query string, args ...interface{})
 }
 
 func (t *MySQL) Exec(ctx context.Context, query string, args ...interface{}) error {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	_, err := t.client.ExecContext(ctx, query, args...)
 
 	return err

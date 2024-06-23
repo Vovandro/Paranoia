@@ -7,7 +7,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"strings"
+	"time"
 )
 
 type MongoDB struct {
@@ -16,6 +19,9 @@ type MongoDB struct {
 	app    interfaces.IService
 	client *mongo.Client
 	db     *mongo.Database
+
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
 }
 
 type MongoDBConfig struct {
@@ -60,6 +66,9 @@ func (t *MongoDB) Init(app interfaces.IService) error {
 
 	t.db = t.client.Database(t.Config.Database)
 
+	t.counter, _ = otel.Meter("").Int64Counter("mongodb." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("mongodb." + t.Name + ".time")
+
 	return t.client.Ping(context.TODO(), nil)
 }
 
@@ -76,6 +85,11 @@ func (t *MongoDB) String() string {
 }
 
 func (t *MongoDB) Exists(ctx context.Context, key interface{}, query interface{}, args ...interface{}) bool {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.CountOptions
 
 	if len(args) > 0 {
@@ -101,6 +115,11 @@ func (t *MongoDB) Exists(ctx context.Context, key interface{}, query interface{}
 }
 
 func (t *MongoDB) Count(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.CountOptions
 
 	if len(args) > 0 {
@@ -119,6 +138,11 @@ func (t *MongoDB) Count(ctx context.Context, key interface{}, query interface{},
 }
 
 func (t *MongoDB) FindOne(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRow, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.FindOneOptions
 
 	if len(args) > 0 {
@@ -137,6 +161,11 @@ func (t *MongoDB) FindOne(ctx context.Context, key interface{}, query interface{
 }
 
 func (t *MongoDB) Find(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.FindOptions
 
 	if len(args) > 0 {
@@ -155,6 +184,11 @@ func (t *MongoDB) Find(ctx context.Context, key interface{}, query interface{}, 
 }
 
 func (t *MongoDB) Exec(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.AggregateOptions
 
 	if len(args) > 0 {
@@ -173,6 +207,11 @@ func (t *MongoDB) Exec(ctx context.Context, key interface{}, query interface{}, 
 }
 
 func (t *MongoDB) Insert(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interface{}, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.InsertOneOptions
 
 	if len(args) > 0 {
@@ -191,6 +230,11 @@ func (t *MongoDB) Insert(ctx context.Context, key interface{}, query interface{}
 }
 
 func (t *MongoDB) Update(ctx context.Context, key interface{}, query interface{}, args ...interface{}) error {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.UpdateOptions
 	var update interface{}
 
@@ -217,6 +261,11 @@ func (t *MongoDB) Update(ctx context.Context, key interface{}, query interface{}
 }
 
 func (t *MongoDB) Delete(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.DeleteOptions
 
 	if len(args) > 0 {
@@ -244,6 +293,11 @@ query []mongo.WriteModel
 typeOp in [bulk]
 */
 func (t *MongoDB) Batch(ctx context.Context, key interface{}, query interface{}, typeOp string, args ...interface{}) (int64, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *options.BulkWriteOptions
 
 	switch typeOp {

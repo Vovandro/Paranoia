@@ -8,6 +8,7 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/noSql"
 	"gitlab.com/devpro_studio/Paranoia/server"
+	"gitlab.com/devpro_studio/Paranoia/telemetry"
 	"gitlab.com/devpro_studio/Paranoia/utils/decoder"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -219,6 +220,30 @@ func (t *AutoConfig) loadConfig() error {
 					}
 
 					t.app.PushServer(server.NewKafka(name, cfg))
+
+				default:
+					return fmt.Errorf("unknown module %s", nameModule)
+				}
+
+			case "metrics":
+				switch nameModule {
+				case "prometheus":
+					cfg := telemetry.MetricsPrometheusConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetMetrics(telemetry.NewPrometheusMetrics(cfg))
+
+				case "std":
+					cfg := telemetry.MetricStdConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetMetrics(telemetry.NewMetricStd(cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)

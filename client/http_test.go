@@ -67,6 +67,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				},
 				client: http.Client{},
 			}
+			t.Init(app)
 			s := server.Http{
 				Config: server.HttpConfig{
 					Port: "8008",

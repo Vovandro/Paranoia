@@ -2,7 +2,10 @@ package cache
 
 import (
 	"container/heap"
+	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"sync"
 	"time"
 )
@@ -15,6 +18,11 @@ type Memory struct {
 	mutex    sync.RWMutex
 	timeHeap TimeHeap
 	done     chan interface{}
+
+	counterRead  metric.Int64Counter
+	counterWrite metric.Int64Counter
+	timeRead     metric.Int64Histogram
+	timeWrite    metric.Int64Histogram
 }
 
 type MemoryConfig struct {
@@ -47,6 +55,11 @@ func (t *Memory) Init(app interfaces.IService) error {
 	if t.Config.TimeClear <= 0 {
 		t.Config.TimeClear = time.Second * 10
 	}
+
+	t.counterRead, _ = otel.Meter("").Int64Counter("cache_memory." + t.Name + ".countRead")
+	t.counterWrite, _ = otel.Meter("").Int64Counter("cache_memory." + t.Name + ".countWrite")
+	t.timeRead, _ = otel.Meter("").Int64Histogram("cache_memory." + t.Name + ".timeRead")
+	t.timeWrite, _ = otel.Meter("").Int64Histogram("cache_memory." + t.Name + ".timeWrite")
 
 	go t.run()
 
@@ -89,6 +102,11 @@ func (t *Memory) String() string {
 }
 
 func (t *Memory) Has(key string) bool {
+	defer func(s time.Time) {
+		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterRead.Add(context.Background(), 1)
+
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
 	val, ok := t.data[key]
@@ -101,6 +119,11 @@ func (t *Memory) Has(key string) bool {
 }
 
 func (t *Memory) Set(key string, args any, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
@@ -125,6 +148,11 @@ func (t *Memory) Set(key string, args any, timeout time.Duration) error {
 }
 
 func (t *Memory) SetIn(key string, key2 string, args any, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
@@ -159,6 +187,11 @@ func (t *Memory) SetMap(key string, args any, timeout time.Duration) error {
 }
 
 func (t *Memory) Get(key string) (any, error) {
+	defer func(s time.Time) {
+		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterRead.Add(context.Background(), 1)
+
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
 
@@ -172,6 +205,11 @@ func (t *Memory) Get(key string) (any, error) {
 }
 
 func (t *Memory) GetIn(key string, key2 string) (any, error) {
+	defer func(s time.Time) {
+		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterRead.Add(context.Background(), 1)
+
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
 
@@ -197,6 +235,11 @@ func (t *Memory) GetMap(key string) (any, error) {
 }
 
 func (t *Memory) Increment(key string, val int64, timeout time.Duration) (int64, error) {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
@@ -226,6 +269,11 @@ func (t *Memory) Increment(key string, val int64, timeout time.Duration) (int64,
 }
 
 func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
@@ -272,6 +320,11 @@ func (t *Memory) DecrementIn(key string, key2 string, val int64, timeout time.Du
 }
 
 func (t *Memory) Delete(key string) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 

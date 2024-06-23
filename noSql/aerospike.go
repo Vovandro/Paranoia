@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go/v7"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +17,9 @@ type Aerospike struct {
 	Config AerospikeConfig
 	app    interfaces.IService
 	client *aerospike.Client
+
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
 }
 
 type AerospikeConfig struct {
@@ -65,6 +70,9 @@ func (t *Aerospike) Init(app interfaces.IService) error {
 	t.client.DefaultWritePolicy = &wPolicy
 	t.client.DefaultBatchPolicy = &bPolicy
 
+	t.counter, _ = otel.Meter("").Int64Counter("aerospike." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("aerospike." + t.Name + ".time")
+
 	return nil
 }
 
@@ -79,6 +87,11 @@ func (t *Aerospike) String() string {
 }
 
 func (t *Aerospike) Exists(ctx context.Context, key interface{}, query interface{}, args ...interface{}) bool {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *aerospike.BasePolicy
 
 	if len(args) > 1 {
@@ -102,6 +115,11 @@ func (t *Aerospike) Exists(ctx context.Context, key interface{}, query interface
 }
 
 func (t *Aerospike) Count(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	if t.Exists(ctx, key, query, args...) {
 		return 1
 	}
@@ -110,6 +128,11 @@ func (t *Aerospike) Count(ctx context.Context, key interface{}, query interface{
 }
 
 func (t *Aerospike) FindOne(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRow, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	bins := make([]string, len(args))
 	var opt *aerospike.BasePolicy
 
@@ -143,6 +166,11 @@ func (t *Aerospike) FindOne(ctx context.Context, key interface{}, query interfac
 }
 
 func (t *Aerospike) Find(ctx context.Context, _ interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *aerospike.QueryPolicy
 
 	if len(args) > 0 {
@@ -166,6 +194,11 @@ func (t *Aerospike) Find(ctx context.Context, _ interface{}, query interface{}, 
 }
 
 func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *aerospike.WritePolicy
 	var arg1, arg2 string
 
@@ -204,6 +237,11 @@ func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}
 }
 
 func (t *Aerospike) Insert(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interface{}, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *aerospike.WritePolicy
 
 	if len(args) > 0 {
@@ -237,6 +275,11 @@ func (t *Aerospike) Insert(ctx context.Context, key interface{}, query interface
 }
 
 func (t *Aerospike) Update(ctx context.Context, key interface{}, query interface{}, args ...interface{}) error {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *aerospike.WritePolicy
 
 	if len(args) > 0 {
@@ -271,6 +314,11 @@ func (t *Aerospike) Update(ctx context.Context, key interface{}, query interface
 }
 
 func (t *Aerospike) Delete(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	if _, ok := key.(*aerospike.Key); ok {
 		var opt *aerospike.WritePolicy
 
@@ -317,6 +365,11 @@ func (t *Aerospike) Delete(ctx context.Context, key interface{}, query interface
 }
 
 func (t *Aerospike) Batch(ctx context.Context, key interface{}, query interface{}, typeOp string, args ...interface{}) (int64, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	var opt *aerospike.BatchPolicy
 
 	switch typeOp {

@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"time"
 )
 
 type Postgres struct {
@@ -12,6 +15,9 @@ type Postgres struct {
 	Config PostgresConfig
 	app    interfaces.IService
 	client *pgx.Conn
+
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
 }
 
 type PostgresConfig struct {
@@ -35,6 +41,9 @@ func (t *Postgres) Init(app interfaces.IService) error {
 		return err
 	}
 
+	t.counter, _ = otel.Meter("").Int64Counter("postgres." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("postgres." + t.Name + ".time")
+
 	return t.client.Ping(context.TODO())
 }
 
@@ -47,6 +56,11 @@ func (t *Postgres) String() string {
 }
 
 func (t *Postgres) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find, err := t.client.Query(ctx, query, args...)
 
 	if err != nil {
@@ -57,6 +71,11 @@ func (t *Postgres) Query(ctx context.Context, query string, args ...interface{})
 }
 
 func (t *Postgres) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find := t.client.QueryRow(ctx, query, args...)
 
 	if find == nil {
@@ -67,6 +86,11 @@ func (t *Postgres) QueryRow(ctx context.Context, query string, args ...interface
 }
 
 func (t *Postgres) Exec(ctx context.Context, query string, args ...interface{}) error {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	_, err := t.client.Exec(ctx, query, args...)
 
 	return err

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"time"
 )
 
 type Sqlite3 struct {
@@ -13,6 +16,9 @@ type Sqlite3 struct {
 	Config Sqlite3Config
 	app    interfaces.IService
 	client *sql.DB
+
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
 }
 
 type Sqlite3Config struct {
@@ -40,6 +46,9 @@ func (t *Sqlite3) Init(app interfaces.IService) error {
 		return err
 	}
 
+	t.counter, _ = otel.Meter("").Int64Counter("sqlite." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("sqlite." + t.Name + ".time")
+
 	return t.client.Ping()
 }
 
@@ -52,6 +61,11 @@ func (t *Sqlite3) String() string {
 }
 
 func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find, err := t.client.QueryContext(ctx, query, args...)
 
 	if err != nil {
@@ -62,6 +76,11 @@ func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) 
 }
 
 func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find := t.client.QueryRowContext(ctx, query, args...)
 
 	if find.Err() != nil {
@@ -72,6 +91,11 @@ func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{
 }
 
 func (t *Sqlite3) Exec(ctx context.Context, query string, args ...interface{}) error {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	_, err := t.client.ExecContext(ctx, query, args...)
 
 	return err

@@ -1,10 +1,13 @@
 package server
 
 import (
+	"context"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/srvCtx"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"sync"
 	"time"
 )
@@ -20,6 +23,10 @@ type Kafka struct {
 	done     chan interface{}
 	w        sync.WaitGroup
 	md       func(interfaces.RouteFunc) interfaces.RouteFunc
+
+	counter      metric.Int64Counter
+	counterError metric.Int64Counter
+	timeCounter  metric.Int64Histogram
 }
 
 type KafkaConfig struct {
@@ -78,6 +85,10 @@ func (t *Kafka) Init(app interfaces.IService) error {
 	if err != nil {
 		return err
 	}
+
+	t.counter, _ = otel.Meter("").Int64Counter("server_kafka." + t.Name + ".count")
+	t.counterError, _ = otel.Meter("").Int64Counter("server_kafka." + t.Name + ".count_error")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("server_kafka." + t.Name + ".time")
 
 	return t.consumer.SubscribeTopics(t.Config.Topics, nil)
 }
@@ -138,6 +149,11 @@ func (t *Kafka) PushRoute(method string, path string, handler interfaces.RouteFu
 }
 
 func (t *Kafka) Handle(msg *kafka.Message) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	ctx := srvCtx.FromKafka(msg)
 	defer srvCtx.ContextPool.Put(ctx)
 
@@ -147,5 +163,9 @@ func (t *Kafka) Handle(msg *kafka.Message) {
 		ctx.Response.StatusCode = 404
 	} else {
 		t.md(route)(ctx)
+	}
+
+	if ctx.Response.StatusCode >= 400 {
+		t.counterError.Add(context.Background(), 1)
 	}
 }

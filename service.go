@@ -9,8 +9,9 @@ import (
 type Service struct {
 	name string
 
-	config interfaces.IConfig
-	logger interfaces.ILogger
+	config         interfaces.IConfig
+	logger         interfaces.ILogger
+	metricExporter interfaces.IMetrics
 
 	cache       map[string]interfaces.ICache
 	database    map[string]interfaces.IDatabase
@@ -69,6 +70,22 @@ func (t *Service) GetLogger() interfaces.ILogger {
 
 func (t *Service) GetConfig() interfaces.IConfig {
 	return t.config
+}
+
+func (t *Service) SetMetrics(c interfaces.IMetrics) {
+	if t.metricExporter != nil {
+		t.metricExporter.Stop()
+	}
+
+	t.metricExporter = c
+
+	if t.metricExporter != nil {
+		err := t.metricExporter.Init(t)
+
+		if err != nil {
+			t.logger.Error(err)
+		}
+	}
 }
 
 func (t *Service) PushCache(c interfaces.ICache) interfaces.IService {
@@ -263,6 +280,14 @@ func (t *Service) Init() error {
 		}
 	}
 
+	if t.metricExporter != nil {
+		err = t.metricExporter.Start()
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return err
 }
 
@@ -339,6 +364,13 @@ func (t *Service) Stop() error {
 			t.logger.Fatal(err)
 			return err
 		}
+	}
+
+	err = t.metricExporter.Stop()
+
+	if err != nil {
+		fmt.Println(err)
+		return err
 	}
 
 	err = t.config.Stop()

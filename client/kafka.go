@@ -1,9 +1,13 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"time"
 )
 
 type KafkaClient struct {
@@ -11,6 +15,10 @@ type KafkaClient struct {
 	Config   KafkaClientConfig
 	app      interfaces.IService
 	producer *kafka.Producer
+
+	counter      metric.Int64Counter
+	timeCounter  metric.Int64Histogram
+	retryCounter metric.Int64Histogram
 }
 
 type KafkaClientConfig struct {
@@ -48,6 +56,10 @@ func (t *KafkaClient) Init(app interfaces.IService) error {
 		return err
 	}
 
+	t.counter, _ = otel.Meter("").Int64Counter("client_kafka." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("client_kafka." + t.Name + ".time")
+	t.retryCounter, _ = otel.Meter("").Int64Histogram("client_kafka." + t.Name + ".retry")
+
 	return nil
 }
 
@@ -64,6 +76,11 @@ func (t *KafkaClient) Fetch(_ string, topic string, data []byte, headers map[str
 	resp := make(chan interfaces.IClientResponse)
 
 	go func(resp chan interfaces.IClientResponse, topic string, data []byte, headers map[string][]string) {
+		defer func(s time.Time) {
+			t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+		}(time.Now())
+		t.counter.Add(context.Background(), 1)
+
 		res := &Response{}
 		request := kafka.Message{
 			TopicPartition: kafka.TopicPartition{
@@ -100,6 +117,8 @@ func (t *KafkaClient) Fetch(_ string, topic string, data []byte, headers map[str
 
 			break
 		}
+
+		t.retryCounter.Record(context.Background(), int64(res.RetryCount))
 
 		resp <- res
 	}(resp, topic, data, headers)
