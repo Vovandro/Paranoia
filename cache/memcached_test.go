@@ -196,8 +196,6 @@ func TestMemcached_Base(t1 *testing.T) {
 			}
 		})
 	}
-
-	time.Sleep(time.Second * 10)
 }
 
 func TestMemcached_In(t1 *testing.T) {
