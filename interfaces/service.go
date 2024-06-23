@@ -5,6 +5,7 @@ type IService interface {
 	Stop() error
 	GetLogger() ILogger
 	GetConfig() IConfig
+	SetMetrics(c IMetrics)
 	PushCache(c ICache) IService
 	GetCache(key string) ICache
 	PushDatabase(c IDatabase) IService

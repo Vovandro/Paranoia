@@ -86,11 +86,12 @@ func TestMemcached_Base(t1 *testing.T) {
 		},
 	}
 	err := t.Init(nil)
-	defer t.Stop()
 
 	if err != nil {
 		t1.Errorf("Init() = %v", err)
 	}
+
+	defer t.Stop()
 
 	type item struct {
 		key     string
@@ -195,6 +196,8 @@ func TestMemcached_Base(t1 *testing.T) {
 			}
 		})
 	}
+
+	time.Sleep(time.Second * 10)
 }
 
 func TestMemcached_In(t1 *testing.T) {

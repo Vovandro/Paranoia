@@ -5,7 +5,10 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"strings"
+	"time"
 )
 
 type ClickHouse struct {
@@ -13,6 +16,9 @@ type ClickHouse struct {
 	Config ClickHouseConfig
 	app    interfaces.IService
 	client driver.Conn
+
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
 }
 
 type ClickHouseConfig struct {
@@ -46,6 +52,9 @@ func (t *ClickHouse) Init(app interfaces.IService) error {
 		return err
 	}
 
+	t.counter, _ = otel.Meter("").Int64Counter("clickhouse." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("clickhouse." + t.Name + ".time")
+
 	return t.client.Ping(context.Background())
 }
 
@@ -58,6 +67,11 @@ func (t *ClickHouse) String() string {
 }
 
 func (t *ClickHouse) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find, err := t.client.Query(ctx, query, args...)
 
 	if err != nil {
@@ -68,6 +82,11 @@ func (t *ClickHouse) Query(ctx context.Context, query string, args ...interface{
 }
 
 func (t *ClickHouse) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	find := t.client.QueryRow(ctx, query, args...)
 
 	if find.Err() != nil {
@@ -78,6 +97,11 @@ func (t *ClickHouse) QueryRow(ctx context.Context, query string, args ...interfa
 }
 
 func (t *ClickHouse) Exec(ctx context.Context, query string, args ...interface{}) error {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	err := t.client.Exec(ctx, query, args...)
 
 	return err

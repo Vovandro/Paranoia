@@ -18,8 +18,8 @@ type MetricStd struct {
 }
 
 type MetricStdConfig struct {
-	Name     string
-	Interval time.Duration
+	Name     string        `yaml:"name"`
+	Interval time.Duration `yaml:"interval"`
 }
 
 func NewMetricStd(cfg MetricStdConfig) *MetricStd {

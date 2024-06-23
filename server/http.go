@@ -5,6 +5,8 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/srvCtx"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"net/http"
 	"time"
 )
@@ -17,6 +19,10 @@ type Http struct {
 	router *Router
 	server *http.Server
 	md     func(interfaces.RouteFunc) interfaces.RouteFunc
+
+	counter      metric.Int64Counter
+	counterError metric.Int64Counter
+	timeCounter  metric.Int64Histogram
 }
 
 type HttpConfig struct {
@@ -65,6 +71,10 @@ func (t *Http) Init(app interfaces.IService) error {
 		IdleTimeout:                  5 * time.Second,
 	}
 
+	t.counter, _ = otel.Meter("").Int64Counter("server_http." + t.Name + ".count")
+	t.counterError, _ = otel.Meter("").Int64Counter("server_http." + t.Name + ".count_error")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("server_http." + t.Name + ".time")
+
 	return nil
 
 }
@@ -106,6 +116,11 @@ func (t *Http) String() string {
 }
 
 func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
 	ctx := srvCtx.FromHttp(req)
 	defer srvCtx.ContextPool.Put(ctx)
 
@@ -129,6 +144,10 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		w.WriteHeader(ctx.Response.StatusCode)
 		w.Write(ctx.Response.Body)
+	}
+
+	if ctx.Response.StatusCode >= 400 {
+		t.counterError.Add(context.Background(), 1)
 	}
 }
 

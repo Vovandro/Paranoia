@@ -2,10 +2,14 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type HTTPClient struct {
@@ -13,6 +17,10 @@ type HTTPClient struct {
 	Config HTTPClientConfig
 	app    interfaces.IService
 	client http.Client
+
+	counter      metric.Int64Counter
+	timeCounter  metric.Int64Histogram
+	retryCounter metric.Int64Histogram
 }
 
 type HTTPClientConfig struct {
@@ -30,6 +38,10 @@ func (t *HTTPClient) Init(app interfaces.IService) error {
 	t.app = app
 	t.client = http.Client{}
 
+	t.counter, _ = otel.Meter("").Int64Counter("client_http." + t.Name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("client_http." + t.Name + ".time")
+	t.retryCounter, _ = otel.Meter("").Int64Histogram("client_http." + t.Name + ".retry")
+
 	return nil
 }
 
@@ -46,6 +58,11 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 	resp := make(chan interfaces.IClientResponse)
 
 	go func(resp chan interfaces.IClientResponse, method string, host string, data []byte, headers map[string][]string) {
+		defer func(s time.Time) {
+			t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+		}(time.Now())
+		t.counter.Add(context.Background(), 1)
+
 		res := &Response{}
 		request, _ := http.NewRequest(method, host, bytes.NewBuffer(data))
 
@@ -94,6 +111,8 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 			do.Body.Close()
 			break
 		}
+
+		t.retryCounter.Record(context.Background(), int64(res.RetryCount))
 
 		resp <- res
 	}(resp, method, host, data, headers)

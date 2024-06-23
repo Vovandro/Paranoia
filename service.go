@@ -25,13 +25,12 @@ type Service struct {
 	middlewares map[string]interfaces.IMiddleware
 }
 
-func New(name string, config interfaces.IConfig, logger interfaces.ILogger, metricExporter interfaces.IMetrics) *Service {
+func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
 	t := &Service{}
 
 	t.name = name
 	t.config = config
 	t.logger = logger
-	t.metricExporter = metricExporter
 
 	t.cache = make(map[string]interfaces.ICache)
 	t.database = make(map[string]interfaces.IDatabase)
@@ -46,15 +45,6 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger, metr
 
 	if t.logger != nil {
 		err := t.logger.Init()
-
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-	}
-
-	if t.metricExporter != nil {
-		err := t.metricExporter.Init(t)
 
 		if err != nil {
 			fmt.Println(err)
@@ -80,6 +70,22 @@ func (t *Service) GetLogger() interfaces.ILogger {
 
 func (t *Service) GetConfig() interfaces.IConfig {
 	return t.config
+}
+
+func (t *Service) SetMetrics(c interfaces.IMetrics) {
+	if t.metricExporter != nil {
+		t.metricExporter.Stop()
+	}
+
+	t.metricExporter = c
+
+	if t.metricExporter != nil {
+		err := t.metricExporter.Init(t)
+
+		if err != nil {
+			t.logger.Error(err)
+		}
+	}
 }
 
 func (t *Service) PushCache(c interfaces.ICache) interfaces.IService {
