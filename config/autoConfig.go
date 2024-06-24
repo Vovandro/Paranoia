@@ -74,8 +74,11 @@ func (t *AutoConfig) loadConfig() error {
 				return fmt.Errorf("not found type module %s", name)
 			}
 
-			delete(module, "name")
 			delete(module, "type")
+
+			if typeModule != "metrics" {
+				delete(module, "name")
+			}
 
 			switch typeModule {
 			case "cache":
