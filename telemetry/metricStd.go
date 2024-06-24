@@ -18,8 +18,8 @@ type MetricStd struct {
 }
 
 type MetricStdConfig struct {
-	Name     string        `yaml:"name"`
-	Interval time.Duration `yaml:"interval"`
+	NameService string        `yaml:"name_service"`
+	Interval    time.Duration `yaml:"interval"`
 }
 
 func NewMetricStd(cfg MetricStdConfig) *MetricStd {
@@ -31,7 +31,7 @@ func (t *MetricStd) Init(app interfaces.IService) error {
 
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(t.cfg.Name),
+			semconv.ServiceName(t.cfg.NameService),
 		))
 
 	if err != nil {

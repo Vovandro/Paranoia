@@ -23,8 +23,8 @@ type MetricPrometheus struct {
 }
 
 type MetricsPrometheusConfig struct {
-	Name string `yaml:"name"`
-	Port string `yaml:"port"`
+	NameService string `yaml:"name_service"`
+	Port        string `yaml:"port"`
 }
 
 func NewPrometheusMetrics(cfg MetricsPrometheusConfig) *MetricPrometheus {
@@ -36,7 +36,7 @@ func (t *MetricPrometheus) Init(app interfaces.IService) error {
 
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(t.cfg.Name),
+			semconv.ServiceName(t.cfg.NameService),
 		))
 
 	if err != nil {
