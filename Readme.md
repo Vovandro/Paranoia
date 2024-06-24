@@ -5,27 +5,8 @@
 [![Latest Release](https://gitlab.com/devpro_studio/Paranoia/-/badges/release.svg)](https://gitlab.com/devpro_studio/Paranoia/-/releases)
 
 
-## Simple start:
-Import to project `go get gitlab.com/devpro_studio/Paranoia`
+## [Documentations rus](./docs/index.md)
 
-add to main.go
-
-```
-	s := Paranoia.
-		New("base paranoia app", &config.Env{}, &logger.File{&logger.Std{}}).
-		PushCache(&cache.Memory{Name: "cache"}).
-		PushRepository(&myRepository{Name: "repository"}).
-		PushController(&myController{Name: "controller"})
-	
-	err := s.Init()
-
-	if err != nil {
-		panic(err)
-		return
-	}
-	
-	defer s.Stop()
-```
 
 ## Supported:
 
