@@ -15,9 +15,10 @@ type StdConfig struct {
 	Level interfaces.LogLevel `yaml:"level"`
 }
 
-func NewStd(cfg StdConfig) *Std {
+func NewStd(cfg StdConfig, parent interfaces.ILogger) *Std {
 	return &Std{
 		Config: cfg,
+		Parent: parent,
 	}
 }
 

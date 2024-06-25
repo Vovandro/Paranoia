@@ -6,7 +6,7 @@
 
 Минимальное приложение включает инициализацию фреймворка:
 
-```
+```go
 s := Paranoia.New("minimal paranoia app", config.NewMock(), logger.NewMock())
 ```
 
@@ -15,7 +15,7 @@ s := Paranoia.New("minimal paranoia app", config.NewMock(), logger.NewMock())
 
 Далее фреймворк наполняется модулями которые будут использоваться в данном сервисе, к примеру добавим in-memory кеш на уровне приложения:
 
-```
+```go
 s.PushCache(cache.NewMemory("secondary", cache.MemoryConfig{time.Minute*10}))
 ```
 
@@ -23,7 +23,7 @@ s.PushCache(cache.NewMemory("secondary", cache.MemoryConfig{time.Minute*10}))
 
 Далее необходимо запустить инициализацию фреймворка и его запуск
 
-```
+```go
 err := s.Init()
 
 if err != nil {

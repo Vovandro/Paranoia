@@ -23,21 +23,25 @@ type Data struct {
 	Cfg    map[string]string    `yaml:"cfg"`
 }
 
-type AutoConfig struct {
-	FName string
+type Auto struct {
+	cfg AutoConfig
 
 	app  interfaces.IService
 	data Data
 }
 
-func NewAutoConfig(fName string) *AutoConfig {
-	return &AutoConfig{
-		FName: fName,
+func NewAuto(cfg AutoConfig) *Auto {
+	return &Auto{
+		cfg: cfg,
 	}
 }
 
-func (t *AutoConfig) loadConfig() error {
-	yamlFile, err := os.ReadFile(t.FName)
+type AutoConfig struct {
+	FName string `yaml:"filename"`
+}
+
+func (t *Auto) loadConfig() error {
+	yamlFile, err := os.ReadFile(t.cfg.FName)
 	if err != nil {
 		return err
 	}
@@ -271,7 +275,7 @@ func (t cfgItem) Scan(to interface{}) error {
 	return nil
 }
 
-func (t *AutoConfig) Init(app interfaces.IService) error {
+func (t *Auto) Init(app interfaces.IService) error {
 	t.app = app
 
 	if t.data.Engine == nil {
@@ -285,11 +289,11 @@ func (t *AutoConfig) Init(app interfaces.IService) error {
 	return t.loadConfig()
 }
 
-func (t *AutoConfig) Stop() error {
+func (t *Auto) Stop() error {
 	return nil
 }
 
-func (t *AutoConfig) Has(key string) bool {
+func (t *Auto) Has(key string) bool {
 	val, ok := t.data.Cfg[key]
 
 	if ok && val != "" {
@@ -299,7 +303,7 @@ func (t *AutoConfig) Has(key string) bool {
 	return false
 }
 
-func (t *AutoConfig) GetString(key string, def string) string {
+func (t *Auto) GetString(key string, def string) string {
 	val, ok := t.data.Cfg[key]
 
 	if ok && val != "" {
@@ -309,7 +313,7 @@ func (t *AutoConfig) GetString(key string, def string) string {
 	return def
 }
 
-func (t *AutoConfig) GetBool(key string, def bool) bool {
+func (t *Auto) GetBool(key string, def bool) bool {
 	val, ok := t.data.Cfg[key]
 
 	if ok && val != "" {
@@ -323,7 +327,7 @@ func (t *AutoConfig) GetBool(key string, def bool) bool {
 	return def
 }
 
-func (t *AutoConfig) GetInt(key string, def int) int {
+func (t *Auto) GetInt(key string, def int) int {
 
 	val, ok := t.data.Cfg[key]
 
@@ -338,7 +342,7 @@ func (t *AutoConfig) GetInt(key string, def int) int {
 	return def
 }
 
-func (t *AutoConfig) GetFloat(key string, def float32) float32 {
+func (t *Auto) GetFloat(key string, def float32) float32 {
 	val, ok := t.data.Cfg[key]
 
 	if ok && val != "" {

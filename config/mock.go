@@ -9,9 +9,9 @@ type Mock struct {
 	Data map[string]string
 }
 
-func NewMock() *Mock {
+func NewMock(data map[string]string) *Mock {
 	return &Mock{
-		Data: make(map[string]string),
+		Data: data,
 	}
 }
 

@@ -61,7 +61,7 @@ func TestConfigEngine_LoadConfig(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {
 		_ = os.WriteFile("./test.yaml", []byte("engine:\n cache:\n  -\n   type: memory\n   name: test_cache\n   time_clear: 10s"), 0666)
 
-		t := NewAutoConfig("./test.yaml")
+		t := NewAuto(AutoConfig{"./test.yaml"})
 
 		t.app = Paranoia.New("test", nil, nil)
 

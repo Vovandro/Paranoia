@@ -1,4 +1,4 @@
-# Быстрый старт
+# Рекомендуемая структура проекта
 
 ### [Оглавление](./index.md)
 
@@ -8,8 +8,8 @@
 
 Для облегчения взаимодействия во фреймворк встроены методы инициализации данных сущностей
 
-```
-s := Paranoia.New("minimal paranoia app", config.NewMock(), logger.NewMock()).
+```go
+s := Paranoia.New("minimal paranoia app", config.NewMock(nil), logger.NewMock()).
         PushController(MyController.New()).
         PushController(HelloController.New()).
         PushRepository(UserRepository.New())
@@ -17,7 +17,7 @@ s := Paranoia.New("minimal paranoia app", config.NewMock(), logger.NewMock()).
 
 Контроллеры должны соответствовать интерфейсу:
 
-```
+```go
 type IController interface {
 	Init(app IService) error
 	Stop() error
@@ -27,7 +27,7 @@ type IController interface {
 
 Репозитории:
 
-```
+```go
 type IRepository interface {
 	Init(app IService) error
 	Stop() error
@@ -37,7 +37,7 @@ type IRepository interface {
 
 Пользовательские модули:
 
-```
+```go
 type IModules interface {
 	Init(app IService) error
 	Stop() error
