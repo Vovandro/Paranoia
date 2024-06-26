@@ -3,7 +3,7 @@
 ### [Оглавление](./index.md)
 
 
-## - [Memory application](./cache-memory.md)
+## - [Memory cache](./cache-memory.md)
 ## - [Memcached](./cache-memcached.md)
 ## - [Redis](./cache-redis.md)
 
@@ -27,4 +27,4 @@
 - `cache.ErrKeyNotFound` - Ключа не существует или время его жизни кончилось 
 - `cache.ErrTypeMismatch` - Ошибка формата данных, например если попытаться установить значение в карте, а под данным ключом храниться строка.
 
-### Далее [SQL базы данных](./database.md)
+### Далее [Memory cache](./cache-memory.md)

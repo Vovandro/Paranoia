@@ -9,7 +9,7 @@
 5. [Экспортер метрик приложения](./metrics.md)
 6. [Список встроенных метрик](./metrics-list.md)
 7. [Системы кеширования](./cache.md)
-   1. [Memory application](./cache-memory.md)
+   1. [Memory cache](./cache-memory.md)
    2. [Memcached](./cache-memcached.md)
    3. [Redis](./cache-redis.md)
 8. [SQL базы данных](./database.md)
