@@ -51,4 +51,35 @@ type IModules interface {
 
 В методе `Stop() error` необходимо корректно завершить работу и освободить занятые ресурсы
 
+Пример контроллера:
+
+```go
+type NewsController struct {
+	app            interfaces.IService
+	newsRepository NewsRepository.INewsRepository
+}
+
+func (t *NewsController) Init(app interfaces.IService) error {
+	t.app = app
+	t.newsRepository = app.GetRepository("NewsRepository").(NewsRepository.INewsRepository)
+
+	app.GetServer("web").PushRoute("GET", "/", t.List, nil)
+	return nil
+}
+
+func (t *NewsController) String() string {
+	return "NewsController"
+}
+
+func (t *NewsController) Stop() error {
+	return nil
+}
+
+func (t *NewsController) List(ctx *srvCtx.Ctx) {
+	news := t.newsRepository.GetActual(10)
+
+	ctx.Response.Body, _ = json.Marshal(news)
+}
+```
+
 ### Далее [Конфигурация системы](./config-index.md)

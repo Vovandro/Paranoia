@@ -42,11 +42,11 @@ type iRedis interface {
 
 type RedisConfig struct {
 	Hosts      string        `yaml:"hosts"`
-	UseCluster bool          `yaml:"use_cluster"`
-	DBNum      int           `yaml:"db_num"`
+	UseCluster bool          `yaml:"use_cluster,omitempty"`
+	DBNum      int           `yaml:"db_num,omitempty"`
 	Timeout    time.Duration `yaml:"timeout"`
-	Username   string        `yaml:"username"`
-	Password   string        `yaml:"password"`
+	Username   string        `yaml:"username,omitempty"`
+	Password   string        `yaml:"password,omitempty"`
 }
 
 func NewRedis(name string, cfg RedisConfig) *Redis {
