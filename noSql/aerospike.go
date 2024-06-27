@@ -23,9 +23,9 @@ type Aerospike struct {
 }
 
 type AerospikeConfig struct {
-	User     string
-	Password string
-	Hosts    string
+	User     string `yaml:"user,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	Hosts    string `yaml:"hosts"`
 }
 
 func NewAerospike(name string, cfg AerospikeConfig) *Aerospike {
