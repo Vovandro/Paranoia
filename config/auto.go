@@ -15,7 +15,7 @@ import (
 	"strconv"
 )
 
-type cfgItem map[string]string
+type cfgItem map[string]interface{}
 type cfgModule []cfgItem
 
 type Data struct {
@@ -94,7 +94,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushCache(cache.NewMemcached(name, cfg))
+					t.app.PushCache(cache.NewMemcached(name.(string), cfg))
 
 				case "memory":
 					cfg := cache.MemoryConfig{}
@@ -103,7 +103,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushCache(cache.NewMemory(name, cfg))
+					t.app.PushCache(cache.NewMemory(name.(string), cfg))
 
 				case "redis":
 					cfg := cache.RedisConfig{}
@@ -112,7 +112,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushCache(cache.NewRedis(name, cfg))
+					t.app.PushCache(cache.NewRedis(name.(string), cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
@@ -127,7 +127,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushClient(client.NewHTTPClient(name, cfg))
+					t.app.PushClient(client.NewHTTPClient(name.(string), cfg))
 
 				case "kafka":
 					cfg := client.KafkaClientConfig{}
@@ -136,7 +136,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushClient(client.NewKafkaClient(name, cfg))
+					t.app.PushClient(client.NewKafkaClient(name.(string), cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
@@ -151,7 +151,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushDatabase(database.NewClickHouse(name, cfg))
+					t.app.PushDatabase(database.NewClickHouse(name.(string), cfg))
 
 				case "postgres":
 					cfg := database.PostgresConfig{}
@@ -160,7 +160,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushDatabase(database.NewPostgres(name, cfg))
+					t.app.PushDatabase(database.NewPostgres(name.(string), cfg))
 
 				case "mysql":
 					cfg := database.MySQLConfig{}
@@ -169,7 +169,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushDatabase(database.NewMySQL(name, cfg))
+					t.app.PushDatabase(database.NewMySQL(name.(string), cfg))
 
 				case "sqlite3":
 					cfg := database.Sqlite3Config{}
@@ -178,7 +178,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushDatabase(database.NewSqlite3(name, cfg))
+					t.app.PushDatabase(database.NewSqlite3(name.(string), cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
@@ -193,7 +193,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushNoSql(noSql.NewAerospike(name, cfg))
+					t.app.PushNoSql(noSql.NewAerospike(name.(string), cfg))
 
 				case "mongodb":
 					cfg := noSql.MongoDBConfig{}
@@ -202,7 +202,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushNoSql(noSql.NewMongoDB(name, cfg))
+					t.app.PushNoSql(noSql.NewMongoDB(name.(string), cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
@@ -217,7 +217,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushServer(server.NewHttp(name, cfg))
+					t.app.PushServer(server.NewHttp(name.(string), cfg))
 
 				case "kafka":
 					cfg := server.KafkaConfig{}
@@ -226,7 +226,7 @@ func (t *Auto) loadConfig() error {
 						return err
 					}
 
-					t.app.PushServer(server.NewKafka(name, cfg))
+					t.app.PushServer(server.NewKafka(name.(string), cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)

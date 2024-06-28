@@ -104,19 +104,20 @@ func (t *Kafka) Start() error {
 				break
 
 			default:
-				msg, err := t.consumer.ReadMessage(time.Millisecond * 100)
-				t.w.Add(1)
-				limited <- nil
+				msg, err := t.consumer.ReadMessage(time.Second)
 
 				if err != nil {
 					t.app.GetLogger().Error(err)
 					continue
 				}
 
+				t.w.Add(1)
+				limited <- nil
+
 				go func() {
 					t.Handle(msg)
-					t.w.Done()
 					<-limited
+					t.w.Done()
 				}()
 			}
 		}
@@ -126,6 +127,7 @@ func (t *Kafka) Start() error {
 }
 
 func (t *Kafka) Stop() error {
+	_ = t.consumer.Unsubscribe()
 	close(t.done)
 	t.w.Wait()
 	err := t.consumer.Close()
