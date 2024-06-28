@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.24.0
-	github.com/aerospike/aerospike-client-go/v7 v7.3.0
+	github.com/aerospike/aerospike-client-go/v7 v7.4.0
 	github.com/bradfitz/gomemcache v0.0.0-20230905024940-24af94b03874
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/go-sql-driver/mysql v1.8.1
