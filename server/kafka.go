@@ -98,21 +98,23 @@ func (t *Kafka) Start() error {
 		limited := make(chan interface{}, t.Config.LimitMessageCount)
 		defer close(limited)
 
+	forLoop:
 		for {
 			select {
 			case <-t.done:
-				break
+				break forLoop
 
 			default:
+				t.w.Add(1)
+				limited <- nil
 				msg, err := t.consumer.ReadMessage(time.Second)
 
 				if err != nil {
 					t.app.GetLogger().Error(err)
+					<-limited
+					t.w.Done()
 					continue
 				}
-
-				t.w.Add(1)
-				limited <- nil
 
 				go func() {
 					t.Handle(msg)
@@ -121,6 +123,8 @@ func (t *Kafka) Start() error {
 				}()
 			}
 		}
+
+		t.w.Wait()
 	}()
 
 	return nil
