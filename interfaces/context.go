@@ -12,17 +12,16 @@ type IHeader interface {
 	Get(key string) string
 	Values(key string) []string
 	Del(key string)
-	GetAsMap() map[string]string
+	GetAsMap() map[string][]string
 }
 
 type IQuery interface {
-	Get(key string) (string, error)
+	Get(key string) string
 }
 
 type ICookie interface {
 	Set(key string, value string, path string, expires time.Duration)
 	Get(key string) string
-	ToHttp(domain string, sameSite string, httpOnly bool, secure bool) []string
 	GetAsMap() map[string]string
 }
 
@@ -38,13 +37,18 @@ type IRequest interface {
 
 	GetRemoteIP() string
 	GetRemoteHost() string
+	GetUserAgent() string
 }
 
 type IResponse interface {
+	Clear()
+	SetBody(data []byte)
 	GetBody() []byte
+	SetStatus(status int)
 	GetStatus() int
-	GetHeader() IHeader
-	GetCookie() ICookie
+
+	Header() IHeader
+	Cookie() ICookie
 }
 
 type ICtx interface {

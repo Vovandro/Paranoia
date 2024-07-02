@@ -4,7 +4,7 @@ import (
 	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"gitlab.com/devpro_studio/Paranoia/srvCtx"
+	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"net/http"
@@ -34,6 +34,8 @@ type HttpConfig struct {
 	CookieSecure   bool   `yaml:"cookie_secure"`
 
 	BaseMiddleware []string `yaml:"base_middleware"`
+
+	timeout time.Duration `yaml:"timeout"`
 }
 
 func NewHttp(name string, cfg HttpConfig) *Http {
@@ -121,32 +123,61 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	ctx := srvCtx.FromHttp(req)
-	defer srvCtx.ContextPool.Put(ctx)
+	ctx := srvUtils.HttpCtxPool.Get().(*srvUtils.HttpCtx)
+	defer srvUtils.HttpCtxPool.Put(ctx)
+	ctx.Fill(req)
 
 	route := t.router.Find(req.Method, req.RequestURI)
 
 	if route == nil {
-		ctx.Response.StatusCode = 404
+		ctx.GetResponse().SetStatus(404)
 		w.WriteHeader(404)
 	} else {
-		t.md(route)(ctx)
+		cancel := ctx.StartTimeout(t.Config.timeout)
+		c := make(chan interface{})
+		defer close(c)
+		defer cancel()
 
-		w.Header().Add("Content-Type", ctx.Response.ContentType)
+		go func() {
+			t.md(route)(ctx)
+			if _, ok := <-c; ok {
+				c <- nil
+			}
+		}()
 
-		for k, v := range ctx.Response.Headers {
-			w.Header().Set(k, v)
+		select {
+		case <-ctx.Done():
+			time.Sleep(time.Millisecond)
+			ctx.GetResponse().SetStatus(499)
+			break
+
+		case <-c:
+			break
 		}
 
-		for i := 0; i < len(ctx.Response.Cookie); i++ {
-			w.Header().Add("Set-Cookie", ctx.Response.Cookie[i].String(t.Config.CookieDomain, t.Config.CookieSameSite, t.Config.CookieHttpOnly, t.Config.CookieSecure))
+		header := ctx.GetResponse().Header().GetAsMap()
+
+		if _, ok := header["Content-Type"]; !ok {
+			header["Content-Type"] = []string{"application/json; charset=utf-8"}
 		}
 
-		w.WriteHeader(ctx.Response.StatusCode)
-		w.Write(ctx.Response.Body)
+		for k, v := range ctx.GetResponse().Header().GetAsMap() {
+			for _, v2 := range v {
+				w.Header().Set(k, v2)
+			}
+		}
+
+		cookie := ctx.GetResponse().Cookie().(*srvUtils.HttpCookie).ToHttp(t.Config.CookieDomain, t.Config.CookieSameSite, t.Config.CookieHttpOnly, t.Config.CookieSecure)
+
+		for i := 0; i < len(cookie); i++ {
+			w.Header().Add("Set-Cookie", cookie[i])
+		}
+
+		w.WriteHeader(ctx.GetResponse().GetStatus())
+		w.Write(ctx.GetResponse().GetBody())
 	}
 
-	if ctx.Response.StatusCode >= 400 {
+	if ctx.GetResponse().GetStatus() >= 400 {
 		t.counterError.Add(context.Background(), 1)
 	}
 }

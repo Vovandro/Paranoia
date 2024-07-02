@@ -1,8 +1,11 @@
 package srvUtils
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
-type Cookie struct {
+type HttpCookie struct {
 	data map[string]cookieItem
 }
 
@@ -28,7 +31,7 @@ func (t cookieItem) String(domain string, sameSite string, httpOnly bool, secure
 	return s
 }
 
-func (t *Cookie) Set(key string, value string, path string, expires time.Duration) {
+func (t *HttpCookie) Set(key string, value string, path string, expires time.Duration) {
 	t.data[key] = cookieItem{
 		Name:    key,
 		Value:   value,
@@ -37,7 +40,7 @@ func (t *Cookie) Set(key string, value string, path string, expires time.Duratio
 	}
 }
 
-func (t *Cookie) Get(key string) string {
+func (t *HttpCookie) Get(key string) string {
 	if v, ok := t.data[key]; ok {
 		return v.Value
 	}
@@ -45,7 +48,7 @@ func (t *Cookie) Get(key string) string {
 	return ""
 }
 
-func (t *Cookie) ToHttp(domain string, sameSite string, httpOnly bool, secure bool) []string {
+func (t *HttpCookie) ToHttp(domain string, sameSite string, httpOnly bool, secure bool) []string {
 	res := make([]string, 0, len(t.data))
 
 	for _, v := range t.data {
@@ -55,7 +58,19 @@ func (t *Cookie) ToHttp(domain string, sameSite string, httpOnly bool, secure bo
 	return res
 }
 
-func (t *Cookie) GetAsMap() map[string]string {
+func (t *HttpCookie) FromHttp(cookie []*http.Cookie) {
+	t.data = make(map[string]cookieItem, len(cookie))
+	for _, v := range cookie {
+		t.data[v.Name] = cookieItem{
+			Name:    v.Name,
+			Value:   v.Value,
+			Path:    v.Path,
+			Expires: v.Expires.Sub(time.Now()),
+		}
+	}
+}
+
+func (t *HttpCookie) GetAsMap() map[string]string {
 	res := make(map[string]string, len(t.data))
 
 	for k, v := range t.data {
