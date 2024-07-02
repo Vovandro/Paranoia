@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
-	"time"
 )
 
 type Ctx struct {
@@ -30,29 +29,6 @@ type Response struct {
 	ContentType string
 	StatusCode  int
 	Headers     map[string]string
-	Cookie      []Cookie
-}
-
-type Cookie struct {
-	Name    string
-	Value   string
-	Path    string
-	Expires time.Duration
-}
-
-func (t Cookie) String(domain string, sameSite string, httpOnly bool, secure bool) string {
-	s := t.Name + "=" + t.Value + "; Expires=" + time.Now().Add(t.Expires).String() + "; Path=" + t.Path +
-		"; Domain=" + domain + "; SameSite=" + sameSite
-
-	if httpOnly {
-		s += "; HttpOnly"
-	}
-
-	if secure {
-		s += "; Secure"
-	}
-
-	return s
 }
 
 var ContextPool = sync.Pool{
