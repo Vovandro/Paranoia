@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
+	"time"
 )
 
 type Service struct {
@@ -219,11 +220,15 @@ func (t *Service) Init() error {
 	}
 
 	if _, ok := t.middlewares["timing"]; !ok {
-		t.PushMiddleware(&middleware.TimingMiddleware{})
+		t.PushMiddleware(middleware.NewTimingMiddleware("timing"))
 	}
 
 	if _, ok := t.middlewares["restore"]; !ok {
-		t.PushMiddleware(&middleware.RestoreMiddleware{})
+		t.PushMiddleware(middleware.NewRestoreMiddleware("restore"))
+	}
+
+	if _, ok := t.middlewares["timeout"]; !ok {
+		t.PushMiddleware(middleware.NewTimeoutMiddleware("timeout", middleware.TimeoutMiddlewareConfig{Timeout: time.Second * 60}))
 	}
 
 	for _, item := range t.middlewares {

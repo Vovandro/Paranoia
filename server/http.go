@@ -34,8 +34,6 @@ type HttpConfig struct {
 	CookieSecure   bool   `yaml:"cookie_secure"`
 
 	BaseMiddleware []string `yaml:"base_middleware"`
-
-	timeout time.Duration `yaml:"timeout"`
 }
 
 func NewHttp(name string, cfg HttpConfig) *Http {
@@ -133,27 +131,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		ctx.GetResponse().SetStatus(404)
 		w.WriteHeader(404)
 	} else {
-		cancel := ctx.StartTimeout(t.Config.timeout)
-		c := make(chan interface{})
-		defer close(c)
-		defer cancel()
-
-		go func() {
-			t.md(route)(ctx)
-			if _, ok := <-c; ok {
-				c <- nil
-			}
-		}()
-
-		select {
-		case <-ctx.Done():
-			time.Sleep(time.Millisecond)
-			ctx.GetResponse().SetStatus(499)
-			break
-
-		case <-c:
-			break
-		}
+		t.md(route)(ctx)
 
 		header := ctx.GetResponse().Header().GetAsMap()
 

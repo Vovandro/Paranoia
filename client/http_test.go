@@ -6,7 +6,7 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server"
-	"gitlab.com/devpro_studio/Paranoia/srvCtx"
+	"io"
 	"net/http"
 	"testing"
 )
@@ -75,12 +75,13 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			}
 			s.Init(app)
 
-			s.PushRoute("GET", "/", func(ctx *srvCtx.Ctx) {
-				ctx.Response.Body = []byte("{}")
+			s.PushRoute("GET", "/", func(ctx interfaces.ICtx) {
+				ctx.GetResponse().SetBody([]byte("{}"))
 			}, nil)
 
-			s.PushRoute("POST", "/test", func(ctx *srvCtx.Ctx) {
-				ctx.Response.Body = ctx.Request.Body
+			s.PushRoute("POST", "/test", func(ctx interfaces.ICtx) {
+				d, _ := io.ReadAll(ctx.GetRequest().GetBody())
+				ctx.GetResponse().SetBody(d)
 			}, nil)
 			s.Start()
 

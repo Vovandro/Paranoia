@@ -5,7 +5,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"gitlab.com/devpro_studio/Paranoia/srvCtx"
+	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"sync"
@@ -160,18 +160,19 @@ func (t *Kafka) Handle(msg *kafka.Message) {
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	ctx := srvCtx.FromKafka(msg)
-	defer srvCtx.ContextPool.Put(ctx)
+	ctx := srvUtils.KafkaCtxPool.Get().(*srvUtils.KafkaCtx)
+	defer srvUtils.KafkaCtxPool.Put(ctx)
+	ctx.Fill(msg)
 
 	route := t.router.Find("KAFKA", *msg.TopicPartition.Topic)
 
 	if route == nil {
-		ctx.Response.StatusCode = 404
+		ctx.GetResponse().SetStatus(404)
 	} else {
 		t.md(route)(ctx)
 	}
 
-	if ctx.Response.StatusCode >= 400 {
+	if ctx.GetResponse().GetStatus() >= 400 {
 		t.counterError.Add(context.Background(), 1)
 	}
 }

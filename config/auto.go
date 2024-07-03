@@ -8,6 +8,7 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/noSql"
 	"gitlab.com/devpro_studio/Paranoia/server"
+	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/telemetry"
 	"gitlab.com/devpro_studio/Paranoia/utils/decoder"
 	"gopkg.in/yaml.v3"
@@ -251,6 +252,27 @@ func (t *Auto) loadConfig() error {
 					}
 
 					t.app.SetMetrics(telemetry.NewMetricStd(cfg))
+
+				default:
+					return fmt.Errorf("unknown module %s", nameModule)
+				}
+
+			case "middleware":
+				switch nameModule {
+				case "timeout":
+					cfg := middleware.TimeoutMiddlewareConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushMiddleware(middleware.NewTimeoutMiddleware(name.(string), cfg))
+
+				case "timing":
+					t.app.PushMiddleware(middleware.NewTimingMiddleware(name.(string)))
+
+				case "restore":
+					t.app.PushMiddleware(middleware.NewRestoreMiddleware(name.(string)))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)

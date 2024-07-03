@@ -1,8 +1,6 @@
 package interfaces
 
-import "gitlab.com/devpro_studio/Paranoia/srvCtx"
-
-type RouteFunc func(ctx *srvCtx.Ctx)
+type RouteFunc func(ctx ICtx)
 
 type IServer interface {
 	Init(app IService) error

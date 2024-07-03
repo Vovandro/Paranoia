@@ -12,7 +12,9 @@ type HttpResponse struct {
 func (t *HttpResponse) Clear() {
 	t.Body = t.Body[:0]
 	t.StatusCode = 200
-	t.headers = &HttpHeader{}
+	t.headers = &HttpHeader{
+		make(map[string][]string, 10),
+	}
 	t.cookie = &HttpCookie{}
 }
 
