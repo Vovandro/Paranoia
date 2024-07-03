@@ -8,7 +8,6 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"gitlab.com/devpro_studio/Paranoia/srvCtx"
 	"testing"
 )
 
@@ -76,8 +75,8 @@ func TestHTTP_Fetch(t1 *testing.T) {
 			}
 			s.Init(app)
 
-			s.PushRoute("GET", "/test", func(ctx *srvCtx.Ctx) {
-				ctx.Response.Body = []byte("{}")
+			s.PushRoute("GET", "/test", func(ctx interfaces.ICtx) {
+				ctx.GetResponse().SetBody([]byte("{}"))
 			}, nil)
 
 			s.Start()
@@ -172,8 +171,8 @@ func TestHTTP_Middleware(t1 *testing.T) {
 			}
 			s.Init(app)
 
-			s.PushRoute("GET", "/test", func(ctx *srvCtx.Ctx) {
-				ctx.Response.Body = []byte("{}")
+			s.PushRoute("GET", "/test", func(ctx interfaces.ICtx) {
+				ctx.GetResponse().SetBody([]byte("{}"))
 			}, nil)
 
 			s.Start()
