@@ -125,12 +125,14 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer srvUtils.HttpCtxPool.Put(ctx)
 	ctx.Fill(req)
 
-	route := t.router.Find(req.Method, req.RequestURI)
+	route, props := t.router.Find(req.Method, req.RequestURI)
 
 	if route == nil {
 		ctx.GetResponse().SetStatus(404)
 		w.WriteHeader(404)
 	} else {
+		ctx.SetRouteProps(props)
+
 		t.md(route)(ctx)
 
 		header := ctx.GetResponse().Header().GetAsMap()

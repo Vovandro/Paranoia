@@ -23,12 +23,14 @@ func TestHTTP_Fetch(t1 *testing.T) {
 	tests := []struct {
 		name       string
 		RetryCount int
+		path       string
 		args       args
 		want       interfaces.IClientResponse
 	}{
 		{
 			name:       "base test 200",
 			RetryCount: 5,
+			path:       "/test",
 			args: args{
 				"GET",
 				"http://127.0.0.1:8009/test",
@@ -45,6 +47,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 		{
 			name:       "base test 404",
 			RetryCount: 2,
+			path:       "/test",
 			args: args{
 				"POST",
 				"http://127.0.0.1:8009/test",
@@ -55,6 +58,57 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				nil,
 				map[string][]string{},
 				fmt.Errorf("not found"),
+				1,
+			},
+		},
+		{
+			name:       "test dynamic",
+			RetryCount: 5,
+			path:       "/test/{name}",
+			args: args{
+				"GET",
+				"http://127.0.0.1:8009/test/alex",
+				nil,
+				nil,
+			},
+			want: &client.Response{
+				[]byte("{}"),
+				map[string][]string{},
+				nil,
+				1,
+			},
+		},
+		{
+			name:       "test slash",
+			RetryCount: 5,
+			path:       "/test/{name}/",
+			args: args{
+				"GET",
+				"http://127.0.0.1:8009/test/alex",
+				nil,
+				nil,
+			},
+			want: &client.Response{
+				[]byte("{}"),
+				map[string][]string{},
+				nil,
+				1,
+			},
+		},
+		{
+			name:       "test slash 2",
+			RetryCount: 5,
+			path:       "/test/{name}",
+			args: args{
+				"GET",
+				"http://127.0.0.1:8009/test/alex/",
+				nil,
+				nil,
+			},
+			want: &client.Response{
+				[]byte("{}"),
+				map[string][]string{},
+				nil,
 				1,
 			},
 		},
@@ -75,7 +129,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 			}
 			s.Init(app)
 
-			s.PushRoute("GET", "/test", func(ctx interfaces.ICtx) {
+			s.PushRoute("GET", tt.path, func(ctx interfaces.ICtx) {
 				ctx.GetResponse().SetBody([]byte("{}"))
 			}, nil)
 

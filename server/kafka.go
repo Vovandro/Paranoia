@@ -164,7 +164,7 @@ func (t *Kafka) Handle(msg *kafka.Message) {
 	defer srvUtils.KafkaCtxPool.Put(ctx)
 	ctx.Fill(msg)
 
-	route := t.router.Find("KAFKA", *msg.TopicPartition.Topic)
+	route, _ := t.router.Find("KAFKA", *msg.TopicPartition.Topic)
 
 	if route == nil {
 		ctx.GetResponse().SetStatus(404)
