@@ -151,8 +151,18 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			w.Header().Add("Set-Cookie", cookie[i])
 		}
 
-		w.WriteHeader(ctx.GetResponse().GetStatus())
-		w.Write(ctx.GetResponse().GetBody())
+		body := ctx.GetResponse().GetBody()
+		status := ctx.GetResponse().GetStatus()
+		if body != nil && len(body) > 0 {
+			w.WriteHeader(status)
+			w.Write(body)
+		} else {
+			if status == http.StatusOK {
+				status = http.StatusNoContent
+			}
+
+			w.WriteHeader(status)
+		}
 	}
 
 	if ctx.GetResponse().GetStatus() >= 400 {
