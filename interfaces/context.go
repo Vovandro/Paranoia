@@ -60,4 +60,7 @@ type ICtx interface {
 
 	GetUserValue(key string) (interface{}, error)
 	PushUserValue(key string, val interface{})
+
+	GetRouterValue(key string) string
+	SetRouteProps(values map[string]string)
 }

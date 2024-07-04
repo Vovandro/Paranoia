@@ -76,3 +76,9 @@ func (t *KafkaCtx) GetUserValue(key string) (interface{}, error) {
 func (t *KafkaCtx) PushUserValue(key string, val interface{}) {
 	t.values[key] = val
 }
+
+func (t *KafkaCtx) GetRouterValue(key string) string {
+	return ""
+}
+
+func (t *KafkaCtx) SetRouteProps(values map[string]string) {}
