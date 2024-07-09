@@ -26,3 +26,4 @@
 11. [Клиенты](./clients.md)
     1. [HTTP клиент](./client-http.md)
     2. [Kafka продюсер](./client-kafka.md)
+12. [Файловая область](./storage-index.md)
