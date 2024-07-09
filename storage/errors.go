@@ -2,5 +2,5 @@ package storage
 
 import "errors"
 
-var FileNotFound = errors.New("file not found")
-var TypeMismatch = errors.New("type mismatch")
+var ErrFileNotFound = errors.New("file not found")
+var ErrTypeMismatch = errors.New("type mismatch")

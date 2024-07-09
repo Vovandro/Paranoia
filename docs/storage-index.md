@@ -17,6 +17,11 @@
 - `GetSize(name string) (int64, error)` - Получение размера файла
 - `GetModified(name string) (int64, error)` - Получение времени последней модификации файла
 
+Общие ошибки:
+
+- `storage.ErrFileNotFound` - Файла или директории не существует
+- `storage.ErrTypeMismatch` - К данному типу действие не применимо
+
 Пример:
 
 ```go

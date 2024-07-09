@@ -57,11 +57,11 @@ func (t *File) List(path string) ([]string, error) {
 	info, err := os.Stat(path)
 
 	if err != nil {
-		return nil, FileNotFound
+		return nil, ErrFileNotFound
 	}
 
 	if !info.IsDir() {
-		return nil, TypeMismatch
+		return nil, ErrTypeMismatch
 	}
 
 	dir, err := os.ReadDir(path)
@@ -83,7 +83,7 @@ func (t *File) IsFolder(name string) (bool, error) {
 	info, err := os.Stat(name)
 
 	if err != nil {
-		return false, FileNotFound
+		return false, ErrFileNotFound
 	}
 
 	return info.IsDir(), nil
@@ -93,7 +93,7 @@ func (t *File) GetSize(name string) (int64, error) {
 	info, err := os.Stat(name)
 
 	if err != nil {
-		return 0, FileNotFound
+		return 0, ErrFileNotFound
 	}
 
 	return info.Size(), nil
@@ -103,7 +103,7 @@ func (t *File) GetModified(name string) (int64, error) {
 	info, err := os.Stat(name)
 
 	if err != nil {
-		return 0, FileNotFound
+		return 0, ErrFileNotFound
 	}
 
 	return info.ModTime().Unix(), nil
