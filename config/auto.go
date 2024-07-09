@@ -9,6 +9,7 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/noSql"
 	"gitlab.com/devpro_studio/Paranoia/server"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
+	"gitlab.com/devpro_studio/Paranoia/storage"
 	"gitlab.com/devpro_studio/Paranoia/telemetry"
 	"gitlab.com/devpro_studio/Paranoia/utils/decoder"
 	"gopkg.in/yaml.v3"
@@ -273,6 +274,15 @@ func (t *Auto) loadConfig() error {
 
 				case "restore":
 					t.app.PushMiddleware(middleware.NewRestoreMiddleware(name.(string)))
+
+				default:
+					return fmt.Errorf("unknown module %s", nameModule)
+				}
+
+			case "storage":
+				switch nameModule {
+				case "file":
+					t.app.PushStorage(storage.NewFile(name.(string)))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
