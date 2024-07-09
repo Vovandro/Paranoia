@@ -38,11 +38,11 @@ func (t *File) Has(name string) bool {
 }
 
 func (t *File) Put(name string, data []byte) error {
-	return os.WriteFile(name, data, 0660)
+	return os.WriteFile(name, data, 0600)
 }
 
 func (t *File) StoreFolder(name string) error {
-	return os.MkdirAll(name, 0750)
+	return os.MkdirAll(name, 0700)
 }
 
 func (t *File) Read(name string) ([]byte, error) {
