@@ -284,12 +284,6 @@ func (t *Auto) loadConfig() error {
 				case "file":
 					t.app.PushStorage(storage.NewFile(name.(string)))
 
-				case "timing":
-					t.app.PushMiddleware(middleware.NewTimingMiddleware(name.(string)))
-
-				case "restore":
-					t.app.PushMiddleware(middleware.NewRestoreMiddleware(name.(string)))
-
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
 				}
