@@ -18,7 +18,7 @@ type KafkaCtx struct {
 
 var KafkaCtxPool = sync.Pool{
 	New: func() interface{} {
-		return &HttpCtx{
+		return &KafkaCtx{
 			request:  &kafkaRequest{},
 			response: &HttpResponse{},
 			values:   make(map[string]interface{}, 10),
