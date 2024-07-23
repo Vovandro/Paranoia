@@ -284,6 +284,15 @@ func (t *Auto) loadConfig() error {
 				case "file":
 					t.app.PushStorage(storage.NewFile(name.(string)))
 
+				case "s3":
+					cfg := storage.S3Config{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushStorage(storage.NewS3(name.(string), cfg))
+
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
 				}
