@@ -27,3 +27,5 @@
     1. [HTTP клиент](./client-http.md)
     2. [Kafka продюсер](./client-kafka.md)
 12. [Файловая область](./storage-index.md)
+    1. [File](./storage-file.md)
+    2. [S3](./storage-s3.md)

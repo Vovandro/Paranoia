@@ -27,8 +27,8 @@ app.PushStorage(storage.NewS3("public", storage.S3Config{
 	URL: "s3.ru",
 	AccessKey: "key",
 	SecretKey: "key",
-    UseSSL: false,
-    ForceDelete: false,
+	UseSSL: false,
+	ForceDelete: false,
 	Location: "ru-RU",
 	Bucket: "mybucket",
 }))
