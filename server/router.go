@@ -126,6 +126,12 @@ func (t *Router) Find(method string, path string) (interfaces.RouteFunc, map[str
 		}
 	}
 
+	if _, ok := t.static[method]; ok {
+		if handler, ok := t.static[method]["*/"]; ok {
+			return handler, nil
+		}
+	}
+
 	return nil, nil
 }
 
