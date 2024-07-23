@@ -2,6 +2,7 @@ package storage
 
 import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"io"
 	"os"
 )
 
@@ -37,16 +38,33 @@ func (t *File) Has(name string) bool {
 	return true
 }
 
-func (t *File) Put(name string, data []byte) error {
-	return os.WriteFile(name, data, 0600)
+func (t *File) Put(name string, data io.Reader) error {
+	f, err := os.Create(name)
+
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = io.Copy(f, data)
+
+	if err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
 }
 
 func (t *File) StoreFolder(name string) error {
 	return os.MkdirAll(name, 0700)
 }
 
-func (t *File) Read(name string) ([]byte, error) {
-	return os.ReadFile(name)
+func (t *File) Read(name string) (io.ReadCloser, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }
 
 func (t *File) Delete(name string) error {

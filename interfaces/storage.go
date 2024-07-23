@@ -1,14 +1,16 @@
 package interfaces
 
+import "io"
+
 type IStorage interface {
 	Init(app IService) error
 	Stop() error
 	String() string
 
 	Has(name string) bool
-	Put(name string, data []byte) error
+	Put(name string, data io.Reader) error
 	StoreFolder(name string) error
-	Read(name string) ([]byte, error)
+	Read(name string) (io.ReadCloser, error)
 	Delete(name string) error
 	List(path string) ([]string, error)
 

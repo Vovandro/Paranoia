@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"testing"
 )
@@ -86,7 +87,7 @@ func TestFile_Put(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &File{}
 
-			if err := t.Put(tt.args.name, tt.args.data); (err != nil) != tt.wantErr {
+			if err := t.Put(tt.args.name, bytes.NewReader(tt.args.data)); (err != nil) != tt.wantErr {
 				t1.Errorf("Put() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -97,8 +98,12 @@ func TestFile_Put(t1 *testing.T) {
 				t1.Errorf("Put() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if !bytes.Equal(file, tt.args.data) {
-				t1.Errorf("Put() = %v, want %v", file, tt.args.data)
+			defer file.Close()
+
+			d, err := io.ReadAll(file)
+
+			if !bytes.Equal(d, tt.args.data) {
+				t1.Errorf("Put() = %v, want %v", d, tt.args.data)
 			}
 
 			if _, err = t.GetSize(tt.args.name); err != nil {
