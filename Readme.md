@@ -40,6 +40,11 @@
 - http
 - Kafka
 
+### Storage
+
+- File
+- S3
+
 ### Other
 
 - Initialize base engine module from yaml config file
