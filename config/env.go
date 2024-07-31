@@ -16,7 +16,9 @@ type Env struct {
 }
 
 type EnvConfig struct {
-	FName string `yaml:"filename"`
+	FName              string `yaml:"filename"`
+	ValueItemDelimiter string `yaml:"value_delimiter"`
+	ItemDelimiter      string `yaml:"item_delimiter"`
 }
 
 func NewEnv(cfg EnvConfig) *Env {
@@ -190,31 +192,189 @@ func (t *Env) GetInt(key string, def int) int {
 	return def
 }
 
-func (t *Env) GetFloat(key string, def float32) float32 {
+func (t *Env) GetFloat(key string, def float64) float64 {
 	val, ok := t.data[key]
 
 	if ok && val != "" {
-		i, err := strconv.ParseFloat(val, 32)
+		i, err := strconv.ParseFloat(val, 64)
 
 		if err != nil {
 			t.logger.Error(err)
 		} else {
-			return float32(i)
+			return i
 		}
 	}
 
 	val, ok = os.LookupEnv(key)
 
 	if ok && val != "" {
-		i, err := strconv.ParseFloat(val, 32)
+		i, err := strconv.ParseFloat(val, 64)
 
 		if err != nil {
 			t.logger.Error(err)
 		} else {
 			t.data[key] = val
-			return float32(i)
+			return i
 		}
 	}
 
 	return def
+}
+
+func (t *Env) GetMapString(key string, def map[string]string) map[string]string {
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	values := strings.Split(val, t.Config.ItemDelimiter)
+	res := make(map[string]string, len(values))
+
+	for _, value := range values {
+		v := strings.Split(value, t.Config.ValueItemDelimiter)
+		if len(v) != 2 {
+			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			continue
+		}
+
+		res[v[0]] = v[1]
+	}
+
+	return res
+}
+
+func (t *Env) GetMapBool(key string, def map[string]bool) map[string]bool {
+
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	values := strings.Split(val, t.Config.ItemDelimiter)
+	res := make(map[string]bool, len(values))
+
+	for _, value := range values {
+		v := strings.Split(value, t.Config.ValueItemDelimiter)
+		if len(v) != 2 {
+			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			continue
+		}
+
+		res[v[0]], _ = strconv.ParseBool(v[1])
+	}
+
+	return res
+}
+
+func (t *Env) GetMapInt(key string, def map[string]int) map[string]int {
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	values := strings.Split(val, t.Config.ItemDelimiter)
+	res := make(map[string]int, len(values))
+
+	for _, value := range values {
+		v := strings.Split(value, t.Config.ValueItemDelimiter)
+		if len(v) != 2 {
+			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			continue
+		}
+
+		i, _ := strconv.ParseInt(v[1], 10, 32)
+		res[v[0]] = int(i)
+	}
+
+	return res
+}
+
+func (t *Env) GetMapFloat(key string, def map[string]float64) map[string]float64 {
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	values := strings.Split(val, t.Config.ItemDelimiter)
+	res := make(map[string]float64, len(values))
+
+	for _, value := range values {
+		v := strings.Split(value, t.Config.ValueItemDelimiter)
+		if len(v) != 2 {
+			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			continue
+		}
+
+		res[v[0]], _ = strconv.ParseFloat(v[1], 64)
+	}
+
+	return res
+}
+
+func (t *Env) GetSliceString(key string, def []string) []string {
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	return strings.Split(val, t.Config.ItemDelimiter)
+}
+
+func (t *Env) GetSliceBool(key string, def []bool) []bool {
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	values := strings.Split(val, t.Config.ItemDelimiter)
+	res := make([]bool, 0, len(values))
+
+	for _, value := range values {
+		i, _ := strconv.ParseBool(value)
+		res = append(res, i)
+	}
+
+	return res
+}
+
+func (t *Env) GetSliceInt(key string, def []int) []int {
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	values := strings.Split(val, t.Config.ItemDelimiter)
+	res := make([]int, 0, len(values))
+
+	for _, value := range values {
+		i, _ := strconv.ParseInt(value, 10, 32)
+		res = append(res, int(i))
+	}
+
+	return res
+}
+
+func (t *Env) GetSliceFloat(key string, def []float64) []float64 {
+	val, ok := t.data[key]
+
+	if !ok || val == "" {
+		return def
+	}
+
+	values := strings.Split(val, t.Config.ItemDelimiter)
+	res := make([]float64, 0, len(values))
+
+	for _, value := range values {
+		i, _ := strconv.ParseFloat(value, 64)
+		res = append(res, i)
+	}
+
+	return res
 }

@@ -5,6 +5,7 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -118,7 +119,7 @@ func TestEnv_GetFloat(t1 *testing.T) {
 	}
 	type args struct {
 		key string
-		def float32
+		def float64
 	}
 
 	app := Paranoia.New("test", nil, &logger.Mock{})
@@ -127,7 +128,7 @@ func TestEnv_GetFloat(t1 *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   float32
+		want   float64
 	}{
 		{
 			"base get float",
@@ -527,4 +528,68 @@ func TestEnv_ParseFile(t1 *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEnv_LoadMaps(t1 *testing.T) {
+	t1.Run("test maps", func(t1 *testing.T) {
+		f := []byte(`
+mi=one:1,two:2
+ms=one:one,two:two
+mb=one:true,two:false
+mf=one:1.1,two:2.5`)
+
+		t := &Env{
+			data:   map[string]string{},
+			Config: EnvConfig{"", ":", ","},
+		}
+		t.ParseFile(f)
+
+		if !reflect.DeepEqual(t.GetMapString("ms", nil), map[string]string{"one": "one", "two": "two"}) {
+			t1.Errorf("error GetMapString()")
+		}
+
+		if !reflect.DeepEqual(t.GetMapBool("mb", nil), map[string]bool{"one": true, "two": false}) {
+			t1.Errorf("error GetMapBool()")
+		}
+
+		if !reflect.DeepEqual(t.GetMapInt("mi", nil), map[string]int{"one": 1, "two": 2}) {
+			t1.Errorf("error GetMapInt()")
+		}
+
+		if !reflect.DeepEqual(t.GetMapFloat("mf", nil), map[string]float64{"one": 1.1, "two": 2.5}) {
+			t1.Errorf("error GetMapFloat()")
+		}
+	})
+}
+
+func TestEnv_LoadSlice(t1 *testing.T) {
+	t1.Run("test slice", func(t1 *testing.T) {
+		f := []byte(`
+i=1,2
+s=one,two
+b=true,false
+f=1.1,2.5`)
+
+		t := &Env{
+			data:   map[string]string{},
+			Config: EnvConfig{"", ":", ","},
+		}
+		t.ParseFile(f)
+
+		if !reflect.DeepEqual(t.GetSliceString("s", nil), []string{"one", "two"}) {
+			t1.Errorf("error GetSliceString()")
+		}
+
+		if !reflect.DeepEqual(t.GetSliceBool("b", nil), []bool{true, false}) {
+			t1.Errorf("error GetSliceBool()")
+		}
+
+		if !reflect.DeepEqual(t.GetSliceInt("i", nil), []int{1, 2}) {
+			t1.Errorf("error GetSliceInt()")
+		}
+
+		if !reflect.DeepEqual(t.GetSliceFloat("f", nil), []float64{1.1, 2.5}) {
+			t1.Errorf("error GetSliceFloat()")
+		}
+	})
 }

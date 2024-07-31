@@ -14,15 +14,14 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/utils/decoder"
 	"gopkg.in/yaml.v3"
 	"os"
-	"strconv"
 )
 
 type cfgItem map[string]interface{}
 type cfgModule []cfgItem
 
 type Data struct {
-	Engine map[string]cfgModule `yaml:"engine"`
-	Cfg    map[string]string    `yaml:"cfg"`
+	Engine map[string]cfgModule   `yaml:"engine"`
+	Cfg    map[string]interface{} `yaml:"cfg"`
 }
 
 type Auto struct {
@@ -53,7 +52,7 @@ func (t *Auto) loadConfig() error {
 	}
 
 	if t.data.Cfg == nil {
-		t.data.Cfg = make(map[string]string, 10)
+		t.data.Cfg = make(map[string]interface{}, 10)
 	}
 
 	err = yaml.Unmarshal(yamlFile, &t.data)
@@ -63,7 +62,7 @@ func (t *Auto) loadConfig() error {
 	}
 
 	if v, ok := t.data.Cfg["logLevel"]; ok {
-		t.app.GetLogger().SetLevel(interfaces.GetLogLevel(v))
+		t.app.GetLogger().SetLevel(interfaces.GetLogLevel(v.(string)))
 	}
 
 	for typeModule, modules := range t.data.Engine {
@@ -324,7 +323,7 @@ func (t *Auto) Init(app interfaces.IService) error {
 	}
 
 	if t.data.Cfg == nil {
-		t.data.Cfg = make(map[string]string, 10)
+		t.data.Cfg = make(map[string]interface{}, 10)
 	}
 
 	return t.loadConfig()
@@ -347,8 +346,8 @@ func (t *Auto) Has(key string) bool {
 func (t *Auto) GetString(key string, def string) string {
 	val, ok := t.data.Cfg[key]
 
-	if ok && val != "" {
-		return val
+	if ok {
+		return val.(string)
 	}
 
 	return def
@@ -357,12 +356,8 @@ func (t *Auto) GetString(key string, def string) string {
 func (t *Auto) GetBool(key string, def bool) bool {
 	val, ok := t.data.Cfg[key]
 
-	if ok && val != "" {
-		b, err := strconv.ParseBool(val)
-
-		if err == nil {
-			return b
-		}
+	if ok {
+		return val.(bool)
 	}
 
 	return def
@@ -372,25 +367,169 @@ func (t *Auto) GetInt(key string, def int) int {
 
 	val, ok := t.data.Cfg[key]
 
-	if ok && val != "" {
-		i, err := strconv.ParseInt(val, 10, 32)
+	if ok {
+		return val.(int)
+	}
 
-		if err == nil {
-			return int(i)
+	return def
+}
+
+func (t *Auto) GetFloat(key string, def float64) float64 {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		return val.(float64)
+	}
+
+	return def
+}
+
+func (t *Auto) GetMapString(key string, def map[string]string) map[string]string {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		if _, ok2 := val.(map[string]interface{}); ok2 {
+			v := make(map[string]string, len(val.(map[string]interface{})))
+
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
 		}
 	}
 
 	return def
 }
 
-func (t *Auto) GetFloat(key string, def float32) float32 {
+func (t *Auto) GetMapBool(key string, def map[string]bool) map[string]bool {
 	val, ok := t.data.Cfg[key]
 
-	if ok && val != "" {
-		i, err := strconv.ParseFloat(val, 32)
+	if ok {
+		if _, ok2 := val.(map[string]interface{}); ok2 {
+			v := make(map[string]bool, len(val.(map[string]interface{})))
 
-		if err == nil {
-			return float32(i)
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
+		}
+	}
+
+	return def
+}
+
+func (t *Auto) GetMapInt(key string, def map[string]int) map[string]int {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		if _, ok2 := val.(map[string]interface{}); ok2 {
+			v := make(map[string]int, len(val.(map[string]interface{})))
+
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
+		}
+	}
+
+	return def
+}
+
+func (t *Auto) GetMapFloat(key string, def map[string]float64) map[string]float64 {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		if _, ok2 := val.(map[string]interface{}); ok2 {
+			v := make(map[string]float64, len(val.(map[string]interface{})))
+
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
+		}
+	}
+
+	return def
+}
+
+func (t *Auto) GetSliceString(key string, def []string) []string {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		if _, ok2 := val.([]interface{}); ok2 {
+			v := make([]string, len(val.([]interface{})))
+
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
+		}
+	}
+
+	return def
+}
+
+func (t *Auto) GetSliceBool(key string, def []bool) []bool {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		if _, ok2 := val.([]interface{}); ok2 {
+			v := make([]bool, len(val.([]interface{})))
+
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
+		}
+	}
+
+	return def
+}
+
+func (t *Auto) GetSliceInt(key string, def []int) []int {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		if _, ok2 := val.([]interface{}); ok2 {
+			v := make([]int, len(val.([]interface{})))
+
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
+		}
+	}
+
+	return def
+}
+
+func (t *Auto) GetSliceFloat(key string, def []float64) []float64 {
+	val, ok := t.data.Cfg[key]
+
+	if ok {
+		if _, ok2 := val.([]interface{}); ok2 {
+			v := make([]float64, len(val.([]interface{})))
+
+			err := decoder.Decode(val, &v, "", false)
+			if err != nil {
+				return def
+			}
+
+			return v
 		}
 	}
 
