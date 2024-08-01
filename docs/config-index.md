@@ -6,7 +6,7 @@
 
 Фреймворк штатно поддерживает системы конфигурирования:
 - Mock конфигурация - конфигурация прописана в исходном коде приложения
-- .env файлы - минимальная поддержка env структуры, без импорта других файлов
+- .env файлы - минимальная поддержка env структуры, без импорта других файлов. Для получения карт и слайсов используется декодирование строки по токенам указанных в конфигурации.
 - Авто конфигурация из yaml файла - поддержка плоской пользовательской конфигурации и настройки всех встроенных модулей фреймворка
 
 # Mock конфигурация
@@ -89,5 +89,19 @@ cfg := app.GetConfig()
 - `GetBool(key string, def bool) bool` - Получить как булево значение с конвертацией.
 - `GetInt(key string, def int) int` - Получить как целое число.
 - `GetFloat(key string, def float32) float32` - Получить как дробное число.
+
+Функции получения карт:
+
+- `GetMapString(key string, def map[string]string) map[string]string`
+- `GetMapBool(key string, def map[string]bool) map[string]bool`
+- `GetMapInt(key string, def map[string]int) map[string]int`
+- `GetMapFloat(key string, def map[string]float64) map[string]float64`
+
+Функции получения массивов:
+
+- `GetSliceString(key string, def []string) []string`
+- `GetSliceBool(key string, def []bool) []bool`
+- `GetSliceInt(key string, def []int) []int`
+- `GetSliceFloat(key string, def []float64) []float64`
 
 ### Далее [Логирование](./logger.md)
