@@ -210,6 +210,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	for _, db := range t.noSql {
+		err = db.Init(t)
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
 	for _, st := range t.storage {
 		err = st.Init(t)
 
@@ -346,6 +355,15 @@ func (t *Service) Stop() error {
 
 	for _, st := range t.storage {
 		err = st.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, db := range t.noSql {
+		err = db.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
