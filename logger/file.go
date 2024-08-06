@@ -47,7 +47,7 @@ func (t *File) Init() error {
 		return err
 	}
 
-	t.run(t.done)
+	t.run()
 
 	if t.Parent != nil {
 		return t.Parent.Init()
@@ -57,13 +57,18 @@ func (t *File) Init() error {
 }
 
 func (t *File) Stop() error {
+	if t.Parent != nil {
+		return t.Parent.Stop()
+	}
+
 	close(t.done)
+	time.Sleep(time.Second * 1)
 	close(t.queue)
 
 	return nil
 }
 
-func (t *File) run(done chan interface{}) {
+func (t *File) run() {
 	go func() {
 		defer t.f.Close()
 
@@ -96,8 +101,8 @@ func (t *File) run(done chan interface{}) {
 				seconds = 24*60*60 - (timeNow.Hour()*60*60 + timeNow.Minute()*60 + timeNow.Second())
 				timerRecreate.Reset(time.Second * time.Duration(seconds))
 
-			case <-done:
-				time.Sleep(time.Second * 1)
+			case <-t.done:
+				time.Sleep(time.Millisecond * 100)
 				return
 			}
 		}
