@@ -335,8 +335,8 @@ func (t *Service) Stop() error {
 		}
 	}
 
-	for _, client := range t.clients {
-		err = client.Stop()
+	for _, module := range t.modules {
+		err = module.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
@@ -344,8 +344,8 @@ func (t *Service) Stop() error {
 		}
 	}
 
-	for _, module := range t.modules {
-		err = module.Stop()
+	for _, client := range t.clients {
+		err = client.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
