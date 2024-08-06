@@ -344,8 +344,8 @@ func (t *Service) Stop() error {
 		}
 	}
 
-	for _, client := range t.clients {
-		err = client.Stop()
+	for _, repository := range t.repository {
+		err = repository.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
@@ -353,8 +353,8 @@ func (t *Service) Stop() error {
 		}
 	}
 
-	for _, repository := range t.repository {
-		err = repository.Stop()
+	for _, client := range t.clients {
+		err = client.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
