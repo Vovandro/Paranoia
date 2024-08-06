@@ -219,6 +219,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	for _, client := range t.clients {
+		err = client.Init(t)
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
 	if _, ok := t.middlewares["timing"]; !ok {
 		t.PushMiddleware(middleware.NewTimingMiddleware("timing"))
 	}
@@ -276,15 +285,6 @@ func (t *Service) Init() error {
 		}
 	}
 
-	for _, client := range t.clients {
-		err = client.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(err)
-			return err
-		}
-	}
-
 	for _, server := range t.servers {
 		err = server.Start()
 
@@ -317,15 +317,6 @@ func (t *Service) Stop() error {
 		}
 	}
 
-	for _, client := range t.clients {
-		err = client.Stop()
-
-		if err != nil {
-			t.logger.Fatal(err)
-			return err
-		}
-	}
-
 	for _, item := range t.middlewares {
 		err = item.Stop()
 
@@ -337,6 +328,15 @@ func (t *Service) Stop() error {
 
 	for _, controller := range t.controllers {
 		err = controller.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, client := range t.clients {
+		err = client.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
