@@ -276,6 +276,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	for _, client := range t.clients {
+		err = client.Init(t)
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
 	for _, server := range t.servers {
 		err = server.Start()
 
@@ -301,6 +310,15 @@ func (t *Service) Stop() error {
 
 	for _, server := range t.servers {
 		err = server.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, client := range t.clients {
+		err = client.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
