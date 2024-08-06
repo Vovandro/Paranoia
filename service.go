@@ -228,6 +228,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	for _, client := range t.clients {
+		err = client.Init(t)
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
 	if _, ok := t.middlewares["timing"]; !ok {
 		t.PushMiddleware(middleware.NewTimingMiddleware("timing"))
 	}
@@ -346,6 +355,15 @@ func (t *Service) Stop() error {
 
 	for _, repository := range t.repository {
 		err = repository.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, client := range t.clients {
+		err = client.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)
