@@ -16,10 +16,9 @@ const (
 )
 
 type ILogger interface {
-	Init() error
+	Init(cfg IConfig) error
 	Stop() error
 	SetLevel(level LogLevel)
-	Push(level LogLevel, msg string, toParent bool)
 	Debug(args ...interface{})
 	Info(args ...interface{})
 	Warn(args ...interface{})

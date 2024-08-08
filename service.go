@@ -44,8 +44,8 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.clients = make(map[string]interfaces.IClient)
 	t.middlewares = make(map[string]interfaces.IMiddleware)
 
-	if t.logger != nil {
-		err := t.logger.Init()
+	if t.config != nil {
+		err := t.config.Init(t)
 
 		if err != nil {
 			fmt.Println(err)
@@ -53,8 +53,8 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 		}
 	}
 
-	if t.config != nil {
-		err := t.config.Init(t)
+	if t.logger != nil {
+		err := t.logger.Init(t.config)
 
 		if err != nil {
 			fmt.Println(err)

@@ -33,14 +33,22 @@ func NewStd(cfg StdConfig, parent interfaces.ILogger) *Std {
 	}
 }
 
-func (t *Std) Init() error {
+func (t *Std) Init(cfg interfaces.IConfig) error {
 	t.queue = make(chan string, 1000)
 	t.done = make(chan interface{})
+
+	if cfg != nil {
+		l := cfg.GetString("LOG_LEVEL", "")
+
+		if l != "" {
+			t.Config.Level = interfaces.GetLogLevel(l)
+		}
+	}
 
 	t.run()
 
 	if t.Parent != nil {
-		return t.Parent.Init()
+		return t.Parent.Init(cfg)
 	}
 
 	return nil
@@ -81,17 +89,13 @@ func (t *Std) SetLevel(level interfaces.LogLevel) {
 	}
 }
 
-func (t *Std) Push(level interfaces.LogLevel, msg string, toParent bool) {
-	fmt.Printf("%s%s\u001B[0m [\033[37m%s\033[0m] %s\n", levelColor[level], level.String(), time.Now().Format("2006-01-02 15:04.05"), msg)
-
-	if toParent && t.Parent != nil {
-		t.Parent.Push(level, msg, true)
-	}
+func (t *Std) push(level interfaces.LogLevel, msg string) {
+	t.queue <- fmt.Sprintf("%s%s\u001B[0m [\033[37m%s\033[0m] %s\n", levelColor[level], level.String(), time.Now().Format("2006-01-02 15:04.05"), msg)
 }
 
 func (t *Std) Debug(args ...interface{}) {
 	if t.Config.Level <= interfaces.DEBUG {
-		t.Push(interfaces.DEBUG, fmt.Sprint(args...), false)
+		t.push(interfaces.DEBUG, fmt.Sprint(args...))
 
 		if t.Parent != nil {
 			t.Parent.Debug(args...)
@@ -101,7 +105,7 @@ func (t *Std) Debug(args ...interface{}) {
 
 func (t *Std) Info(args ...interface{}) {
 	if t.Config.Level <= interfaces.INFO {
-		t.Push(interfaces.INFO, fmt.Sprint(args...), false)
+		t.push(interfaces.INFO, fmt.Sprint(args...))
 
 		if t.Parent != nil {
 			t.Parent.Info(args...)
@@ -111,7 +115,7 @@ func (t *Std) Info(args ...interface{}) {
 
 func (t *Std) Warn(args ...interface{}) {
 	if t.Config.Level <= interfaces.WARNING {
-		t.Push(interfaces.WARNING, fmt.Sprint(args...), false)
+		t.push(interfaces.WARNING, fmt.Sprint(args...))
 
 		if t.Parent != nil {
 			t.Parent.Warn(args...)
@@ -121,7 +125,7 @@ func (t *Std) Warn(args ...interface{}) {
 
 func (t *Std) Message(args ...interface{}) {
 	if t.Config.Level <= interfaces.MESSAGE {
-		t.Push(interfaces.MESSAGE, fmt.Sprint(args...), false)
+		t.push(interfaces.MESSAGE, fmt.Sprint(args...))
 
 		if t.Parent != nil {
 			t.Parent.Message(args...)
@@ -131,7 +135,7 @@ func (t *Std) Message(args ...interface{}) {
 
 func (t *Std) Error(err error) {
 	if t.Config.Level <= interfaces.ERROR {
-		t.Push(interfaces.DEBUG, err.Error(), false)
+		t.push(interfaces.DEBUG, err.Error())
 
 		if t.Parent != nil {
 			t.Parent.Error(err)
@@ -141,7 +145,7 @@ func (t *Std) Error(err error) {
 
 func (t *Std) Fatal(err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
-		t.Push(interfaces.DEBUG, err.Error(), false)
+		t.push(interfaces.DEBUG, err.Error())
 
 		if t.Parent != nil {
 			t.Parent.Fatal(err)
@@ -151,7 +155,7 @@ func (t *Std) Fatal(err error) {
 
 func (t *Std) Panic(err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
-		t.Push(interfaces.DEBUG, err.Error(), false)
+		t.push(interfaces.DEBUG, err.Error())
 
 		if t.Parent != nil {
 			t.Parent.Panic(err)
