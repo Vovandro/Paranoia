@@ -135,7 +135,7 @@ func (t *Std) Message(args ...interface{}) {
 
 func (t *Std) Error(err error) {
 	if t.Config.Level <= interfaces.ERROR {
-		t.push(interfaces.DEBUG, err.Error())
+		t.push(interfaces.ERROR, err.Error())
 
 		if t.Parent != nil {
 			t.Parent.Error(err)
@@ -145,7 +145,7 @@ func (t *Std) Error(err error) {
 
 func (t *Std) Fatal(err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
-		t.push(interfaces.DEBUG, err.Error())
+		t.push(interfaces.CRITICAL, err.Error())
 
 		if t.Parent != nil {
 			t.Parent.Fatal(err)
@@ -155,7 +155,7 @@ func (t *Std) Fatal(err error) {
 
 func (t *Std) Panic(err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
-		t.push(interfaces.DEBUG, err.Error())
+		t.push(interfaces.CRITICAL, err.Error())
 
 		if t.Parent != nil {
 			t.Parent.Panic(err)
