@@ -266,8 +266,7 @@ func TestEnv_GetInt(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Env{
-				data:   tt.fields.data,
-				logger: &logger.Mock{},
+				data: tt.fields.data,
 			}
 
 			if got := t.GetInt(tt.args.key, tt.args.def); got != tt.want {
@@ -318,8 +317,7 @@ func TestEnv_GetString(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Env{
-				data:   tt.fields.data,
-				logger: &logger.Mock{},
+				data: tt.fields.data,
 			}
 			if got := t.GetString(tt.args.key, tt.args.def); got != tt.want {
 				t1.Errorf("GetString() = %v, want %v", got, tt.want)

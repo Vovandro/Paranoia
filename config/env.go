@@ -12,7 +12,6 @@ import (
 type Env struct {
 	Config EnvConfig
 	data   map[string]string
-	logger interfaces.ILogger
 }
 
 type EnvConfig struct {
@@ -29,7 +28,6 @@ func NewEnv(cfg EnvConfig) *Env {
 
 func (t *Env) Init(app interfaces.IService) error {
 	t.data = make(map[string]string, 20)
-	t.logger = app.GetLogger()
 
 	if t.Config.FName == "" {
 		t.Config.FName = ".env"
@@ -41,8 +39,6 @@ func (t *Env) Init(app interfaces.IService) error {
 		if err == nil {
 			err = fmt.Errorf("file %s is empty", t.Config.FName)
 		}
-
-		t.logger.Error(err)
 	} else {
 		t.ParseFile(f)
 	}
@@ -140,7 +136,7 @@ func (t *Env) GetBool(key string, def bool) bool {
 		b, err := strconv.ParseBool(val)
 
 		if err != nil {
-			t.logger.Error(err)
+			fmt.Println(err)
 		} else {
 			return b
 		}
@@ -152,7 +148,7 @@ func (t *Env) GetBool(key string, def bool) bool {
 		b, err := strconv.ParseBool(val)
 
 		if err != nil {
-			t.logger.Error(err)
+			fmt.Println(err)
 		} else {
 			t.data[key] = val
 			return b
@@ -170,7 +166,7 @@ func (t *Env) GetInt(key string, def int) int {
 		i, err := strconv.ParseInt(val, 10, 32)
 
 		if err != nil {
-			t.logger.Error(err)
+			fmt.Println(err)
 		} else {
 			return int(i)
 		}
@@ -182,7 +178,7 @@ func (t *Env) GetInt(key string, def int) int {
 		i, err := strconv.ParseInt(val, 10, 32)
 
 		if err != nil {
-			t.logger.Error(err)
+			fmt.Println(err)
 		} else {
 			t.data[key] = val
 			return int(i)
@@ -199,7 +195,7 @@ func (t *Env) GetFloat(key string, def float64) float64 {
 		i, err := strconv.ParseFloat(val, 64)
 
 		if err != nil {
-			t.logger.Error(err)
+			fmt.Println(err)
 		} else {
 			return i
 		}
@@ -211,7 +207,7 @@ func (t *Env) GetFloat(key string, def float64) float64 {
 		i, err := strconv.ParseFloat(val, 64)
 
 		if err != nil {
-			t.logger.Error(err)
+			fmt.Println(err)
 		} else {
 			t.data[key] = val
 			return i
@@ -234,7 +230,7 @@ func (t *Env) GetMapString(key string, def map[string]string) map[string]string 
 	for _, value := range values {
 		v := strings.Split(value, t.Config.ValueItemDelimiter)
 		if len(v) != 2 {
-			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			fmt.Println(fmt.Errorf("invalid map row %s", value))
 			continue
 		}
 
@@ -258,7 +254,7 @@ func (t *Env) GetMapBool(key string, def map[string]bool) map[string]bool {
 	for _, value := range values {
 		v := strings.Split(value, t.Config.ValueItemDelimiter)
 		if len(v) != 2 {
-			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			fmt.Println(fmt.Errorf("invalid map row %s", value))
 			continue
 		}
 
@@ -281,7 +277,7 @@ func (t *Env) GetMapInt(key string, def map[string]int) map[string]int {
 	for _, value := range values {
 		v := strings.Split(value, t.Config.ValueItemDelimiter)
 		if len(v) != 2 {
-			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			fmt.Println(fmt.Errorf("invalid map row %s", value))
 			continue
 		}
 
@@ -305,7 +301,7 @@ func (t *Env) GetMapFloat(key string, def map[string]float64) map[string]float64
 	for _, value := range values {
 		v := strings.Split(value, t.Config.ValueItemDelimiter)
 		if len(v) != 2 {
-			t.logger.Error(fmt.Errorf("invalid map row %s", value))
+			fmt.Println(fmt.Errorf("invalid map row %s", value))
 			continue
 		}
 
