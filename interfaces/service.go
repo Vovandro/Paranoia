@@ -18,6 +18,9 @@ type IService interface {
 	GetModule(key string) IModules
 	PushRepository(c IRepository) IService
 	GetRepository(key string) IRepository
+	PushTask(c ITask) IService
+	GetTask(key string) ITask
+	RemoveTask(key string)
 	PushServer(c IServer) IService
 	GetServer(key string) IServer
 	PushClient(c IClient) IService
