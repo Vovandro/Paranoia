@@ -15,7 +15,7 @@ type Http struct {
 	Name   string
 	Config HttpConfig
 
-	app    interfaces.IService
+	app    interfaces.IEngine
 	router *Router
 	server *http.Server
 	md     func(interfaces.RouteFunc) interfaces.RouteFunc
@@ -43,7 +43,7 @@ func NewHttp(name string, cfg HttpConfig) *Http {
 	}
 }
 
-func (t *Http) Init(app interfaces.IService) error {
+func (t *Http) Init(app interfaces.IEngine) error {
 	t.app = app
 
 	t.router = NewRouter(app)

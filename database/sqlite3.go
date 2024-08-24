@@ -14,7 +14,7 @@ import (
 type Sqlite3 struct {
 	Name   string
 	Config Sqlite3Config
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client *sql.DB
 
 	counter     metric.Int64Counter
@@ -32,7 +32,7 @@ func NewSqlite3(name string, cfg Sqlite3Config) *Sqlite3 {
 	}
 }
 
-func (t *Sqlite3) Init(app interfaces.IService) error {
+func (t *Sqlite3) Init(app interfaces.IEngine) error {
 	t.app = app
 	var err error
 

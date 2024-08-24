@@ -26,7 +26,7 @@ func NewEnv(cfg EnvConfig) *Env {
 	}
 }
 
-func (t *Env) Init(app interfaces.IService) error {
+func (t *Env) Init(app interfaces.IEngine) error {
 	t.data = make(map[string]string, 20)
 
 	if t.Config.FName == "" {

@@ -14,7 +14,7 @@ import (
 type MetricStd struct {
 	cfg      MetricStdConfig
 	exporter metric.Exporter
-	app      interfaces.IService
+	app      interfaces.IEngine
 }
 
 type MetricStdConfig struct {
@@ -26,7 +26,7 @@ func NewMetricStd(cfg MetricStdConfig) *MetricStd {
 	return &MetricStd{cfg: cfg}
 }
 
-func (t *MetricStd) Init(app interfaces.IService) error {
+func (t *MetricStd) Init(app interfaces.IEngine) error {
 	t.app = app
 
 	res, err := resource.Merge(resource.Default(),

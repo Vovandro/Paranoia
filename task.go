@@ -18,13 +18,13 @@ type task struct {
 	tasks     map[string]interfaces.ITask
 	runCfg    map[string][]taskRun
 	taskMutex sync.RWMutex
-	app       interfaces.IService
+	app       interfaces.IEngine
 
 	done chan interface{}
 	end  sync.WaitGroup
 }
 
-func (t *task) Init(app interfaces.IService) {
+func (t *task) Init(app interfaces.IEngine) {
 	t.app = app
 	t.tasks = make(map[string]interfaces.ITask, 20)
 	t.runCfg = make(map[string][]taskRun, 20)

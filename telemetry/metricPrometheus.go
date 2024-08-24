@@ -15,7 +15,7 @@ import (
 )
 
 type MetricPrometheus struct {
-	app      interfaces.IService
+	app      interfaces.IEngine
 	cfg      MetricsPrometheusConfig
 	server   *http.Server
 	exporter metric.Reader
@@ -31,7 +31,7 @@ func NewPrometheusMetrics(cfg MetricsPrometheusConfig) *MetricPrometheus {
 	return &MetricPrometheus{cfg: cfg}
 }
 
-func (t *MetricPrometheus) Init(app interfaces.IService) error {
+func (t *MetricPrometheus) Init(app interfaces.IEngine) error {
 	t.app = app
 
 	res, err := resource.Merge(resource.Default(),

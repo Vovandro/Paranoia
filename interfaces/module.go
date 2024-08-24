@@ -1,7 +1,7 @@
 package interfaces
 
 type IModules interface {
-	Init(app IService) error
+	Init(app IEngine) error
 	Stop() error
 	String() string
 }

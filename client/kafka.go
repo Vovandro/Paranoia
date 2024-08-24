@@ -13,7 +13,7 @@ import (
 type KafkaClient struct {
 	Name     string
 	Config   KafkaClientConfig
-	app      interfaces.IService
+	app      interfaces.IEngine
 	producer *kafka.Producer
 
 	counter      metric.Int64Counter
@@ -35,7 +35,7 @@ func NewKafkaClient(name string, cfg KafkaClientConfig) *KafkaClient {
 	}
 }
 
-func (t *KafkaClient) Init(app interfaces.IService) error {
+func (t *KafkaClient) Init(app interfaces.IEngine) error {
 	var err error
 
 	t.app = app

@@ -14,7 +14,7 @@ func NewMock(data map[string]interface{}) *Mock {
 	}
 }
 
-func (t *Mock) Init(_ interfaces.IService) error {
+func (t *Mock) Init(_ interfaces.IEngine) error {
 	if t.Data == nil {
 		t.Data = make(map[string]interface{})
 	}

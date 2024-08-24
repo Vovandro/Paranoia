@@ -34,6 +34,7 @@
 
 - Restore from panic
 - Register timing middleware (default use)
+- Timeout request
 
 ### Clients
 
@@ -48,3 +49,5 @@
 ### Other
 
 - Initialize base engine module from yaml config file
+- Regulatory task system 
+- Sentry log

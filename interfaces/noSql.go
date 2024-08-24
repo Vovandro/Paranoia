@@ -3,7 +3,7 @@ package interfaces
 import "context"
 
 type INoSql interface {
-	Init(app IService) error
+	Init(app IEngine) error
 	Stop() error
 	String() string
 

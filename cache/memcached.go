@@ -17,7 +17,7 @@ type Memcached struct {
 	Name   string
 	Config MemcachedConfig
 
-	app          interfaces.IService
+	app          interfaces.IEngine
 	client       *memcache.Client
 	counterRead  metric.Int64Counter
 	counterWrite metric.Int64Counter
@@ -37,7 +37,7 @@ func NewMemcached(name string, cfg MemcachedConfig) *Memcached {
 	}
 }
 
-func (t *Memcached) Init(app interfaces.IService) error {
+func (t *Memcached) Init(app interfaces.IEngine) error {
 	t.app = app
 
 	if t.Config.Timeout == 0 {

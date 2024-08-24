@@ -12,7 +12,7 @@ import (
 func TestEnv_GetBool(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  interfaces.IService
+		app  interfaces.IEngine
 	}
 	type args struct {
 		key string
@@ -115,7 +115,7 @@ func TestEnv_GetBool(t1 *testing.T) {
 func TestEnv_GetFloat(t1 *testing.T) {
 	type fields struct {
 		data map[string]string
-		app  interfaces.IService
+		app  interfaces.IEngine
 	}
 	type args struct {
 		key string
@@ -446,7 +446,7 @@ func TestEnv_Init(t1 *testing.T) {
 
 			_ = os.WriteFile(tt.file.FName, []byte(tt.file.FileData), 0666)
 
-			if err := t.Init(&Paranoia.Service{}); (err != nil) != tt.wantErr {
+			if err := t.Init(&Paranoia.Engine{}); (err != nil) != tt.wantErr {
 				t1.Errorf("Init() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

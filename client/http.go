@@ -15,7 +15,7 @@ import (
 type HTTPClient struct {
 	Name   string
 	Config HTTPClientConfig
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client http.Client
 
 	counter      metric.Int64Counter
@@ -34,7 +34,7 @@ func NewHTTPClient(name string, cfg HTTPClientConfig) *HTTPClient {
 	}
 }
 
-func (t *HTTPClient) Init(app interfaces.IService) error {
+func (t *HTTPClient) Init(app interfaces.IEngine) error {
 	t.app = app
 	t.client = http.Client{}
 

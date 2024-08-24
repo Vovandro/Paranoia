@@ -6,7 +6,7 @@ type ITaskRunConfiguration interface {
 }
 
 type ITask interface {
-	Init(app IService) error
+	Init(app IEngine) error
 	Stop() error
 	String() string
 	Start() []ITaskRunConfiguration

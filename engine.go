@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type Service struct {
+type Engine struct {
 	name string
 
 	starting bool
@@ -24,14 +24,15 @@ type Service struct {
 	controllers map[string]interfaces.IController
 	modules     map[string]interfaces.IModules
 	repository  map[string]interfaces.IRepository
+	service     map[string]interfaces.IService
 	servers     map[string]interfaces.IServer
 	clients     map[string]interfaces.IClient
 	storage     map[string]interfaces.IStorage
 	middlewares map[string]interfaces.IMiddleware
 }
 
-func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
-	t := &Service{}
+func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Engine {
+	t := &Engine{}
 
 	t.starting = false
 	t.name = name
@@ -44,6 +45,7 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.controllers = make(map[string]interfaces.IController)
 	t.modules = make(map[string]interfaces.IModules)
 	t.repository = make(map[string]interfaces.IRepository)
+	t.service = make(map[string]interfaces.IService)
 	t.servers = make(map[string]interfaces.IServer)
 	t.storage = make(map[string]interfaces.IStorage)
 	t.clients = make(map[string]interfaces.IClient)
@@ -72,15 +74,15 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	return t
 }
 
-func (t *Service) GetLogger() interfaces.ILogger {
+func (t *Engine) GetLogger() interfaces.ILogger {
 	return t.logger
 }
 
-func (t *Service) GetConfig() interfaces.IConfig {
+func (t *Engine) GetConfig() interfaces.IConfig {
 	return t.config
 }
 
-func (t *Service) SetMetrics(c interfaces.IMetrics) {
+func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 	if t.metricExporter != nil {
 		t.metricExporter.Stop()
 	}
@@ -96,125 +98,135 @@ func (t *Service) SetMetrics(c interfaces.IMetrics) {
 	}
 }
 
-func (t *Service) PushCache(c interfaces.ICache) interfaces.IService {
+func (t *Engine) PushCache(c interfaces.ICache) interfaces.IEngine {
 	t.cache[c.String()] = c
 
 	return t
 }
 
-func (t *Service) GetCache(key string) interfaces.ICache {
+func (t *Engine) GetCache(key string) interfaces.ICache {
 	return t.cache[key]
 }
 
-func (t *Service) PushDatabase(b interfaces.IDatabase) interfaces.IService {
+func (t *Engine) PushDatabase(b interfaces.IDatabase) interfaces.IEngine {
 	t.database[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetDatabase(key string) interfaces.IDatabase {
+func (t *Engine) GetDatabase(key string) interfaces.IDatabase {
 	return t.database[key]
 }
 
-func (t *Service) PushNoSql(b interfaces.INoSql) interfaces.IService {
+func (t *Engine) PushNoSql(b interfaces.INoSql) interfaces.IEngine {
 	t.noSql[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetNoSql(key string) interfaces.INoSql {
+func (t *Engine) GetNoSql(key string) interfaces.INoSql {
 	return t.noSql[key]
 }
 
-func (t *Service) PushController(b interfaces.IController) interfaces.IService {
+func (t *Engine) PushController(b interfaces.IController) interfaces.IEngine {
 	t.controllers[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetController(key string) interfaces.IController {
+func (t *Engine) GetController(key string) interfaces.IController {
 	return t.controllers[key]
 }
 
-func (t *Service) PushModule(b interfaces.IModules) interfaces.IService {
+func (t *Engine) PushModule(b interfaces.IModules) interfaces.IEngine {
 	t.modules[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetModule(key string) interfaces.IModules {
+func (t *Engine) GetModule(key string) interfaces.IModules {
 	return t.modules[key]
 }
 
-func (t *Service) PushRepository(b interfaces.IRepository) interfaces.IService {
+func (t *Engine) PushRepository(b interfaces.IRepository) interfaces.IEngine {
 	t.repository[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetRepository(key string) interfaces.IRepository {
+func (t *Engine) GetRepository(key string) interfaces.IRepository {
 	return t.repository[key]
 }
 
-func (t *Service) PushServer(b interfaces.IServer) interfaces.IService {
+func (t *Engine) PushService(b interfaces.IService) interfaces.IEngine {
+	t.service[b.String()] = b
+
+	return t
+}
+
+func (t *Engine) GetService(key string) interfaces.IService {
+	return t.repository[key]
+}
+
+func (t *Engine) PushServer(b interfaces.IServer) interfaces.IEngine {
 	t.servers[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetTask(key string) interfaces.ITask {
+func (t *Engine) GetTask(key string) interfaces.ITask {
 	return t.task.GetTask(key)
 }
 
-func (t *Service) PushTask(b interfaces.ITask) interfaces.IService {
+func (t *Engine) PushTask(b interfaces.ITask) interfaces.IEngine {
 	t.task.PushTask(b, t.starting)
 
 	return t
 }
 
-func (t *Service) RemoveTask(key string) {
+func (t *Engine) RemoveTask(key string) {
 	t.task.RemoveTask(key)
 }
 
-func (t *Service) RunTask(key string, args map[string]interface{}) error {
+func (t *Engine) RunTask(key string, args map[string]interface{}) error {
 	return t.task.RunTask(key, args)
 }
 
-func (t *Service) GetServer(key string) interfaces.IServer {
+func (t *Engine) GetServer(key string) interfaces.IServer {
 	return t.servers[key]
 }
 
-func (t *Service) PushClient(b interfaces.IClient) interfaces.IService {
+func (t *Engine) PushClient(b interfaces.IClient) interfaces.IEngine {
 	t.clients[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetClient(key string) interfaces.IClient {
+func (t *Engine) GetClient(key string) interfaces.IClient {
 	return t.clients[key]
 }
 
-func (t *Service) PushStorage(b interfaces.IStorage) interfaces.IService {
+func (t *Engine) PushStorage(b interfaces.IStorage) interfaces.IEngine {
 	t.storage[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetStorage(key string) interfaces.IStorage {
+func (t *Engine) GetStorage(key string) interfaces.IStorage {
 	return t.storage[key]
 }
 
-func (t *Service) PushMiddleware(b interfaces.IMiddleware) interfaces.IService {
+func (t *Engine) PushMiddleware(b interfaces.IMiddleware) interfaces.IEngine {
 	t.middlewares[b.String()] = b
 
 	return t
 }
 
-func (t *Service) GetMiddleware(key string) interfaces.IMiddleware {
+func (t *Engine) GetMiddleware(key string) interfaces.IMiddleware {
 	return t.middlewares[key]
 }
 
-func (t *Service) Init() error {
+func (t *Engine) Init() error {
 	var err error = nil
 
 	for _, cache := range t.cache {
@@ -301,6 +313,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	for _, service := range t.service {
+		err = service.Init(t)
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
 	for _, module := range t.modules {
 		err = module.Init(t)
 
@@ -343,7 +364,7 @@ func (t *Service) Init() error {
 	return err
 }
 
-func (t *Service) Stop() error {
+func (t *Engine) Stop() error {
 	var err error = nil
 
 	t.starting = false
@@ -379,6 +400,15 @@ func (t *Service) Stop() error {
 
 	for _, module := range t.modules {
 		err = module.Stop()
+
+		if err != nil {
+			t.logger.Fatal(err)
+			return err
+		}
+	}
+
+	for _, service := range t.service {
+		err = service.Stop()
 
 		if err != nil {
 			t.logger.Fatal(err)

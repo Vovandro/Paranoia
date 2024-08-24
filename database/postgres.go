@@ -13,7 +13,7 @@ import (
 type Postgres struct {
 	Name   string
 	Config PostgresConfig
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client *pgx.Conn
 
 	counter     metric.Int64Counter
@@ -31,7 +31,7 @@ func NewPostgres(name string, cfg PostgresConfig) *Postgres {
 	}
 }
 
-func (t *Postgres) Init(app interfaces.IService) error {
+func (t *Postgres) Init(app interfaces.IEngine) error {
 	t.app = app
 	var err error
 

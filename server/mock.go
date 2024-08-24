@@ -8,7 +8,7 @@ type Mock struct {
 	Name          string
 	RouteRegister func(router *Router)
 
-	app    interfaces.IService
+	app    interfaces.IEngine
 	router *Router
 }
 
@@ -18,7 +18,7 @@ func NewMock(name string) *Mock {
 	}
 }
 
-func (t *Mock) Init(app interfaces.IService) error {
+func (t *Mock) Init(app interfaces.IEngine) error {
 	t.app = app
 	t.router = NewRouter(app)
 

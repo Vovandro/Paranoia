@@ -16,7 +16,7 @@ import (
 type MongoDB struct {
 	Name   string
 	Config MongoDBConfig
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client *mongo.Client
 	db     *mongo.Database
 
@@ -40,7 +40,7 @@ func NewMongoDB(name string, cfg MongoDBConfig) *MongoDB {
 	}
 }
 
-func (t *MongoDB) Init(app interfaces.IService) error {
+func (t *MongoDB) Init(app interfaces.IEngine) error {
 	t.app = app
 	var err error
 	var opt options.ClientOptions

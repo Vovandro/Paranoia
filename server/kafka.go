@@ -17,7 +17,7 @@ type Kafka struct {
 
 	Config KafkaConfig
 
-	app      interfaces.IService
+	app      interfaces.IEngine
 	router   *Router
 	consumer *kafka.Consumer
 	done     chan interface{}
@@ -46,7 +46,7 @@ func NewKafka(name string, cfg KafkaConfig) *Kafka {
 	}
 }
 
-func (t *Kafka) Init(app interfaces.IService) error {
+func (t *Kafka) Init(app interfaces.IEngine) error {
 	var err error
 	t.app = app
 	t.done = make(chan interface{})

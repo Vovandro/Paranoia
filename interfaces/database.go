@@ -5,7 +5,7 @@ import (
 )
 
 type IDatabase interface {
-	Init(app IService) error
+	Init(app IEngine) error
 	Stop() error
 	String() string
 
