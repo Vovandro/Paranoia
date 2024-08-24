@@ -118,6 +118,8 @@ func (t *task) Start() {
 			}
 		}
 	}
+
+	go t.run()
 }
 
 func (t *task) Stop() {
