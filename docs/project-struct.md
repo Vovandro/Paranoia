@@ -12,6 +12,7 @@
 s := Paranoia.New("minimal paranoia app", config.NewMock(nil), logger.NewMock()).
         PushController(MyController.New()).
         PushController(HelloController.New()).
+        PushService(HelloService.New()).
         PushRepository(UserRepository.New())
 ```
 
@@ -19,7 +20,17 @@ s := Paranoia.New("minimal paranoia app", config.NewMock(nil), logger.NewMock())
 
 ```go
 type IController interface {
-	Init(app IService) error
+	Init(app IEngine) error
+	Stop() error
+	String() string
+}
+```
+
+Сервисы:
+
+```go
+type IService interface {
+	Init(app IEngine) error
 	Stop() error
 	String() string
 }
@@ -29,7 +40,7 @@ type IController interface {
 
 ```go
 type IRepository interface {
-	Init(app IService) error
+	Init(app IEngine) error
 	Stop() error
 	String() string
 }
@@ -39,7 +50,7 @@ type IRepository interface {
 
 ```go
 type IModules interface {
-	Init(app IService) error
+	Init(app IEngine) error
 	Stop() error
 	String() string
 }
@@ -47,7 +58,7 @@ type IModules interface {
 
 Все структуры в методе `String()` должны возвращать уникальное имя.
 
-В методе `Init(app IService) error` допускается получение других модулей фреймворка, они в этот момент уже проинициализированы. 
+В методе `Init(app IEngine) error` допускается получение других модулей фреймворка, они в этот момент уже проинициализированы. 
 
 В методе `Stop() error` необходимо корректно завершить работу и освободить занятые ресурсы
 
@@ -55,11 +66,11 @@ type IModules interface {
 
 ```go
 type NewsController struct {
-	app            interfaces.IService
+	app            interfaces.IEngine
 	newsRepository NewsRepository.INewsRepository
 }
 
-func (t *NewsController) Init(app interfaces.IService) error {
+func (t *NewsController) Init(app interfaces.IEngine) error {
 	t.app = app
 	t.newsRepository = app.GetRepository("NewsRepository").(NewsRepository.INewsRepository)
 

@@ -27,7 +27,7 @@ type Data struct {
 type Auto struct {
 	cfg AutoConfig
 
-	app  interfaces.IService
+	app  interfaces.IEngine
 	data Data
 }
 
@@ -315,7 +315,7 @@ func (t cfgItem) Scan(to interface{}) error {
 	return nil
 }
 
-func (t *Auto) Init(app interfaces.IService) error {
+func (t *Auto) Init(app interfaces.IEngine) error {
 	t.app = app
 
 	if t.data.Engine == nil {

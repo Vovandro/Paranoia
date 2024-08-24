@@ -15,7 +15,7 @@ import (
 type Aerospike struct {
 	Name   string
 	Config AerospikeConfig
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client *aerospike.Client
 
 	counter     metric.Int64Counter
@@ -35,7 +35,7 @@ func NewAerospike(name string, cfg AerospikeConfig) *Aerospike {
 	}
 }
 
-func (t *Aerospike) Init(app interfaces.IService) error {
+func (t *Aerospike) Init(app interfaces.IEngine) error {
 	t.app = app
 	var err error
 

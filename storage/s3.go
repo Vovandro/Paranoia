@@ -10,7 +10,7 @@ import (
 
 type S3 struct {
 	Name   string
-	app    interfaces.IService
+	app    interfaces.IEngine
 	config S3Config
 	client *minio.Client
 }
@@ -29,7 +29,7 @@ func NewS3(name string, cfg S3Config) interfaces.IStorage {
 	return &S3{Name: name, config: cfg}
 }
 
-func (t *S3) Init(app interfaces.IService) error {
+func (t *S3) Init(app interfaces.IEngine) error {
 	t.app = app
 	var err error
 

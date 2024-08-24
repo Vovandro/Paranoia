@@ -14,7 +14,7 @@ import (
 type MySQL struct {
 	Name   string
 	Config MySQLConfig
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client *sql.DB
 
 	counter     metric.Int64Counter
@@ -32,7 +32,7 @@ func NewMySQL(name string, cfg MySQLConfig) *MySQL {
 	}
 }
 
-func (t *MySQL) Init(app interfaces.IService) error {
+func (t *MySQL) Init(app interfaces.IEngine) error {
 	t.app = app
 	var err error
 

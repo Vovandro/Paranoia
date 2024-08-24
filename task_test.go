@@ -12,7 +12,7 @@ type testTask struct {
 	cfg   []interfaces.ITaskRunConfiguration
 }
 
-func (t *testTask) Init(app interfaces.IService) error        { return nil }
+func (t *testTask) Init(app interfaces.IEngine) error         { return nil }
 func (t *testTask) Stop() error                               { return nil }
 func (t *testTask) String() string                            { return "test" }
 func (t *testTask) Start() []interfaces.ITaskRunConfiguration { return t.cfg }

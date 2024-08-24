@@ -14,7 +14,7 @@ import (
 type ClickHouse struct {
 	Name   string
 	Config ClickHouseConfig
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client driver.Conn
 
 	counter     metric.Int64Counter
@@ -35,7 +35,7 @@ func NewClickHouse(name string, cfg ClickHouseConfig) *ClickHouse {
 	}
 }
 
-func (t *ClickHouse) Init(app interfaces.IService) error {
+func (t *ClickHouse) Init(app interfaces.IEngine) error {
 	t.app = app
 	var err error
 

@@ -17,7 +17,7 @@ func NewTimingMiddleware(name string) interfaces.IMiddleware {
 	}
 }
 
-func (t *TimingMiddleware) Init(app interfaces.IService) error {
+func (t *TimingMiddleware) Init(app interfaces.IEngine) error {
 	t.logger = app.GetLogger()
 	return nil
 }

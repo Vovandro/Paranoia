@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestService_PushCache(t1 *testing.T) {
+func TestEngine_PushCache(t1 *testing.T) {
 	s := Paranoia.New("test", nil, nil)
 
 	mockCache := cache.Memory{Name: "mock"}

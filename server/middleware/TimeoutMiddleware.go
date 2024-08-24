@@ -21,7 +21,7 @@ func NewTimeoutMiddleware(name string, cfg TimeoutMiddlewareConfig) interfaces.I
 	}
 }
 
-func (t *TimeoutMiddleware) Init(app interfaces.IService) error {
+func (t *TimeoutMiddleware) Init(app interfaces.IEngine) error {
 	return nil
 }
 

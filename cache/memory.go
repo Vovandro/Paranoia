@@ -41,7 +41,7 @@ func NewMemory(name string, cfg MemoryConfig) *Memory {
 	}
 }
 
-func (t *Memory) Init(app interfaces.IService) error {
+func (t *Memory) Init(app interfaces.IEngine) error {
 	t.pool.New = func() any {
 		return &cacheItem{}
 	}

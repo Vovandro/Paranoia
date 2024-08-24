@@ -18,12 +18,12 @@ type dynamicRouter struct {
 }
 
 type Router struct {
-	app     interfaces.IService
+	app     interfaces.IEngine
 	static  map[string]map[string]interfaces.RouteFunc
 	dynamic map[string]dynamicRouter
 }
 
-func NewRouter(app interfaces.IService) *Router {
+func NewRouter(app interfaces.IEngine) *Router {
 	return &Router{
 		app:     app,
 		static:  make(map[string]map[string]interfaces.RouteFunc, 5),

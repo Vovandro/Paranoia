@@ -8,14 +8,14 @@ import (
 
 type File struct {
 	Name string
-	app  interfaces.IService
+	app  interfaces.IEngine
 }
 
 func NewFile(name string) interfaces.IStorage {
 	return &File{Name: name}
 }
 
-func (t *File) Init(app interfaces.IService) error {
+func (t *File) Init(app interfaces.IEngine) error {
 	t.app = app
 	return nil
 }

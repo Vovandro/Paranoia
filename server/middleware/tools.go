@@ -18,7 +18,7 @@ func HandlerFromList(middlewares []interfaces.IMiddleware) func(routeFunc interf
 	}
 }
 
-func HandlerFromStrings(app interfaces.IService, middlewares []string) func(routeFunc interfaces.RouteFunc) interfaces.RouteFunc {
+func HandlerFromStrings(app interfaces.IEngine, middlewares []string) func(routeFunc interfaces.RouteFunc) interfaces.RouteFunc {
 	m := make([]interfaces.IMiddleware, 0, len(middlewares))
 
 	for _, middleware := range middlewares {

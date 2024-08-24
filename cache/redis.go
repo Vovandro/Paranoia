@@ -15,7 +15,7 @@ type Redis struct {
 	Name   string
 	Config RedisConfig
 
-	app    interfaces.IService
+	app    interfaces.IEngine
 	client iRedis
 
 	counterRead  metric.Int64Counter
@@ -56,7 +56,7 @@ func NewRedis(name string, cfg RedisConfig) *Redis {
 	}
 }
 
-func (t *Redis) Init(app interfaces.IService) error {
+func (t *Redis) Init(app interfaces.IEngine) error {
 	t.app = app
 
 	if t.Config.UseCluster {

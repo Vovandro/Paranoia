@@ -16,7 +16,7 @@ func NewRestoreMiddleware(name string) interfaces.IMiddleware {
 	}
 }
 
-func (t *RestoreMiddleware) Init(app interfaces.IService) error {
+func (t *RestoreMiddleware) Init(app interfaces.IEngine) error {
 	t.logger = app.GetLogger()
 	return nil
 }
