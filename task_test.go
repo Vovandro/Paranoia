@@ -19,19 +19,19 @@ func (t *testTask) Start() []interfaces.ITaskRunConfiguration { return t.cfg }
 func (t *testTask) Invoke(map[string]interface{})             { t.count.Add(1) }
 
 func Test_task_run(t1 *testing.T) {
-	reset := make(chan time.Duration, 1)
-	defer close(reset)
-
-	tsk := &testTask{
-		cfg: []interfaces.ITaskRunConfiguration{
-			&interfaces.TaskRunAfter{
-				Restart: reset,
-				After:   time.Millisecond * 1000,
-			},
-		},
-	}
-
 	t1.Run("base test", func(t1 *testing.T) {
+		reset := make(chan time.Duration, 1)
+		defer close(reset)
+
+		tsk := &testTask{
+			cfg: []interfaces.ITaskRunConfiguration{
+				&interfaces.TaskRunAfter{
+					Restart: reset,
+					After:   time.Millisecond * 1000,
+				},
+			},
+		}
+
 		t := task{}
 		t.Init(nil)
 		t.Start()
@@ -58,11 +58,11 @@ func Test_task_run(t1 *testing.T) {
 }
 
 func Test_task_ManualRun(t1 *testing.T) {
-	tsk := &testTask{
-		cfg: []interfaces.ITaskRunConfiguration{},
-	}
-
 	t1.Run("base test", func(t1 *testing.T) {
+		tsk := &testTask{
+			cfg: []interfaces.ITaskRunConfiguration{},
+		}
+
 		t := task{}
 		t.Init(nil)
 		t.Start()
