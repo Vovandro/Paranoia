@@ -262,3 +262,20 @@ func (t *Redis) Delete(key string) error {
 
 	return t.client.Del(context.Background(), key).Err()
 }
+
+func (t *Redis) Expire(key string, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
+	err := t.client.Expire(context.Background(), key, timeout).Err()
+
+	if errors.Is(err, redis.Nil) {
+		return ErrKeyNotFound
+	} else if err != nil {
+		return err
+	}
+
+	return nil
+}

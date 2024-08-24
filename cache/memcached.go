@@ -297,3 +297,21 @@ func (t *Memcached) Delete(key string) error {
 
 	return err
 }
+
+func (t *Memcached) Expire(key string, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
+	err := t.client.Touch(key, int32(timeout.Seconds()))
+
+	if err != nil {
+		if errors.Is(err, memcache.ErrCacheMiss) {
+			return ErrKeyNotFound
+		}
+		return err
+	}
+
+	return nil
+}

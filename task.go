@@ -144,7 +144,7 @@ func (t *task) run() {
 	for {
 		t.taskMutex.RLock()
 		for key, configs := range t.runCfg {
-			for i := range len(configs) {
+			for i := 0; i < len(configs); i++ {
 				if configs[i].enable.Load() {
 					select {
 					case <-configs[i].c.C:

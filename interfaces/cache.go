@@ -182,4 +182,5 @@ type ICache interface {
 	   - error: An error if the deletion operation encounters any issues.
 	*/
 	Delete(key string) error
+	Expire(key string, timeout time.Duration) error
 }
