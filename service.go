@@ -10,9 +10,13 @@ import (
 type Service struct {
 	name string
 
+	starting bool
+
 	config         interfaces.IConfig
 	logger         interfaces.ILogger
 	metricExporter interfaces.IMetrics
+
+	task task
 
 	cache       map[string]interfaces.ICache
 	database    map[string]interfaces.IDatabase
@@ -29,6 +33,7 @@ type Service struct {
 func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
 	t := &Service{}
 
+	t.starting = false
 	t.name = name
 	t.config = config
 	t.logger = logger
@@ -43,6 +48,8 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.storage = make(map[string]interfaces.IStorage)
 	t.clients = make(map[string]interfaces.IClient)
 	t.middlewares = make(map[string]interfaces.IMiddleware)
+
+	t.task.Init(t)
 
 	if t.config != nil {
 		err := t.config.Init(t)
@@ -153,6 +160,24 @@ func (t *Service) PushServer(b interfaces.IServer) interfaces.IService {
 	t.servers[b.String()] = b
 
 	return t
+}
+
+func (t *Service) GetTask(key string) interfaces.ITask {
+	return t.task.GetTask(key)
+}
+
+func (t *Service) PushTask(b interfaces.ITask) interfaces.IService {
+	t.task.PushTask(b, t.starting)
+
+	return t
+}
+
+func (t *Service) RemoveTask(key string) {
+	t.task.RemoveTask(key)
+}
+
+func (t *Service) RunTask(key string, args map[string]interface{}) error {
+	return t.task.RunTask(key, args)
 }
 
 func (t *Service) GetServer(key string) interfaces.IServer {
@@ -294,6 +319,8 @@ func (t *Service) Init() error {
 		}
 	}
 
+	t.task.Start()
+
 	for _, server := range t.servers {
 		err = server.Start()
 
@@ -311,11 +338,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	t.starting = true
+
 	return err
 }
 
 func (t *Service) Stop() error {
 	var err error = nil
+
+	t.starting = false
 
 	for _, server := range t.servers {
 		err = server.Stop()
@@ -325,6 +356,8 @@ func (t *Service) Stop() error {
 			return err
 		}
 	}
+
+	t.task.Stop()
 
 	for _, item := range t.middlewares {
 		err = item.Stop()
