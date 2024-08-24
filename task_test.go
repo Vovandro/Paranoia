@@ -39,7 +39,14 @@ func Test_task_run(t1 *testing.T) {
 
 		time.Sleep(time.Second)
 		reset <- time.Millisecond * 100
-		time.Sleep(time.Second)
+
+		for i := 0; i < 5; i++ {
+			time.Sleep(time.Second)
+
+			if tsk.count == 2 {
+				break
+			}
+		}
 
 		t.Stop()
 
