@@ -58,7 +58,7 @@ func (t *task) PushTask(b interfaces.ITask, run bool) {
 		t.runCfg[b.String()] = make([]taskRun, len(cfgs))
 
 		for i, cfg := range cfgs {
-			if c, ok := cfg.(interfaces.TaskRunAfter); ok {
+			if c, ok := cfg.(*interfaces.TaskRunAfter); ok {
 				t.runCfg[b.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(c.After),
@@ -66,7 +66,7 @@ func (t *task) PushTask(b interfaces.ITask, run bool) {
 				}
 
 				t.runCfg[b.String()][i].enable.Store(true)
-			} else if c, ok := cfg.(interfaces.TaskRunTime); ok {
+			} else if c, ok := cfg.(*interfaces.TaskRunTime); ok {
 				t.runCfg[b.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(time.Until(c.To)),
@@ -99,7 +99,7 @@ func (t *task) Start() {
 		t.runCfg[item.String()] = make([]taskRun, len(cfgs))
 
 		for i, cfg := range cfgs {
-			if c, ok := cfg.(interfaces.TaskRunAfter); ok {
+			if c, ok := cfg.(*interfaces.TaskRunAfter); ok {
 				t.runCfg[item.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(c.After),
@@ -107,7 +107,7 @@ func (t *task) Start() {
 				}
 
 				t.runCfg[item.String()][i].enable.Store(true)
-			} else if c, ok := cfg.(interfaces.TaskRunTime); ok {
+			} else if c, ok := cfg.(*interfaces.TaskRunTime); ok {
 				t.runCfg[item.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(time.Until(c.To)),
@@ -165,7 +165,7 @@ func (t *task) run() {
 						break
 					}
 
-					if c, ok := configs[i].cfg.(interfaces.TaskRunAfter); ok {
+					if c, ok := configs[i].cfg.(*interfaces.TaskRunAfter); ok {
 						select {
 						case r := <-c.Restart:
 							configs[i].c.Reset(r)
@@ -174,7 +174,7 @@ func (t *task) run() {
 						default:
 							break
 						}
-					} else if c, ok := configs[i].cfg.(interfaces.TaskRunTime); ok {
+					} else if c, ok := configs[i].cfg.(*interfaces.TaskRunTime); ok {
 						select {
 						case r := <-c.Restart:
 							configs[i].c.Reset(time.Until(r))
@@ -194,7 +194,7 @@ func (t *task) run() {
 		case <-t.done:
 			return
 
-		case <-time.After(time.Millisecond * 100):
+		case <-time.After(time.Millisecond * 10):
 			break
 		}
 	}
