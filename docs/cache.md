@@ -20,6 +20,7 @@
 - `IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error)` - Увеличивает счетчик в карте по ключу и поле по второму ключу на определенное значение и устанавливает время жизни всей карты, возвращает новое значение.
 - `Decrement(key string, val int64, timeout time.Duration) (int64, error)` - Уменьшает счетчик по ключу на определенное значение и устанавливает время жизни записи, возвращает новое значение.
 - `DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error)` - Уменьшает счетчик в карте по ключу и поле по второму ключу на определенное значение и устанавливает время жизни всей карты, возвращает новое значение.
+- `Expire(key string, timeout time.Duration) error` - Продлевает время жизни кеша
 - `Delete(key string) error` - Удаляет данные из кеша по ключу.
 
 Общие ошибки:

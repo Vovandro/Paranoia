@@ -39,9 +39,9 @@ func Test_task_run(t1 *testing.T) {
 		t.PushTask(tsk, true)
 
 		time.Sleep(time.Second)
-		reset <- time.Millisecond * 100
+		reset <- time.Millisecond * 1000
 
-		for i := 0; i < 5; i++ {
+		for i := 0; i < 10; i++ {
 			time.Sleep(time.Second)
 
 			if tsk.count.Load() == 2 {

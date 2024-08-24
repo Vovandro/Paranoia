@@ -337,3 +337,23 @@ func (t *Memory) Delete(key string) error {
 
 	return nil
 }
+
+func (t *Memory) Expire(key string, timeout time.Duration) error {
+	defer func(s time.Time) {
+		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counterWrite.Add(context.Background(), 1)
+
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	val, ok := t.data[key]
+
+	if !ok {
+		return ErrKeyNotFound
+	}
+
+	val.timeout = time.Now().Add(timeout)
+
+	return nil
+}
