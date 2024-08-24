@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"sync"
 	"time"
 )
 
 type Service struct {
 	name string
 
+	starting bool
+
 	config         interfaces.IConfig
 	logger         interfaces.ILogger
 	metricExporter interfaces.IMetrics
+
+	task task
 
 	cache       map[string]interfaces.ICache
 	database    map[string]interfaces.IDatabase
@@ -21,18 +24,16 @@ type Service struct {
 	controllers map[string]interfaces.IController
 	modules     map[string]interfaces.IModules
 	repository  map[string]interfaces.IRepository
-	task        map[string]interfaces.ITask
 	servers     map[string]interfaces.IServer
 	clients     map[string]interfaces.IClient
 	storage     map[string]interfaces.IStorage
 	middlewares map[string]interfaces.IMiddleware
-
-	taskMutex sync.RWMutex
 }
 
 func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Service {
 	t := &Service{}
 
+	t.starting = false
 	t.name = name
 	t.config = config
 	t.logger = logger
@@ -43,13 +44,12 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Ser
 	t.controllers = make(map[string]interfaces.IController)
 	t.modules = make(map[string]interfaces.IModules)
 	t.repository = make(map[string]interfaces.IRepository)
-	t.task = make(map[string]interfaces.ITask)
 	t.servers = make(map[string]interfaces.IServer)
 	t.storage = make(map[string]interfaces.IStorage)
 	t.clients = make(map[string]interfaces.IClient)
 	t.middlewares = make(map[string]interfaces.IMiddleware)
 
-	t.taskMutex = sync.RWMutex{}
+	t.task.Init(t)
 
 	if t.config != nil {
 		err := t.config.Init(t)
@@ -163,36 +163,21 @@ func (t *Service) PushServer(b interfaces.IServer) interfaces.IService {
 }
 
 func (t *Service) GetTask(key string) interfaces.ITask {
-	t.taskMutex.RLock()
-	defer t.taskMutex.RUnlock()
-
-	return t.task[key]
+	return t.task.GetTask(key)
 }
 
 func (t *Service) PushTask(b interfaces.ITask) interfaces.IService {
-	t.taskMutex.Lock()
-	defer t.taskMutex.Unlock()
-
-	if task, ok := t.task[b.String()]; ok {
-		_ = task.Stop()
-	}
-
-	t.task[b.String()] = b
-
-	_ = b.Init(t)
-	b.Start()
+	t.task.PushTask(b, t.starting)
 
 	return t
 }
 
 func (t *Service) RemoveTask(key string) {
-	t.taskMutex.Lock()
-	defer t.taskMutex.Unlock()
+	t.task.RemoveTask(key)
+}
 
-	if task, ok := t.task[key]; ok {
-		_ = task.Stop()
-		delete(t.task, key)
-	}
+func (t *Service) RunTask(key string, args map[string]interface{}) error {
+	return t.task.RunTask(key, args)
 }
 
 func (t *Service) GetServer(key string) interfaces.IServer {
@@ -334,6 +319,8 @@ func (t *Service) Init() error {
 		}
 	}
 
+	t.task.Start()
+
 	for _, server := range t.servers {
 		err = server.Start()
 
@@ -351,11 +338,15 @@ func (t *Service) Init() error {
 		}
 	}
 
+	t.starting = true
+
 	return err
 }
 
 func (t *Service) Stop() error {
 	var err error = nil
+
+	t.starting = false
 
 	for _, server := range t.servers {
 		err = server.Stop()
@@ -365,6 +356,8 @@ func (t *Service) Stop() error {
 			return err
 		}
 	}
+
+	t.task.Stop()
 
 	for _, item := range t.middlewares {
 		err = item.Stop()

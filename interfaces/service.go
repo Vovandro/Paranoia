@@ -21,6 +21,7 @@ type IService interface {
 	PushTask(c ITask) IService
 	GetTask(key string) ITask
 	RemoveTask(key string)
+	RunTask(key string, args map[string]interface{}) error
 	PushServer(c IServer) IService
 	GetServer(key string) IServer
 	PushClient(c IClient) IService
