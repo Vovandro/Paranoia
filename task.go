@@ -164,25 +164,25 @@ func (t *task) run() {
 					default:
 						break
 					}
+				}
 
-					if c, ok := configs[i].cfg.(*interfaces.TaskRunAfter); ok {
-						select {
-						case r := <-c.Restart:
-							configs[i].c.Reset(r)
-							configs[i].enable.Store(true)
+				if c, ok := configs[i].cfg.(*interfaces.TaskRunAfter); ok {
+					select {
+					case r := <-c.Restart:
+						configs[i].c.Reset(r)
+						configs[i].enable.Store(true)
 
-						default:
-							break
-						}
-					} else if c, ok := configs[i].cfg.(*interfaces.TaskRunTime); ok {
-						select {
-						case r := <-c.Restart:
-							configs[i].c.Reset(time.Until(r))
-							configs[i].enable.Store(true)
+					default:
+						break
+					}
+				} else if c, ok := configs[i].cfg.(*interfaces.TaskRunTime); ok {
+					select {
+					case r := <-c.Restart:
+						configs[i].c.Reset(time.Until(r))
+						configs[i].enable.Store(true)
 
-						default:
-							break
-						}
+					default:
+						break
 					}
 				}
 

@@ -27,7 +27,7 @@ func Test_task_run(t1 *testing.T) {
 			cfg: []interfaces.ITaskRunConfiguration{
 				&interfaces.TaskRunAfter{
 					Restart: reset,
-					After:   time.Millisecond * 1000,
+					After:   time.Millisecond * 100,
 				},
 			},
 		}
@@ -37,22 +37,32 @@ func Test_task_run(t1 *testing.T) {
 		t.Start()
 
 		t.PushTask(tsk, true)
-
-		time.Sleep(time.Second)
-		reset <- time.Millisecond * 1000
+		var c int32
 
 		for i := 0; i < 10; i++ {
-			time.Sleep(time.Second)
+			//time.Sleep(time.Second)
+			<-time.After(time.Second)
 
-			if tsk.count.Load() == 2 {
+			if c = tsk.count.Load(); c == 1 {
+				break
+			}
+		}
+
+		reset <- time.Millisecond * 100
+
+		for i := 0; i < 10; i++ {
+			//time.Sleep(time.Second)
+			<-time.After(time.Second)
+
+			if c = tsk.count.Load(); c == 2 {
 				break
 			}
 		}
 
 		t.Stop()
 
-		if tsk.count.Load() != 2 {
-			t1.Errorf("expect 2 tasks, got %d", tsk.count.Load())
+		if c != 2 {
+			t1.Errorf("expect 2 tasks, got %d", c)
 		}
 	})
 }
