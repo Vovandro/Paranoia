@@ -7,8 +7,8 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
+	"io"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -76,10 +76,8 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 
 			if do.StatusCode == 200 {
 				res.RetryCount = i + 1
+				res.Body, _ = io.ReadAll(do.Body)
 				res.Header = map[string][]string{}
-				size, _ := strconv.ParseInt(do.Header.Get("Content-Length"), 10, 64)
-				res.Body = make([]byte, size)
-				do.Body.Read(res.Body)
 				for s, strings := range do.Header {
 					res.Header[s] = strings
 				}
