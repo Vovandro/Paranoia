@@ -2,9 +2,10 @@ package Paranoia
 
 import (
 	"fmt"
+	"time"
+
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"time"
 )
 
 type Engine struct {
@@ -470,11 +471,13 @@ func (t *Engine) Stop() error {
 		}
 	}
 
-	err = t.metricExporter.Stop()
+	if t.metricExporter != nil {
+		err = t.metricExporter.Stop()
 
-	if err != nil {
-		fmt.Println(err)
-		return err
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
 	}
 
 	err = t.config.Stop()
