@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"io"
@@ -36,7 +37,9 @@ func NewHTTPClient(name string, cfg HTTPClientConfig) *HTTPClient {
 
 func (t *HTTPClient) Init(app interfaces.IEngine) error {
 	t.app = app
-	t.client = http.Client{}
+	t.client = http.Client{
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
 
 	t.counter, _ = otel.Meter("").Int64Counter("client_http." + t.Name + ".count")
 	t.timeCounter, _ = otel.Meter("").Int64Histogram("client_http." + t.Name + ".time")
