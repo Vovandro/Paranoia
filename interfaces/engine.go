@@ -6,6 +6,7 @@ type IEngine interface {
 	GetLogger() ILogger
 	GetConfig() IConfig
 	SetMetrics(c IMetrics)
+	SetTrace(c ITrace)
 	PushCache(c ICache) IEngine
 	GetCache(key string) ICache
 	PushDatabase(c IDatabase) IEngine

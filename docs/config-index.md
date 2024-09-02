@@ -63,6 +63,7 @@ cfg:
 
 В блоке `engine` следующем уровнем указывается название модуля:
 - metrics
+- trace
 - cache
 - database
 - nosql

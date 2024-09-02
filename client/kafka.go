@@ -3,7 +3,8 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/jurabek/otelkafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
@@ -14,7 +15,7 @@ type KafkaClient struct {
 	Name     string
 	Config   KafkaClientConfig
 	app      interfaces.IEngine
-	producer *kafka.Producer
+	producer *otelkafka.Producer
 
 	counter      metric.Int64Counter
 	timeCounter  metric.Int64Histogram
@@ -50,7 +51,7 @@ func (t *KafkaClient) Init(app interfaces.IEngine) error {
 		_ = cfg.SetKey("sasl.password", t.Config.Password)
 	}
 
-	t.producer, err = kafka.NewProducer(&cfg)
+	t.producer, err = otelkafka.NewProducer(&cfg)
 
 	if err != nil {
 		return err
@@ -72,10 +73,10 @@ func (t *KafkaClient) String() string {
 	return t.Name
 }
 
-func (t *KafkaClient) Fetch(_ string, topic string, data []byte, headers map[string][]string) chan interfaces.IClientResponse {
+func (t *KafkaClient) Fetch(ctx context.Context, _ string, topic string, data []byte, headers map[string][]string) chan interfaces.IClientResponse {
 	resp := make(chan interfaces.IClientResponse)
 
-	go func(resp chan interfaces.IClientResponse, topic string, data []byte, headers map[string][]string) {
+	go func(resp chan interfaces.IClientResponse, ctx context.Context, topic string, data []byte, headers map[string][]string) {
 		defer func(s time.Time) {
 			t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 		}(time.Now())
@@ -100,6 +101,8 @@ func (t *KafkaClient) Fetch(_ string, topic string, data []byte, headers map[str
 			}
 		}
 
+		otel.GetTextMapPropagator().Inject(ctx, otelkafka.NewMessageCarrier(&request))
+
 		for i := 0; i <= t.Config.RetryCount; i++ {
 			err := t.producer.Produce(&request, nil)
 
@@ -121,7 +124,7 @@ func (t *KafkaClient) Fetch(_ string, topic string, data []byte, headers map[str
 		t.retryCounter.Record(context.Background(), int64(res.RetryCount))
 
 		resp <- res
-	}(resp, topic, data, headers)
+	}(resp, ctx, topic, data, headers)
 
 	return resp
 }

@@ -1,12 +1,10 @@
 package srvUtils
 
 import (
-	"context"
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"sync"
-	"time"
 )
 
 type KafkaCtx struct {
@@ -38,31 +36,6 @@ func (t *KafkaCtx) GetRequest() interfaces.IRequest {
 
 func (t *KafkaCtx) GetResponse() interfaces.IResponse {
 	return t.response
-}
-
-func (t *KafkaCtx) Done() <-chan struct{} {
-	return t.done
-}
-
-func (t *KafkaCtx) StartTimeout(tm time.Duration) context.CancelFunc {
-	t.done = make(chan struct{})
-	go func() {
-		select {
-		case <-t.Done():
-			return
-
-		case <-time.After(tm):
-			close(t.done)
-			t.done = nil
-			return
-		}
-	}()
-
-	return func() {
-		if t.done != nil {
-			close(t.done)
-		}
-	}
 }
 
 func (t *KafkaCtx) GetUserValue(key string) (interface{}, error) {

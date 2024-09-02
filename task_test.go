@@ -1,6 +1,7 @@
 package Paranoia
 
 import (
+	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"sync/atomic"
 	"testing"
@@ -12,11 +13,11 @@ type testTask struct {
 	cfg   []interfaces.ITaskRunConfiguration
 }
 
-func (t *testTask) Init(app interfaces.IEngine) error         { return nil }
-func (t *testTask) Stop() error                               { return nil }
-func (t *testTask) String() string                            { return "test" }
-func (t *testTask) Start() []interfaces.ITaskRunConfiguration { return t.cfg }
-func (t *testTask) Invoke(map[string]interface{})             { t.count.Add(1) }
+func (t *testTask) Init(app interfaces.IEngine) error                       { return nil }
+func (t *testTask) Stop() error                                             { return nil }
+func (t *testTask) String() string                                          { return "test" }
+func (t *testTask) Start() []interfaces.ITaskRunConfiguration               { return t.cfg }
+func (t *testTask) Invoke(ctx context.Context, data map[string]interface{}) { t.count.Add(1) }
 
 func Test_task_run(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {

@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
@@ -75,17 +76,17 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			}
 			s.Init(app)
 
-			s.PushRoute("GET", "/", func(ctx interfaces.ICtx) {
+			s.PushRoute("GET", "/", func(c context.Context, ctx interfaces.ICtx) {
 				ctx.GetResponse().SetBody([]byte("{}"))
 			}, nil)
 
-			s.PushRoute("POST", "/test", func(ctx interfaces.ICtx) {
+			s.PushRoute("POST", "/test", func(c context.Context, ctx interfaces.ICtx) {
 				d, _ := io.ReadAll(ctx.GetRequest().GetBody())
 				ctx.GetResponse().SetBody(d)
 			}, nil)
 			s.Start()
 
-			if got := <-t.Fetch(tt.args.method, tt.args.host, tt.args.data, tt.args.headers); !bytes.Equal(got.GetBody(), tt.want.GetBody()) {
+			if got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers); !bytes.Equal(got.GetBody(), tt.want.GetBody()) {
 				t1.Errorf("Fetch() = %s, want %s", got.GetBody(), tt.want.GetBody())
 			}
 

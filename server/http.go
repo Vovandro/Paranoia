@@ -134,7 +134,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		ctx.SetRouteProps(props)
 
-		t.md(route)(ctx)
+		t.md(route)(req.Context(), ctx)
 
 		header := ctx.GetResponse().Header().GetAsMap()
 

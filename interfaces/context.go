@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"context"
 	"io"
 	"time"
 )
@@ -54,9 +53,6 @@ type IResponse interface {
 type ICtx interface {
 	GetRequest() IRequest
 	GetResponse() IResponse
-
-	Done() <-chan struct{}
-	StartTimeout(t time.Duration) context.CancelFunc
 
 	GetUserValue(key string) (interface{}, error)
 	PushUserValue(key string, val interface{})

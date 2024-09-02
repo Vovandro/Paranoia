@@ -1,8 +1,10 @@
 package Paranoia
 
 import (
+	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"go.opentelemetry.io/otel"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -152,8 +154,12 @@ func (t *task) run() {
 							configs[i].enable.Store(false)
 							t.end.Add(1)
 							go func(tsk interfaces.ITask) {
-								tsk.Invoke(nil)
-								t.end.Done()
+								defer t.end.Done()
+								tr := otel.Tracer("task")
+								ctx, span := tr.Start(context.Background(), tsk.String())
+								defer span.End()
+
+								tsk.Invoke(ctx, nil)
 							}(tsk)
 						}
 
@@ -208,8 +214,12 @@ func (t *task) RunTask(key string, args map[string]interface{}) error {
 		t.end.Add(1)
 
 		go func(tsk interfaces.ITask, args map[string]interface{}) {
-			tsk.Invoke(args)
-			t.end.Done()
+			defer t.end.Done()
+			tr := otel.Tracer("task")
+			ctx, span := tr.Start(context.Background(), tsk.String())
+			defer span.End()
+
+			tsk.Invoke(ctx, args)
 		}(item, args)
 
 		return nil

@@ -86,7 +86,7 @@ func (t *NewsController) Stop() error {
 	return nil
 }
 
-func (t *NewsController) List(ctx *srvCtx.Ctx) {
+func (t *NewsController) List(c context.Context, ctx *srvCtx.Ctx) {
 	news := t.newsRepository.GetActual(10)
 
 	ctx.Response.Body, _ = json.Marshal(news)

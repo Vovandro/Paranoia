@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
@@ -30,13 +31,13 @@ func (t *RestoreMiddleware) String() string {
 }
 
 func (t *RestoreMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {
-	return func(ctx interfaces.ICtx) {
+	return func(c context.Context, ctx interfaces.ICtx) {
 		defer func() {
 			if err := recover(); err != nil {
 				t.logger.Error(fmt.Errorf("%v", err))
 			}
 		}()
 
-		next(ctx)
+		next(c, ctx)
 	}
 }

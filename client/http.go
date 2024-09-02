@@ -57,17 +57,17 @@ func (t *HTTPClient) String() string {
 	return t.Name
 }
 
-func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[string][]string) chan interfaces.IClientResponse {
+func (t *HTTPClient) Fetch(ctx context.Context, method string, host string, data []byte, headers map[string][]string) chan interfaces.IClientResponse {
 	resp := make(chan interfaces.IClientResponse)
 
-	go func(resp chan interfaces.IClientResponse, method string, host string, data []byte, headers map[string][]string) {
+	go func(resp chan interfaces.IClientResponse, ctx context.Context, method string, host string, data []byte, headers map[string][]string) {
 		defer func(s time.Time) {
 			t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 		}(time.Now())
 		t.counter.Add(context.Background(), 1)
 
 		res := &Response{}
-		request, _ := http.NewRequest(method, host, bytes.NewBuffer(data))
+		request, _ := http.NewRequestWithContext(ctx, method, host, bytes.NewBuffer(data))
 
 		for i := 0; i <= t.Config.RetryCount; i++ {
 			do, err := t.client.Do(request)
@@ -116,7 +116,7 @@ func (t *HTTPClient) Fetch(method string, host string, data []byte, headers map[
 		t.retryCounter.Record(context.Background(), int64(res.RetryCount))
 
 		resp <- res
-	}(resp, method, host, data, headers)
+	}(resp, ctx, method, host, data, headers)
 
 	return resp
 }

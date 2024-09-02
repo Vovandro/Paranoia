@@ -1,6 +1,9 @@
 package interfaces
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type ITaskRunConfiguration interface {
 }
@@ -10,7 +13,7 @@ type ITask interface {
 	Stop() error
 	String() string
 	Start() []ITaskRunConfiguration
-	Invoke(map[string]interface{})
+	Invoke(ctx context.Context, data map[string]interface{})
 }
 
 type TaskRunAfter struct {
