@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/jurabek/otelkafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
+	"golang.org/x/net/trace"
 	"sync"
 	"time"
 )
@@ -19,7 +21,7 @@ type Kafka struct {
 
 	app      interfaces.IEngine
 	router   *Router
-	consumer *kafka.Consumer
+	consumer *otelkafka.Consumer
 	done     chan interface{}
 	w        sync.WaitGroup
 	md       func(interfaces.RouteFunc) interfaces.RouteFunc
@@ -80,7 +82,7 @@ func (t *Kafka) Init(app interfaces.IEngine) error {
 		cfg.SetKey("sasl.password", t.Config.Password)
 	}
 
-	t.consumer, err = kafka.NewConsumer(&cfg)
+	t.consumer, err = otelkafka.NewConsumer(&cfg)
 
 	if err != nil {
 		return err
@@ -160,6 +162,9 @@ func (t *Kafka) Handle(msg *kafka.Message) {
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
+	tr := trace.New(t.Name, msg.TopicPartition.String())
+	defer tr.Finish()
+
 	ctx := srvUtils.KafkaCtxPool.Get().(*srvUtils.KafkaCtx)
 	defer srvUtils.KafkaCtxPool.Put(ctx)
 	ctx.Fill(msg)
@@ -169,7 +174,7 @@ func (t *Kafka) Handle(msg *kafka.Message) {
 	if route == nil {
 		ctx.GetResponse().SetStatus(404)
 	} else {
-		t.md(route)(ctx)
+		t.md(route)(context.Background(), ctx)
 	}
 
 	if ctx.GetResponse().GetStatus() >= 400 {

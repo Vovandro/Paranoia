@@ -81,7 +81,7 @@ func (t *Auto) loadConfig() error {
 
 			delete(module, "type")
 
-			if typeModule != "metrics" {
+			if typeModule != "metrics" && typeModule != "trace" {
 				delete(module, "name")
 			}
 
@@ -252,6 +252,39 @@ func (t *Auto) loadConfig() error {
 					}
 
 					t.app.SetMetrics(telemetry.NewMetricStd(cfg))
+
+				default:
+					return fmt.Errorf("unknown module %s", nameModule)
+				}
+
+			case "trace":
+				switch nameModule {
+				case "std":
+					cfg := telemetry.TraceStdConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetTrace(telemetry.NewTraceStd(cfg))
+
+				case "zipkin":
+					cfg := telemetry.TraceZipkingConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetTrace(telemetry.NewTraceZipking(cfg))
+
+				case "sentry":
+					cfg := telemetry.TraceSentryConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetTrace(telemetry.NewTraceSentry(cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)

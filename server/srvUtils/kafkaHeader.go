@@ -1,6 +1,6 @@
 package srvUtils
 
-import "github.com/confluentinc/confluent-kafka-go/kafka"
+import "github.com/confluentinc/confluent-kafka-go/v2/kafka"
 
 type kafkaHeader struct {
 	data map[string][]string

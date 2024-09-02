@@ -16,6 +16,7 @@ type Engine struct {
 	config         interfaces.IConfig
 	logger         interfaces.ILogger
 	metricExporter interfaces.IMetrics
+	trace          interfaces.ITrace
 
 	task task
 
@@ -92,6 +93,22 @@ func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 
 	if t.metricExporter != nil {
 		err := t.metricExporter.Init(t)
+
+		if err != nil {
+			t.logger.Error(err)
+		}
+	}
+}
+
+func (t *Engine) SetTrace(c interfaces.ITrace) {
+	if t.trace != nil {
+		t.trace.Stop()
+	}
+
+	t.trace = c
+
+	if t.trace != nil {
+		err := t.trace.Init(t)
 
 		if err != nil {
 			t.logger.Error(err)
@@ -352,6 +369,14 @@ func (t *Engine) Init() error {
 		}
 	}
 
+	if t.trace != nil {
+		err = t.trace.Start()
+
+		if err != nil {
+			return err
+		}
+	}
+
 	if t.metricExporter != nil {
 		err = t.metricExporter.Start()
 
@@ -473,6 +498,15 @@ func (t *Engine) Stop() error {
 
 	if t.metricExporter != nil {
 		err = t.metricExporter.Stop()
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	if t.trace != nil {
+		err = t.trace.Stop()
 
 		if err != nil {
 			fmt.Println(err)

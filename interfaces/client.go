@@ -1,11 +1,13 @@
 package interfaces
 
+import "context"
+
 type IClient interface {
 	Init(app IEngine) error
 	Stop() error
 	String() string
 
-	Fetch(method string, host string, data []byte, headers map[string][]string) chan IClientResponse
+	Fetch(ctx context.Context, method string, host string, data []byte, headers map[string][]string) chan IClientResponse
 }
 
 type IClientResponse interface {

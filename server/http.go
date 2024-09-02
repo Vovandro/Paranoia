@@ -5,6 +5,7 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"net/http"
@@ -64,7 +65,7 @@ func (t *Http) Init(app interfaces.IEngine) error {
 
 	t.server = &http.Server{
 		Addr:                         ":" + t.Config.Port,
-		Handler:                      t,
+		Handler:                      otelhttp.NewHandler(t, t.Name),
 		DisableGeneralOptionsHandler: false,
 		ReadTimeout:                  5 * time.Second,
 		WriteTimeout:                 10 * time.Second,
@@ -133,7 +134,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		ctx.SetRouteProps(props)
 
-		t.md(route)(ctx)
+		t.md(route)(req.Context(), ctx)
 
 		header := ctx.GetResponse().Header().GetAsMap()
 

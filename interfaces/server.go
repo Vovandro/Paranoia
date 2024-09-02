@@ -1,6 +1,8 @@
 package interfaces
 
-type RouteFunc func(ctx ICtx)
+import "context"
+
+type RouteFunc func(c context.Context, ctx ICtx)
 
 type IServer interface {
 	Init(app IEngine) error

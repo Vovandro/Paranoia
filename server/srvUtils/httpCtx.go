@@ -1,12 +1,10 @@
 package srvUtils
 
 import (
-	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"net/http"
 	"sync"
-	"time"
 )
 
 type HttpCtx struct {
@@ -41,31 +39,6 @@ func (t *HttpCtx) GetRequest() interfaces.IRequest {
 
 func (t *HttpCtx) GetResponse() interfaces.IResponse {
 	return t.response
-}
-
-func (t *HttpCtx) Done() <-chan struct{} {
-	return t.done
-}
-
-func (t *HttpCtx) StartTimeout(tm time.Duration) context.CancelFunc {
-	t.done = make(chan struct{})
-	go func() {
-		select {
-		case <-t.Done():
-			return
-
-		case <-time.After(tm):
-			close(t.done)
-			t.done = nil
-			return
-		}
-	}()
-
-	return func() {
-		if t.done != nil {
-			close(t.done)
-		}
-	}
 }
 
 func (t *HttpCtx) GetUserValue(key string) (interface{}, error) {

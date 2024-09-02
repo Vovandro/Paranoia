@@ -2,7 +2,7 @@ package srvUtils
 
 import (
 	"bytes"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"io"
 )

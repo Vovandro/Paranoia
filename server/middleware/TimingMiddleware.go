@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"time"
@@ -31,10 +32,10 @@ func (t *TimingMiddleware) String() string {
 }
 
 func (t *TimingMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {
-	return func(ctx interfaces.ICtx) {
+	return func(c context.Context, ctx interfaces.ICtx) {
 		tm := time.Now()
 
-		next(ctx)
+		next(c, ctx)
 
 		s := time.Now().Sub(tm)
 		ctx.PushUserValue("request_time", s)

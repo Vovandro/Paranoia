@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"time"
 )
@@ -34,27 +35,29 @@ func (t *TimeoutMiddleware) String() string {
 }
 
 func (t *TimeoutMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {
-	return func(ctx interfaces.ICtx) {
-		cancel := ctx.StartTimeout(t.Config.Timeout)
-		c := make(chan interface{})
-		defer close(c)
-		defer cancel()
+	return func(c context.Context, ctx interfaces.ICtx) {
+		var end context.CancelFunc
+		c, end = context.WithTimeout(c, t.Config.Timeout)
+
+		done := make(chan interface{})
+		defer close(done)
+		defer end()
 
 		go func() {
-			next(ctx)
+			next(c, ctx)
 
-			if _, ok := <-c; ok {
-				c <- nil
+			if _, ok := <-c.Done(); ok {
+				done <- nil
 			}
 		}()
 
 		select {
-		case <-ctx.Done():
+		case <-c.Done():
 			time.Sleep(time.Millisecond)
 			ctx.GetResponse().SetStatus(499)
 			break
 
-		case <-c:
+		case <-done:
 			break
 		}
 	}
