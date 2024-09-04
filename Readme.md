@@ -29,6 +29,7 @@
 
 - http
 - Kafka
+- GRPC
 
 ### Server middlewares
 
@@ -40,6 +41,7 @@
 
 - http
 - Kafka
+- GRPC
 
 ### Storage
 

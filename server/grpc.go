@@ -40,14 +40,26 @@ func (t *Grpc) Init(app interfaces.IEngine) error {
 }
 
 func (t *Grpc) Start() error {
-	l, err := net.Listen("tcp", ":"+t.Config.Port)
-	if err != nil {
-		return err
-	}
 
-	err = t.server.Serve(l)
-	if err != nil {
+	listenErr := make(chan error, 1)
+
+	go func() {
+		l, err := net.Listen("tcp", ":"+t.Config.Port)
+		if err != nil {
+			listenErr <- err
+			return
+		}
+
+		listenErr <- t.server.Serve(l)
+	}()
+
+	select {
+	case err := <-listenErr:
+		t.app.GetLogger().Error(err)
 		return err
+
+	case <-time.After(time.Second):
+		// pass
 	}
 
 	return nil

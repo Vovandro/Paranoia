@@ -139,6 +139,15 @@ func (t *Auto) loadConfig() error {
 
 					t.app.PushClient(client.NewKafkaClient(name.(string), cfg))
 
+				case "grpc":
+					cfg := client.GrpcClientConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushClient(client.NewGrpcClient(name.(string), cfg))
+
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
 				}
@@ -228,6 +237,15 @@ func (t *Auto) loadConfig() error {
 					}
 
 					t.app.PushServer(server.NewKafka(name.(string), cfg))
+
+				case "grpc":
+					cfg := server.GrpcConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushServer(server.NewGrpc(name.(string), cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
