@@ -1,4 +1,4 @@
-package server
+package client
 
 import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
@@ -11,10 +11,6 @@ type Mock struct {
 
 func (t *Mock) Init(app interfaces.IEngine) error {
 	t.app = app
-	return nil
-}
-
-func (t *Mock) Start() error {
 	return nil
 }
 
