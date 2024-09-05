@@ -1,4 +1,4 @@
-package coltroller
+package controller
 
 import "gitlab.com/devpro_studio/Paranoia/interfaces"
 
