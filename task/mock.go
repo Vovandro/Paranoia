@@ -1,6 +1,7 @@
-package server
+package task
 
 import (
+	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
@@ -14,10 +15,6 @@ func (t *Mock) Init(app interfaces.IEngine) error {
 	return nil
 }
 
-func (t *Mock) Start() error {
-	return nil
-}
-
 func (t *Mock) Stop() error {
 	return nil
 }
@@ -25,3 +22,9 @@ func (t *Mock) Stop() error {
 func (t *Mock) String() string {
 	return t.Name
 }
+
+func (t *Mock) Start() []interfaces.ITaskRunConfiguration {
+	return []interfaces.ITaskRunConfiguration{}
+}
+
+func (t *Mock) Invoke(ctx context.Context, data map[string]interface{}) {}

@@ -1,8 +1,6 @@
-package server
+package coltroller
 
-import (
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
-)
+import "gitlab.com/devpro_studio/Paranoia/interfaces"
 
 type Mock struct {
 	Name string
@@ -11,10 +9,6 @@ type Mock struct {
 
 func (t *Mock) Init(app interfaces.IEngine) error {
 	t.app = app
-	return nil
-}
-
-func (t *Mock) Start() error {
 	return nil
 }
 
