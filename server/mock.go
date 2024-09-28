@@ -6,11 +6,9 @@ import (
 
 type Mock struct {
 	Name string
-	app  interfaces.IEngine
 }
 
-func (t *Mock) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *Mock) Init(_ interfaces.IEngine) error {
 	return nil
 }
 
