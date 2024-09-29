@@ -2,14 +2,15 @@ package server
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"net/http"
-	"time"
 )
 
 type Http struct {
@@ -126,7 +127,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer srvUtils.HttpCtxPool.Put(ctx)
 	ctx.Fill(req)
 
-	route, props := t.router.Find(req.Method, req.RequestURI)
+	route, props := t.router.Find(req.Method, req.URL.Path)
 
 	if route == nil {
 		ctx.GetResponse().SetStatus(404)

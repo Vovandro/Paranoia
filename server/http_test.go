@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"testing"
+
 	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/client"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"testing"
 )
 
 func TestHTTP_Fetch(t1 *testing.T) {
@@ -120,6 +121,23 @@ func TestHTTP_Fetch(t1 *testing.T) {
 			args: args{
 				"GET",
 				"http://127.0.0.1:8009/test/alex/",
+				nil,
+				nil,
+			},
+			want: &client.Response{
+				[]byte("{}"),
+				map[string][]string{},
+				nil,
+				1,
+			},
+		},
+		{
+			name:       "test query parameters",
+			RetryCount: 5,
+			path:       "/test",
+			args: args{
+				"GET",
+				"http://127.0.0.1:8009/test?test_one=1&test_two=2",
 				nil,
 				nil,
 			},
