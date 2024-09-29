@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"testing"
-
 	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/client"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
+	"testing"
 )
 
 func TestHTTP_Fetch(t1 *testing.T) {

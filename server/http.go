@@ -2,15 +2,14 @@ package server
 
 import (
 	"context"
-	"net/http"
-	"time"
-
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
+	"net/http"
+	"time"
 )
 
 type Http struct {
