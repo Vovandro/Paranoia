@@ -130,6 +130,23 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				1,
 			},
 		},
+		{
+			name:       "test query parameters",
+			RetryCount: 5,
+			path:       "/test",
+			args: args{
+				"GET",
+				"http://127.0.0.1:8009/test?test_one=1&test_two=2",
+				nil,
+				nil,
+			},
+			want: &client.Response{
+				[]byte("{}"),
+				map[string][]string{},
+				nil,
+				1,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {

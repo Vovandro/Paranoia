@@ -126,7 +126,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer srvUtils.HttpCtxPool.Put(ctx)
 	ctx.Fill(req)
 
-	route, props := t.router.Find(req.Method, req.RequestURI)
+	route, props := t.router.Find(req.Method, req.URL.Path)
 
 	if route == nil {
 		ctx.GetResponse().SetStatus(404)
