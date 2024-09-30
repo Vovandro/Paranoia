@@ -52,5 +52,23 @@ app.SetMetrics(telemetry.NewPrometheus(telemetry.MetricPrometheusConfig{
 
 В данном случае метрики будут доступны по адресу http://127.0.0.1:8090
 
+## OTLP
+
+Доступны экспортеры HTTP и GRPC
+
+```yaml
+engine:
+  metrics:
+    - type: otlp_http
+      name: app
+```
+
+```yaml
+engine:
+  metrics:
+    - type: otlp_grpc
+      name: app
+```
+
 
 ### Далее [Список встроенных метрик](./metrics-list.md)
