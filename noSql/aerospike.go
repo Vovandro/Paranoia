@@ -255,17 +255,17 @@ func (t *Aerospike) Insert(ctx context.Context, key interface{}, query interface
 		opt.SendKey = true
 	}
 
-	var bins []*aerospike.Bin
+	var err error
 
 	if val, ok := query.(*aerospike.Bin); ok {
-		bins = append(bins, val)
+		err = t.client.PutBins(opt, key.(*aerospike.Key), val)
 	} else if val, ok := query.([]*aerospike.Bin); ok {
-		bins = val
+		err = t.client.PutBins(opt, key.(*aerospike.Key), val...)
+	} else if val, ok := query.(*aerospike.BinMap); ok {
+		err = t.client.Put(opt, key.(*aerospike.Key), *val)
 	} else {
 		return nil, fmt.Errorf("invalid query type")
 	}
-
-	err := t.client.PutBins(opt, key.(*aerospike.Key), bins...)
 
 	if err != nil {
 		return nil, err
@@ -293,17 +293,17 @@ func (t *Aerospike) Update(ctx context.Context, key interface{}, query interface
 		opt.SendKey = true
 	}
 
-	var bins []*aerospike.Bin
+	var err error
 
 	if val, ok := query.(*aerospike.Bin); ok {
-		bins = append(bins, val)
+		err = t.client.PutBins(opt, key.(*aerospike.Key), val)
 	} else if val, ok := query.([]*aerospike.Bin); ok {
-		bins = val
+		err = t.client.PutBins(opt, key.(*aerospike.Key), val...)
+	} else if val, ok := query.(*aerospike.BinMap); ok {
+		err = t.client.Put(opt, key.(*aerospike.Key), *val)
 	} else {
 		return fmt.Errorf("invalid query type")
 	}
-
-	err := t.client.PutBins(opt, key.(*aerospike.Key), bins...)
 
 	if err != nil {
 		return err
