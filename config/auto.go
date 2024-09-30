@@ -271,6 +271,24 @@ func (t *Auto) loadConfig() error {
 
 					t.app.SetMetrics(telemetry.NewMetricStd(cfg))
 
+				case "otlp_http":
+					cfg := telemetry.MetricOtlpHttpConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetMetrics(telemetry.NewMetricOtlpHttp(cfg))
+
+				case "otlp_grpc":
+					cfg := telemetry.MetricOtlpGrpcConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetMetrics(telemetry.NewMetricOtlpGrpc(cfg))
+
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)
 				}
@@ -303,6 +321,24 @@ func (t *Auto) loadConfig() error {
 					}
 
 					t.app.SetTrace(telemetry.NewTraceSentry(cfg))
+
+				case "otlp_http":
+					cfg := telemetry.TraceOtlpHttpConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetTrace(telemetry.NewTraceOtlpHttp(cfg))
+
+				case "otlp_grpc":
+					cfg := telemetry.TraceOtlpGrpcConfig{}
+					err = module.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.SetTrace(telemetry.NewTraceOtlpGrpc(cfg))
 
 				default:
 					return fmt.Errorf("unknown module %s", nameModule)

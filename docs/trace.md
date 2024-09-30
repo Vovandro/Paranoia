@@ -67,6 +67,26 @@ app.SetTrace(telemetry.NewTraceSentry(telemetry.TraceSentryConfig{
 }))
 ```
 
-Для работы трассировки сентри необходимо использовать логирование в сентри
+* Для работы трассировки сентри необходимо использовать логирование в сентри *
+
+
+## OTLP
+
+Доступны экспортеры HTTP и GRPC
+
+```yaml
+engine:
+  trace:
+    - type: otlp_http
+      name: app
+```
+
+```yaml
+engine:
+  trace:
+    - type: otlp_grpc
+      name: app
+```
+
 
 ### Далее [Системы кеширования](./cache.md)
