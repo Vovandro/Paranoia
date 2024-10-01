@@ -11,7 +11,6 @@ import (
 
 type TraceSentry struct {
 	cfg      TraceSentryConfig
-	exporter trace.SpanExporter
 	provider *trace.TracerProvider
 	app      interfaces.IEngine
 }
@@ -48,12 +47,6 @@ func (t *TraceSentry) Start() error {
 
 func (t *TraceSentry) Stop() error {
 	err := t.provider.Shutdown(context.Background())
-
-	if err != nil {
-		t.app.GetLogger().Error(err)
-	}
-
-	err = t.exporter.Shutdown(context.TODO())
 
 	if err != nil {
 		t.app.GetLogger().Error(err)

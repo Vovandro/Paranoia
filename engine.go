@@ -183,7 +183,7 @@ func (t *Engine) PushService(b interfaces.IService) interfaces.IEngine {
 }
 
 func (t *Engine) GetService(key string) interfaces.IService {
-	return t.repository[key]
+	return t.service[key]
 }
 
 func (t *Engine) PushServer(b interfaces.IServer) interfaces.IEngine {
