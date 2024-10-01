@@ -111,7 +111,7 @@ func (t *Engine) SetTrace(c interfaces.ITrace) {
 		err := t.trace.Init(t)
 
 		if err != nil {
-			t.logger.Error(err)
+			fmt.Println(err)
 		}
 	}
 }
