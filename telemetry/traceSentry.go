@@ -5,7 +5,6 @@ import (
 	sentryotel "github.com/getsentry/sentry-go/otel"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
@@ -26,11 +25,7 @@ func NewTraceSentry(cfg TraceSentryConfig) *TraceSentry {
 func (t *TraceSentry) Init(app interfaces.IEngine) error {
 	t.app = app
 
-	prop := propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	)
-	otel.SetTextMapPropagator(prop)
+	otel.SetTextMapPropagator(sentryotel.NewSentryPropagator())
 
 	t.provider = trace.NewTracerProvider(
 		trace.WithSpanProcessor(sentryotel.NewSentrySpanProcessor()),
