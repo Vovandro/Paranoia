@@ -8,6 +8,8 @@
 ## [Documentations rus](./docs/index.md)
 
 
+## [GUI Helper project tool](https://gitlab.com/devpro_studio/paranoia-gui)
+
 ## Supported:
 
 ### Database
