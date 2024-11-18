@@ -1,6 +1,7 @@
 package Paranoia
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -95,7 +96,7 @@ func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 		err := t.metricExporter.Init(t)
 
 		if err != nil {
-			t.logger.Error(err)
+			t.logger.Error(context.Background(), err)
 		}
 	}
 }
@@ -118,7 +119,7 @@ func (t *Engine) SetTrace(c interfaces.ITrace) {
 
 func (t *Engine) PushCache(c interfaces.ICache) interfaces.IEngine {
 	if _, ok := t.cache[c.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("cache %s already exists", c.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("cache %s already exists", c.String()))
 	} else {
 		t.cache[c.String()] = c
 	}
@@ -132,7 +133,7 @@ func (t *Engine) GetCache(key string) interfaces.ICache {
 
 func (t *Engine) PushDatabase(b interfaces.IDatabase) interfaces.IEngine {
 	if _, ok := t.database[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("database %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("database %s already exists", b.String()))
 	} else {
 		t.database[b.String()] = b
 	}
@@ -146,7 +147,7 @@ func (t *Engine) GetDatabase(key string) interfaces.IDatabase {
 
 func (t *Engine) PushNoSql(b interfaces.INoSql) interfaces.IEngine {
 	if _, ok := t.noSql[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("nosql %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("nosql %s already exists", b.String()))
 	} else {
 		t.noSql[b.String()] = b
 	}
@@ -160,7 +161,7 @@ func (t *Engine) GetNoSql(key string) interfaces.INoSql {
 
 func (t *Engine) PushController(b interfaces.IController) interfaces.IEngine {
 	if _, ok := t.controllers[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("controller %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("controller %s already exists", b.String()))
 	} else {
 		t.controllers[b.String()] = b
 	}
@@ -174,7 +175,7 @@ func (t *Engine) GetController(key string) interfaces.IController {
 
 func (t *Engine) PushModule(b interfaces.IModules) interfaces.IEngine {
 	if _, ok := t.modules[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("module %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("module %s already exists", b.String()))
 	} else {
 		t.modules[b.String()] = b
 	}
@@ -188,7 +189,7 @@ func (t *Engine) GetModule(key string) interfaces.IModules {
 
 func (t *Engine) PushRepository(b interfaces.IRepository) interfaces.IEngine {
 	if _, ok := t.repository[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("repository %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("repository %s already exists", b.String()))
 	} else {
 		t.repository[b.String()] = b
 	}
@@ -202,7 +203,7 @@ func (t *Engine) GetRepository(key string) interfaces.IRepository {
 
 func (t *Engine) PushService(b interfaces.IService) interfaces.IEngine {
 	if _, ok := t.service[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("service %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("service %s already exists", b.String()))
 	} else {
 		t.service[b.String()] = b
 	}
@@ -216,7 +217,7 @@ func (t *Engine) GetService(key string) interfaces.IService {
 
 func (t *Engine) PushServer(b interfaces.IServer) interfaces.IEngine {
 	if _, ok := t.servers[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("server %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("server %s already exists", b.String()))
 	} else {
 		t.servers[b.String()] = b
 	}
@@ -248,7 +249,7 @@ func (t *Engine) GetServer(key string) interfaces.IServer {
 
 func (t *Engine) PushClient(b interfaces.IClient) interfaces.IEngine {
 	if _, ok := t.clients[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("client %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("client %s already exists", b.String()))
 	} else {
 		t.clients[b.String()] = b
 	}
@@ -262,7 +263,7 @@ func (t *Engine) GetClient(key string) interfaces.IClient {
 
 func (t *Engine) PushStorage(b interfaces.IStorage) interfaces.IEngine {
 	if _, ok := t.storage[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("storage %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("storage %s already exists", b.String()))
 	} else {
 		t.storage[b.String()] = b
 	}
@@ -276,7 +277,7 @@ func (t *Engine) GetStorage(key string) interfaces.IStorage {
 
 func (t *Engine) PushMiddleware(b interfaces.IMiddleware) interfaces.IEngine {
 	if _, ok := t.middlewares[b.String()]; ok {
-		t.logger.Fatal(fmt.Errorf("middleware %s already exists", b.String()))
+		t.logger.Fatal(context.Background(), fmt.Errorf("middleware %s already exists", b.String()))
 	} else {
 		t.middlewares[b.String()] = b
 	}
@@ -295,7 +296,7 @@ func (t *Engine) Init() error {
 		err = cache.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -304,7 +305,7 @@ func (t *Engine) Init() error {
 		err = db.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -313,7 +314,7 @@ func (t *Engine) Init() error {
 		err = db.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -322,7 +323,7 @@ func (t *Engine) Init() error {
 		err = st.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -331,7 +332,7 @@ func (t *Engine) Init() error {
 		err = client.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -352,7 +353,7 @@ func (t *Engine) Init() error {
 		err = item.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -361,7 +362,7 @@ func (t *Engine) Init() error {
 		err = server.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -370,7 +371,7 @@ func (t *Engine) Init() error {
 		err = repository.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -379,7 +380,7 @@ func (t *Engine) Init() error {
 		err = service.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -388,7 +389,7 @@ func (t *Engine) Init() error {
 		err = module.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -397,7 +398,7 @@ func (t *Engine) Init() error {
 		err = controller.Init(t)
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -408,7 +409,7 @@ func (t *Engine) Init() error {
 		err = server.Start()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -443,7 +444,7 @@ func (t *Engine) Stop() error {
 		err = server.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -454,7 +455,7 @@ func (t *Engine) Stop() error {
 		err = item.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -463,7 +464,7 @@ func (t *Engine) Stop() error {
 		err = controller.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -472,7 +473,7 @@ func (t *Engine) Stop() error {
 		err = module.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -481,7 +482,7 @@ func (t *Engine) Stop() error {
 		err = service.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -490,7 +491,7 @@ func (t *Engine) Stop() error {
 		err = repository.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -499,7 +500,7 @@ func (t *Engine) Stop() error {
 		err = client.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -508,7 +509,7 @@ func (t *Engine) Stop() error {
 		err = st.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -517,7 +518,7 @@ func (t *Engine) Stop() error {
 		err = db.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -526,7 +527,7 @@ func (t *Engine) Stop() error {
 		err = db.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}
@@ -535,7 +536,7 @@ func (t *Engine) Stop() error {
 		err = cache.Stop()
 
 		if err != nil {
-			t.logger.Fatal(err)
+			t.logger.Fatal(context.Background(), err)
 			return err
 		}
 	}

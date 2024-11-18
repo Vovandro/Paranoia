@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"github.com/getsentry/sentry-go"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
@@ -113,91 +114,111 @@ func (t *Sentry) SetLevel(level interfaces.LogLevel) {
 	}
 }
 
-func (t *Sentry) Debug(args ...interface{}) {
+func (t *Sentry) Debug(ctx context.Context, args ...interface{}) {
 	if t.Config.Level <= interfaces.DEBUG {
 		if t.Parent != nil {
-			t.Parent.Debug(args...)
+			t.Parent.Debug(ctx, args...)
 		}
 	}
 }
 
-func (t *Sentry) Info(args ...interface{}) {
+func (t *Sentry) Info(ctx context.Context, args ...interface{}) {
 	if t.Config.Level <= interfaces.INFO {
-		if t.Parent != nil {
-			t.Parent.Info(args...)
-		}
-	}
-}
-
-func (t *Sentry) Warn(args ...interface{}) {
-	if t.Config.Level <= interfaces.WARNING {
-
 		if t.enable {
-			hub := sentry.CurrentHub()
-			hub.ConfigureScope(func(scope *sentry.Scope) {
-				scope.SetLevel(sentry.LevelWarning)
-			})
+			hub := t.getHub(ctx, sentry.LevelInfo)
 			hub.CaptureMessage(fmt.Sprint(args...))
 		}
 
 		if t.Parent != nil {
-			t.Parent.Warn(args...)
+			t.Parent.Info(ctx, args...)
 		}
 	}
 }
 
-func (t *Sentry) Message(args ...interface{}) {
-	if t.Config.Level <= interfaces.MESSAGE {
+func (t *Sentry) Warn(ctx context.Context, args ...interface{}) {
+	if t.Config.Level <= interfaces.WARNING {
+		if t.enable {
+			hub := t.getHub(ctx, sentry.LevelWarning)
+			hub.CaptureMessage(fmt.Sprint(args...))
+		}
+
 		if t.Parent != nil {
-			t.Parent.Message(args...)
+			t.Parent.Warn(ctx, args...)
 		}
 	}
 }
 
-func (t *Sentry) Error(err error) {
+func (t *Sentry) Message(ctx context.Context, args ...interface{}) {
+	if t.Config.Level <= interfaces.MESSAGE {
+		if t.enable {
+			hub := t.getHub(ctx, sentry.LevelInfo)
+			hub.CaptureMessage(fmt.Sprint(args...))
+		}
+
+		if t.Parent != nil {
+			t.Parent.Message(ctx, args...)
+		}
+	}
+}
+
+func (t *Sentry) Error(ctx context.Context, err error) {
 	if t.Config.Level <= interfaces.ERROR {
 		if t.enable {
-			hub := sentry.CurrentHub()
-			hub.ConfigureScope(func(scope *sentry.Scope) {
-				scope.SetLevel(sentry.LevelError)
-			})
+			hub := t.getHub(ctx, sentry.LevelError)
 			hub.CaptureException(err)
 		}
 
 		if t.Parent != nil {
-			t.Parent.Error(err)
+			t.Parent.Error(ctx, err)
 		}
 	}
 }
 
-func (t *Sentry) Fatal(err error) {
+func (t *Sentry) Fatal(ctx context.Context, err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
 		if t.enable {
-			hub := sentry.CurrentHub()
-			hub.ConfigureScope(func(scope *sentry.Scope) {
-				scope.SetLevel(sentry.LevelFatal)
-			})
+			hub := t.getHub(ctx, sentry.LevelFatal)
 			hub.CaptureException(err)
 		}
 
 		if t.Parent != nil {
-			t.Parent.Fatal(err)
+			t.Parent.Fatal(ctx, err)
 		}
 	}
 }
 
-func (t *Sentry) Panic(err error) {
+func (t *Sentry) Panic(ctx context.Context, err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
 		if t.enable {
-			hub := sentry.CurrentHub()
-			hub.ConfigureScope(func(scope *sentry.Scope) {
-				scope.SetLevel(sentry.LevelFatal)
-			})
+			hub := t.getHub(ctx, sentry.LevelFatal)
 			hub.CaptureException(err)
 		}
 
 		if t.Parent != nil {
-			t.Parent.Panic(err)
+			t.Parent.Panic(ctx, err)
 		}
 	}
+}
+
+func (t *Sentry) getHub(ctx context.Context, level sentry.Level) *sentry.Hub {
+	hub := sentry.CurrentHub()
+	hub.ConfigureScope(func(scope *sentry.Scope) {
+		scope.SetLevel(level)
+
+		span := ctx.Value("span")
+		if span != nil {
+			if _, ok := span.(*sentry.Span); ok {
+				scope.SetSpan(span.(*sentry.Span))
+			}
+		}
+
+		tags := ctx.Value("tags")
+		if tags != nil {
+			for k, v := range tags.(map[string]string) {
+				scope.SetTag(k, v)
+			}
+		}
+	})
+
+	return hub
 }

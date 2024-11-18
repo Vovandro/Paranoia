@@ -59,13 +59,13 @@ func (t *TraceZipking) Stop() error {
 	err := t.provider.Shutdown(context.Background())
 
 	if err != nil {
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 	}
 
 	err = t.exporter.Shutdown(context.TODO())
 
 	if err != nil {
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 	}
 
 	return err

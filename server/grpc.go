@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -55,7 +56,7 @@ func (t *Grpc) Start() error {
 
 	select {
 	case err := <-listenErr:
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 		return err
 
 	case <-time.After(time.Second):
@@ -68,7 +69,7 @@ func (t *Grpc) Start() error {
 func (t *Grpc) Stop() error {
 	t.server.GracefulStop()
 
-	t.app.GetLogger().Info("grpc server gracefully stopped.")
+	t.app.GetLogger().Info(context.Background(), "grpc server gracefully stopped.")
 	time.Sleep(time.Second)
 
 	return nil

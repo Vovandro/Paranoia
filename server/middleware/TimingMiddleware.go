@@ -39,6 +39,6 @@ func (t *TimingMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFun
 
 		s := time.Now().Sub(tm)
 		ctx.PushUserValue("request_time", s)
-		t.logger.Debug(fmt.Sprintf("%d - %v, %s: %s", ctx.GetResponse().GetStatus(), s, ctx.GetRequest().GetMethod(), ctx.GetRequest().GetURI()))
+		t.logger.Debug(c, fmt.Sprintf("%d - %v, %s: %s", ctx.GetResponse().GetStatus(), s, ctx.GetRequest().GetMethod(), ctx.GetRequest().GetURI()))
 	}
 }

@@ -89,7 +89,7 @@ func (t *Http) Start() error {
 
 	select {
 	case err := <-listenErr:
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 		return err
 
 	case <-time.After(time.Second):
@@ -103,9 +103,9 @@ func (t *Http) Stop() error {
 	err := t.server.Shutdown(context.TODO())
 
 	if err != nil {
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 	} else {
-		t.app.GetLogger().Info("http server gracefully stopped.")
+		t.app.GetLogger().Info(context.Background(), "http server gracefully stopped.")
 		time.Sleep(time.Second)
 	}
 

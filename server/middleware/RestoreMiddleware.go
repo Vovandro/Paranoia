@@ -34,7 +34,7 @@ func (t *RestoreMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFu
 	return func(c context.Context, ctx interfaces.ICtx) {
 		defer func() {
 			if err := recover(); err != nil {
-				t.logger.Error(fmt.Errorf("%v", err))
+				t.logger.Error(context.Background(), fmt.Errorf("%v", err))
 			}
 		}()
 

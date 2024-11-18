@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
@@ -25,7 +26,7 @@ func HandlerFromStrings(app interfaces.IEngine, middlewares []string) func(route
 		t := app.GetMiddleware(middleware)
 
 		if t == nil {
-			app.GetLogger().Warn("middleware not found: " + middleware)
+			app.GetLogger().Warn(context.Background(), "middleware not found: "+middleware)
 			continue
 		}
 		m = append(m, t)

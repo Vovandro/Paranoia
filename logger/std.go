@@ -1,12 +1,13 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"time"
 )
 
-var levelColor map[interfaces.LogLevel]string = map[interfaces.LogLevel]string{
+var levelColor = map[interfaces.LogLevel]string{
 	interfaces.DEBUG:    "\033[35m",
 	interfaces.INFO:     "\033[36m",
 	interfaces.WARNING:  "\033[33m",
@@ -93,72 +94,72 @@ func (t *Std) push(level interfaces.LogLevel, msg string) {
 	t.queue <- fmt.Sprintf("%s%s\u001B[0m [\033[37m%s\033[0m] %s\n", levelColor[level], level.String(), time.Now().Format("2006-01-02 15:04.05"), msg)
 }
 
-func (t *Std) Debug(args ...interface{}) {
+func (t *Std) Debug(ctx context.Context, args ...interface{}) {
 	if t.Config.Level <= interfaces.DEBUG {
 		t.push(interfaces.DEBUG, fmt.Sprint(args...))
 
 		if t.Parent != nil {
-			t.Parent.Debug(args...)
+			t.Parent.Debug(ctx, args...)
 		}
 	}
 }
 
-func (t *Std) Info(args ...interface{}) {
+func (t *Std) Info(ctx context.Context, args ...interface{}) {
 	if t.Config.Level <= interfaces.INFO {
 		t.push(interfaces.INFO, fmt.Sprint(args...))
 
 		if t.Parent != nil {
-			t.Parent.Info(args...)
+			t.Parent.Info(ctx, args...)
 		}
 	}
 }
 
-func (t *Std) Warn(args ...interface{}) {
+func (t *Std) Warn(ctx context.Context, args ...interface{}) {
 	if t.Config.Level <= interfaces.WARNING {
 		t.push(interfaces.WARNING, fmt.Sprint(args...))
 
 		if t.Parent != nil {
-			t.Parent.Warn(args...)
+			t.Parent.Warn(ctx, args...)
 		}
 	}
 }
 
-func (t *Std) Message(args ...interface{}) {
+func (t *Std) Message(ctx context.Context, args ...interface{}) {
 	if t.Config.Level <= interfaces.MESSAGE {
 		t.push(interfaces.MESSAGE, fmt.Sprint(args...))
 
 		if t.Parent != nil {
-			t.Parent.Message(args...)
+			t.Parent.Message(ctx, args...)
 		}
 	}
 }
 
-func (t *Std) Error(err error) {
+func (t *Std) Error(ctx context.Context, err error) {
 	if t.Config.Level <= interfaces.ERROR {
 		t.push(interfaces.ERROR, err.Error())
 
 		if t.Parent != nil {
-			t.Parent.Error(err)
+			t.Parent.Error(ctx, err)
 		}
 	}
 }
 
-func (t *Std) Fatal(err error) {
+func (t *Std) Fatal(ctx context.Context, err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
 		t.push(interfaces.CRITICAL, err.Error())
 
 		if t.Parent != nil {
-			t.Parent.Fatal(err)
+			t.Parent.Fatal(ctx, err)
 		}
 	}
 }
 
-func (t *Std) Panic(err error) {
+func (t *Std) Panic(ctx context.Context, err error) {
 	if t.Config.Level <= interfaces.CRITICAL {
 		t.push(interfaces.CRITICAL, err.Error())
 
 		if t.Parent != nil {
-			t.Parent.Panic(err)
+			t.Parent.Panic(ctx, err)
 		}
 	}
 }
