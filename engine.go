@@ -86,7 +86,7 @@ func (t *Engine) GetConfig() interfaces.IConfig {
 
 func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 	if t.metricExporter != nil {
-		t.metricExporter.Stop()
+		_ = t.metricExporter.Stop()
 	}
 
 	t.metricExporter = c
@@ -102,7 +102,7 @@ func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 
 func (t *Engine) SetTrace(c interfaces.ITrace) {
 	if t.trace != nil {
-		t.trace.Stop()
+		_ = t.trace.Stop()
 	}
 
 	t.trace = c
@@ -117,7 +117,11 @@ func (t *Engine) SetTrace(c interfaces.ITrace) {
 }
 
 func (t *Engine) PushCache(c interfaces.ICache) interfaces.IEngine {
-	t.cache[c.String()] = c
+	if _, ok := t.cache[c.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("cache %s already exists", c.String()))
+	} else {
+		t.cache[c.String()] = c
+	}
 
 	return t
 }
@@ -127,7 +131,11 @@ func (t *Engine) GetCache(key string) interfaces.ICache {
 }
 
 func (t *Engine) PushDatabase(b interfaces.IDatabase) interfaces.IEngine {
-	t.database[b.String()] = b
+	if _, ok := t.database[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("database %s already exists", b.String()))
+	} else {
+		t.database[b.String()] = b
+	}
 
 	return t
 }
@@ -137,7 +145,11 @@ func (t *Engine) GetDatabase(key string) interfaces.IDatabase {
 }
 
 func (t *Engine) PushNoSql(b interfaces.INoSql) interfaces.IEngine {
-	t.noSql[b.String()] = b
+	if _, ok := t.noSql[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("nosql %s already exists", b.String()))
+	} else {
+		t.noSql[b.String()] = b
+	}
 
 	return t
 }
@@ -147,7 +159,11 @@ func (t *Engine) GetNoSql(key string) interfaces.INoSql {
 }
 
 func (t *Engine) PushController(b interfaces.IController) interfaces.IEngine {
-	t.controllers[b.String()] = b
+	if _, ok := t.controllers[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("controller %s already exists", b.String()))
+	} else {
+		t.controllers[b.String()] = b
+	}
 
 	return t
 }
@@ -157,7 +173,11 @@ func (t *Engine) GetController(key string) interfaces.IController {
 }
 
 func (t *Engine) PushModule(b interfaces.IModules) interfaces.IEngine {
-	t.modules[b.String()] = b
+	if _, ok := t.modules[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("module %s already exists", b.String()))
+	} else {
+		t.modules[b.String()] = b
+	}
 
 	return t
 }
@@ -167,7 +187,11 @@ func (t *Engine) GetModule(key string) interfaces.IModules {
 }
 
 func (t *Engine) PushRepository(b interfaces.IRepository) interfaces.IEngine {
-	t.repository[b.String()] = b
+	if _, ok := t.repository[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("repository %s already exists", b.String()))
+	} else {
+		t.repository[b.String()] = b
+	}
 
 	return t
 }
@@ -177,7 +201,11 @@ func (t *Engine) GetRepository(key string) interfaces.IRepository {
 }
 
 func (t *Engine) PushService(b interfaces.IService) interfaces.IEngine {
-	t.service[b.String()] = b
+	if _, ok := t.service[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("service %s already exists", b.String()))
+	} else {
+		t.service[b.String()] = b
+	}
 
 	return t
 }
@@ -187,7 +215,11 @@ func (t *Engine) GetService(key string) interfaces.IService {
 }
 
 func (t *Engine) PushServer(b interfaces.IServer) interfaces.IEngine {
-	t.servers[b.String()] = b
+	if _, ok := t.servers[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("server %s already exists", b.String()))
+	} else {
+		t.servers[b.String()] = b
+	}
 
 	return t
 }
@@ -215,7 +247,11 @@ func (t *Engine) GetServer(key string) interfaces.IServer {
 }
 
 func (t *Engine) PushClient(b interfaces.IClient) interfaces.IEngine {
-	t.clients[b.String()] = b
+	if _, ok := t.clients[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("client %s already exists", b.String()))
+	} else {
+		t.clients[b.String()] = b
+	}
 
 	return t
 }
@@ -225,7 +261,11 @@ func (t *Engine) GetClient(key string) interfaces.IClient {
 }
 
 func (t *Engine) PushStorage(b interfaces.IStorage) interfaces.IEngine {
-	t.storage[b.String()] = b
+	if _, ok := t.storage[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("storage %s already exists", b.String()))
+	} else {
+		t.storage[b.String()] = b
+	}
 
 	return t
 }
@@ -235,7 +275,11 @@ func (t *Engine) GetStorage(key string) interfaces.IStorage {
 }
 
 func (t *Engine) PushMiddleware(b interfaces.IMiddleware) interfaces.IEngine {
-	t.middlewares[b.String()] = b
+	if _, ok := t.middlewares[b.String()]; ok {
+		t.logger.Fatal(fmt.Errorf("middleware %s already exists", b.String()))
+	} else {
+		t.middlewares[b.String()] = b
+	}
 
 	return t
 }
