@@ -63,7 +63,7 @@ func (t *MetricOtlpHttp) Stop() error {
 	err := t.exporter.Shutdown(context.TODO())
 
 	if err != nil {
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 	}
 
 	return err

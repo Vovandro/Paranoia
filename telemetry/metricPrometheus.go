@@ -73,7 +73,7 @@ func (t *MetricPrometheus) Start() error {
 
 	select {
 	case err := <-listenErr:
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 		return err
 
 	case <-time.After(time.Second):
@@ -87,14 +87,14 @@ func (t *MetricPrometheus) Stop() error {
 	err := t.server.Shutdown(context.TODO())
 
 	if err != nil {
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 		return err
 	}
 
 	err = t.exporter.Shutdown(context.TODO())
 
 	if err != nil {
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 	}
 
 	return err

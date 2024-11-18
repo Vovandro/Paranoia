@@ -61,7 +61,7 @@ func (t *Redis) Init(app interfaces.IEngine) error {
 
 	if t.Config.UseCluster {
 		if t.Config.DBNum != 0 {
-			t.app.GetLogger().Warn("Database number not available when using Redis cluster")
+			t.app.GetLogger().Warn(context.Background(), "Database number not available when using Redis cluster")
 		}
 
 		t.client = redis.NewClusterClient(&redis.ClusterOptions{

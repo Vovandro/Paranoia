@@ -9,6 +9,7 @@
 - Mock - используется в качестве заглушек, ничего не делает
 - Std - Вывод в стандартный вывод
 - File - Вывод логов в файл
+- Sentry - Логирование в Sentry
 
 ## Mock
 
@@ -38,6 +39,20 @@ s := Paranoia.New("app", nil, logger.NewFile(logger.FileConfig{
 	FName: "app",
 }, nil))
 ```
+
+# Sentry
+
+```go
+s := Paranoia.New("app", nil, logger.NewSentry(logger.SentryConfig{
+    Level: interfaces.INFO,
+	SentryURL: "key@localhost.ru",
+    AppEnv: "local",
+	SampleRate: 0.1,
+	TraceSampleRate: 0.5,
+}, nil))
+```
+
+В sentry пишутся только логи все кроме DEBUG уровня. Через контекст возможно передача `span` с типом `*sentry.Span`, и `tags` с типом `map[string]string`
 
 # Возможно каскадное вложение модулей.
 

@@ -112,7 +112,7 @@ func (t *Kafka) Start() error {
 				msg, err := t.consumer.ReadMessage(time.Second)
 
 				if err != nil {
-					t.app.GetLogger().Error(err)
+					t.app.GetLogger().Error(context.Background(), err)
 					<-limited
 					t.w.Done()
 					continue
@@ -139,9 +139,9 @@ func (t *Kafka) Stop() error {
 	err := t.consumer.Close()
 
 	if err != nil {
-		t.app.GetLogger().Error(err)
+		t.app.GetLogger().Error(context.Background(), err)
 	} else {
-		t.app.GetLogger().Info("kafka consumer gracefully stopped.")
+		t.app.GetLogger().Info(context.Background(), "kafka consumer gracefully stopped.")
 		time.Sleep(time.Second)
 	}
 

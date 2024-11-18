@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"context"
 	"strings"
 )
 
@@ -19,13 +20,13 @@ type ILogger interface {
 	Init(cfg IConfig) error
 	Stop() error
 	SetLevel(level LogLevel)
-	Debug(args ...interface{})
-	Info(args ...interface{})
-	Warn(args ...interface{})
-	Message(args ...interface{})
-	Error(err error)
-	Fatal(err error)
-	Panic(err error)
+	Debug(ctx context.Context, args ...interface{})
+	Info(ctx context.Context, args ...interface{})
+	Warn(ctx context.Context, args ...interface{})
+	Message(ctx context.Context, args ...interface{})
+	Error(ctx context.Context, err error)
+	Fatal(ctx context.Context, err error)
+	Panic(ctx context.Context, err error)
 }
 
 func (t LogLevel) String() string {
