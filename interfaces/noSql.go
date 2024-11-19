@@ -54,6 +54,8 @@ type IMongoDB interface {
 	Insert(ctx context.Context, collection string, query bson.D, opt *options.InsertOneOptions) (interface{}, error)
 	Update(ctx context.Context, collection string, query bson.D, update bson.D, opt *options.UpdateOptions) error
 	Delete(ctx context.Context, collection string, query bson.D, opt *options.DeleteOptions) int64
+
+	// Advanced operations
 	Batch(ctx context.Context, collection string, query []mongo.WriteModel, opt *options.BulkWriteOptions) (int64, error)
 
 	// Access underlying database
