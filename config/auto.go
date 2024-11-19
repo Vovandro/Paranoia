@@ -6,6 +6,7 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/client"
 	"gitlab.com/devpro_studio/Paranoia/database"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/module"
 	"gitlab.com/devpro_studio/Paranoia/noSql"
 	"gitlab.com/devpro_studio/Paranoia/server"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
@@ -66,23 +67,23 @@ func (t *Auto) loadConfig() error {
 	}
 
 	for typeModule, modules := range t.data.Engine {
-		for _, module := range modules {
-			name, ok := module["name"]
+		for _, mod := range modules {
+			name, ok := mod["name"]
 
 			if !ok {
-				return fmt.Errorf("not found name module")
+				return fmt.Errorf("not found name mod")
 			}
 
-			nameModule, ok := module["type"]
+			nameModule, ok := mod["type"]
 
 			if !ok {
-				return fmt.Errorf("not found type module %s", name)
+				return fmt.Errorf("not found type mod %s", name)
 			}
 
-			delete(module, "type")
+			delete(mod, "type")
 
 			if typeModule != "metrics" && typeModule != "trace" {
-				delete(module, "name")
+				delete(mod, "name")
 			}
 
 			switch typeModule {
@@ -90,7 +91,7 @@ func (t *Auto) loadConfig() error {
 				switch nameModule {
 				case "memcached":
 					cfg := cache.MemcachedConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -99,7 +100,7 @@ func (t *Auto) loadConfig() error {
 
 				case "memory":
 					cfg := cache.MemoryConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -108,7 +109,7 @@ func (t *Auto) loadConfig() error {
 
 				case "redis":
 					cfg := cache.RedisConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -116,14 +117,14 @@ func (t *Auto) loadConfig() error {
 					t.app.PushCache(cache.NewRedis(name.(string), cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "client":
 				switch nameModule {
 				case "http":
 					cfg := client.HTTPClientConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -132,7 +133,7 @@ func (t *Auto) loadConfig() error {
 
 				case "kafka":
 					cfg := client.KafkaClientConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -141,7 +142,7 @@ func (t *Auto) loadConfig() error {
 
 				case "grpc":
 					cfg := client.GrpcClientConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -149,14 +150,14 @@ func (t *Auto) loadConfig() error {
 					t.app.PushClient(client.NewGrpcClient(name.(string), cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "database":
 				switch nameModule {
 				case "clickhouse":
 					cfg := database.ClickHouseConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -165,7 +166,7 @@ func (t *Auto) loadConfig() error {
 
 				case "postgres":
 					cfg := database.PostgresConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -174,7 +175,7 @@ func (t *Auto) loadConfig() error {
 
 				case "mysql":
 					cfg := database.MySQLConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -183,7 +184,7 @@ func (t *Auto) loadConfig() error {
 
 				case "sqlite3":
 					cfg := database.Sqlite3Config{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -191,14 +192,14 @@ func (t *Auto) loadConfig() error {
 					t.app.PushDatabase(database.NewSqlite3(name.(string), cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "nosql":
 				switch nameModule {
 				case "aerospike":
 					cfg := noSql.AerospikeConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -207,7 +208,7 @@ func (t *Auto) loadConfig() error {
 
 				case "mongodb":
 					cfg := noSql.MongoDBConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -215,14 +216,14 @@ func (t *Auto) loadConfig() error {
 					t.app.PushNoSql(noSql.NewMongoDB(name.(string), cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "server":
 				switch nameModule {
 				case "http":
 					cfg := server.HttpConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -231,7 +232,7 @@ func (t *Auto) loadConfig() error {
 
 				case "kafka":
 					cfg := server.KafkaConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -240,7 +241,7 @@ func (t *Auto) loadConfig() error {
 
 				case "grpc":
 					cfg := server.GrpcConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -248,14 +249,14 @@ func (t *Auto) loadConfig() error {
 					t.app.PushServer(server.NewGrpc(name.(string), cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "metrics":
 				switch nameModule {
 				case "prometheus":
 					cfg := telemetry.MetricsPrometheusConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -264,7 +265,7 @@ func (t *Auto) loadConfig() error {
 
 				case "std":
 					cfg := telemetry.MetricStdConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -273,7 +274,7 @@ func (t *Auto) loadConfig() error {
 
 				case "otlp_http":
 					cfg := telemetry.MetricOtlpHttpConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -282,7 +283,7 @@ func (t *Auto) loadConfig() error {
 
 				case "otlp_grpc":
 					cfg := telemetry.MetricOtlpGrpcConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -290,14 +291,14 @@ func (t *Auto) loadConfig() error {
 					t.app.SetMetrics(telemetry.NewMetricOtlpGrpc(cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "trace":
 				switch nameModule {
 				case "std":
 					cfg := telemetry.TraceStdConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -306,7 +307,7 @@ func (t *Auto) loadConfig() error {
 
 				case "zipkin":
 					cfg := telemetry.TraceZipkingConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -315,7 +316,7 @@ func (t *Auto) loadConfig() error {
 
 				case "sentry":
 					cfg := telemetry.TraceSentryConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -324,7 +325,7 @@ func (t *Auto) loadConfig() error {
 
 				case "otlp_http":
 					cfg := telemetry.TraceOtlpHttpConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -333,7 +334,7 @@ func (t *Auto) loadConfig() error {
 
 				case "otlp_grpc":
 					cfg := telemetry.TraceOtlpGrpcConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -341,14 +342,14 @@ func (t *Auto) loadConfig() error {
 					t.app.SetTrace(telemetry.NewTraceOtlpGrpc(cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "middleware":
 				switch nameModule {
 				case "timeout":
 					cfg := middleware.TimeoutMiddlewareConfig{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -361,8 +362,17 @@ func (t *Auto) loadConfig() error {
 				case "restore":
 					t.app.PushMiddleware(middleware.NewRestoreMiddleware(name.(string)))
 
+				case "jwt":
+					cfg := middleware.JWTMiddlewareConfig{}
+					err = mod.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushMiddleware(middleware.NewJWTMiddleware(name.(string), cfg))
+
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			case "storage":
@@ -372,7 +382,7 @@ func (t *Auto) loadConfig() error {
 
 				case "s3":
 					cfg := storage.S3Config{}
-					err = module.Scan(&cfg)
+					err = mod.Scan(&cfg)
 					if err != nil {
 						return err
 					}
@@ -380,11 +390,26 @@ func (t *Auto) loadConfig() error {
 					t.app.PushStorage(storage.NewS3(name.(string), cfg))
 
 				default:
-					return fmt.Errorf("unknown module %s", nameModule)
+					return fmt.Errorf("unknown mod %s", nameModule)
+				}
+
+			case "mod":
+				switch nameModule {
+				case "jwt":
+					cfg := module.JWTConfig{}
+					err = mod.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushModule(module.NewJWT(name.(string), cfg))
+
+				default:
+					return fmt.Errorf("unknown mod %s", nameModule)
 				}
 
 			default:
-				return fmt.Errorf("unknown module type %s", typeModule)
+				return fmt.Errorf("unknown mod type %s", typeModule)
 			}
 		}
 	}

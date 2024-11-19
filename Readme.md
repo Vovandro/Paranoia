@@ -38,6 +38,7 @@
 - Restore from panic
 - Register timing middleware (default use)
 - Timeout request
+- Authorize (JWT)
 
 ### Clients
 
@@ -55,3 +56,10 @@
 - Initialize base engine module from yaml config file
 - Regulatory task system 
 - Sentry log
+- JWT native support (module and middleware)
+
+Generating RSA keys for JWT:
+
+`openssl genrsa -out private.key 2048`
+
+`openssl rsa -in private.key -pubout -out public.key`
