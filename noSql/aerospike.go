@@ -86,26 +86,18 @@ func (t *Aerospike) String() string {
 	return t.Name
 }
 
-func (t *Aerospike) Exists(ctx context.Context, key interface{}, query interface{}, args ...interface{}) bool {
+func (t *Aerospike) Exists(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy) bool {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	var opt *aerospike.BasePolicy
-
-	if len(args) > 1 {
-		if val, ok := args[1].(*aerospike.BasePolicy); ok {
-			opt = val
-		}
+	if policy == nil {
+		policy = &aerospike.BasePolicy{}
+		policy.SendKey = true
 	}
 
-	if opt == nil {
-		opt = &aerospike.BasePolicy{}
-		opt.SendKey = true
-	}
-
-	find, err := t.client.Exists(opt, key.(*aerospike.Key))
+	find, err := t.client.Exists(policy, key)
 
 	if err != nil {
 		return false
@@ -114,49 +106,31 @@ func (t *Aerospike) Exists(ctx context.Context, key interface{}, query interface
 	return find
 }
 
-func (t *Aerospike) Count(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
+func (t *Aerospike) Count(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy) int64 {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	if t.Exists(ctx, key, query, args...) {
+	if t.Exists(ctx, key, policy) {
 		return 1
 	}
 
 	return 0
 }
 
-func (t *Aerospike) FindOne(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRow, error) {
+func (t *Aerospike) FindOne(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy, bins []string) (interfaces.NoSQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	bins := make([]string, len(args))
-	var opt *aerospike.BasePolicy
-
-	if len(args) > 0 {
-		if val, ok := args[0].(*aerospike.BasePolicy); ok {
-			opt = val
-		}
+	if policy == nil {
+		policy = &aerospike.BasePolicy{}
+		policy.SendKey = true
 	}
 
-	if opt == nil {
-		opt = &aerospike.BasePolicy{}
-		opt.SendKey = true
-	}
-
-	for i := 0; i < len(args); i++ {
-		if val, ok := args[i].(string); ok {
-			bins[i] = val
-		} else if val, ok := args[i].([]string); ok {
-			bins = val
-			break
-		}
-	}
-
-	find, err := t.client.Get(opt, key.(*aerospike.Key), bins...)
+	find, err := t.client.Get(policy, key, bins...)
 
 	if err != nil {
 		return nil, err
@@ -165,26 +139,18 @@ func (t *Aerospike) FindOne(ctx context.Context, key interface{}, query interfac
 	return &ASRow{find}, nil
 }
 
-func (t *Aerospike) Find(ctx context.Context, _ interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
+func (t *Aerospike) Find(ctx context.Context, query *aerospike.Statement, policy *aerospike.QueryPolicy) (interfaces.NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	var opt *aerospike.QueryPolicy
-
-	if len(args) > 0 {
-		if val, ok := args[0].(*aerospike.QueryPolicy); ok {
-			opt = val
-		}
+	if policy == nil {
+		policy = &aerospike.QueryPolicy{}
+		policy.SendKey = true
 	}
 
-	if opt == nil {
-		opt = &aerospike.QueryPolicy{}
-		opt.SendKey = true
-	}
-
-	q, err := t.client.Query(opt, query.(*aerospike.Statement))
+	q, err := t.client.Query(policy, query)
 
 	if err != nil {
 		return nil, err
@@ -193,41 +159,18 @@ func (t *Aerospike) Find(ctx context.Context, _ interface{}, query interface{}, 
 	return &ASRows{rows: q}, nil
 }
 
-func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interfaces.NoSQLRows, error) {
+func (t *Aerospike) Exec(ctx context.Context, key *aerospike.Key, policy *aerospike.WritePolicy, packageName string, functionName string) (interfaces.NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	var opt *aerospike.WritePolicy
-	var arg1, arg2 string
-
-	if len(args) > 0 {
-		if val, ok := args[0].(*aerospike.WritePolicy); ok {
-			opt = val
-		}
+	if policy == nil {
+		policy = &aerospike.WritePolicy{}
+		policy.SendKey = true
 	}
 
-	if opt == nil {
-		if len(args) < 2 {
-			return nil, fmt.Errorf("invalid query args")
-		}
-
-		opt = &aerospike.WritePolicy{}
-		opt.SendKey = true
-
-		arg1 = args[0].(string)
-		arg2 = args[1].(string)
-	} else {
-		if len(args) < 3 {
-			return nil, fmt.Errorf("invalid query args")
-		}
-
-		arg1 = args[1].(string)
-		arg2 = args[2].(string)
-	}
-
-	_, err := t.client.Execute(opt, key.(*aerospike.Key), arg1, arg2)
+	_, err := t.client.Execute(policy, key, packageName, functionName)
 
 	if err != nil {
 		return nil, err
@@ -236,33 +179,26 @@ func (t *Aerospike) Exec(ctx context.Context, key interface{}, query interface{}
 	return nil, nil
 }
 
-func (t *Aerospike) Insert(ctx context.Context, key interface{}, query interface{}, args ...interface{}) (interface{}, error) {
+// Insert query is *aerospike.Bin or []*aerospike.Bin or *aerospike.BinMap
+func (t *Aerospike) Insert(ctx context.Context, key *aerospike.Key, query interface{}, policy *aerospike.WritePolicy) (interface{}, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	var opt *aerospike.WritePolicy
-
-	if len(args) > 0 {
-		if val, ok := args[0].(*aerospike.WritePolicy); ok {
-			opt = val
-		}
-	}
-
-	if opt == nil {
-		opt = &aerospike.WritePolicy{}
-		opt.SendKey = true
+	if policy == nil {
+		policy = &aerospike.WritePolicy{}
+		policy.SendKey = true
 	}
 
 	var err error
 
 	if val, ok := query.(*aerospike.Bin); ok {
-		err = t.client.PutBins(opt, key.(*aerospike.Key), val)
+		err = t.client.PutBins(policy, key, val)
 	} else if val, ok := query.([]*aerospike.Bin); ok {
-		err = t.client.PutBins(opt, key.(*aerospike.Key), val...)
+		err = t.client.PutBins(policy, key, val...)
 	} else if val, ok := query.(*aerospike.BinMap); ok {
-		err = t.client.Put(opt, key.(*aerospike.Key), *val)
+		err = t.client.Put(policy, key, *val)
 	} else {
 		return nil, fmt.Errorf("invalid query type")
 	}
@@ -274,97 +210,47 @@ func (t *Aerospike) Insert(ctx context.Context, key interface{}, query interface
 	return query, nil
 }
 
-func (t *Aerospike) Update(ctx context.Context, key interface{}, query interface{}, args ...interface{}) error {
+func (t *Aerospike) Delete(ctx context.Context, key *aerospike.Key, policy *aerospike.WritePolicy) int64 {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	var opt *aerospike.WritePolicy
-
-	if len(args) > 0 {
-		if val, ok := args[0].(*aerospike.WritePolicy); ok {
-			opt = val
-		}
+	if policy == nil {
+		policy = &aerospike.WritePolicy{}
+		policy.SendKey = true
 	}
 
-	if opt == nil {
-		opt = &aerospike.WritePolicy{}
-		opt.SendKey = true
-	}
-
-	var err error
-
-	if val, ok := query.(*aerospike.Bin); ok {
-		err = t.client.PutBins(opt, key.(*aerospike.Key), val)
-	} else if val, ok := query.([]*aerospike.Bin); ok {
-		err = t.client.PutBins(opt, key.(*aerospike.Key), val...)
-	} else if val, ok := query.(*aerospike.BinMap); ok {
-		err = t.client.Put(opt, key.(*aerospike.Key), *val)
-	} else {
-		return fmt.Errorf("invalid query type")
-	}
+	_, err := t.client.Delete(policy, key)
 
 	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-func (t *Aerospike) Delete(ctx context.Context, key interface{}, query interface{}, args ...interface{}) int64 {
-	defer func(s time.Time) {
-		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
-	}(time.Now())
-	t.counter.Add(context.Background(), 1)
-
-	if _, ok := key.(*aerospike.Key); ok {
-		var opt *aerospike.WritePolicy
-
-		if len(args) > 0 {
-			if val, ok := args[0].(*aerospike.WritePolicy); ok {
-				opt = val
-			}
-		}
-
-		if opt == nil {
-			opt = &aerospike.WritePolicy{}
-			opt.SendKey = true
-		}
-
-		_, err := t.client.Delete(opt, key.(*aerospike.Key))
-
-		if err != nil {
-			return 0
-		}
-	} else if keys, ok := key.([]*aerospike.Key); ok {
-		var opt *aerospike.BatchPolicy
-
-		if len(args) > 0 {
-			if val, ok := args[0].(*aerospike.BatchPolicy); ok {
-				opt = val
-			}
-		}
-
-		if opt == nil {
-			opt = &aerospike.BatchPolicy{}
-			opt.SendKey = true
-		}
-
-		_, err := t.client.BatchDelete(opt, nil, keys)
-
-		if err != nil {
-			return 0
-		}
-	} else {
 		return 0
 	}
 
 	return 1
 }
 
-func (t *Aerospike) Batch(ctx context.Context, key interface{}, query interface{}, typeOp string, args ...interface{}) (int64, error) {
+func (t *Aerospike) DeleteMany(ctx context.Context, keys []*aerospike.Key, policy *aerospike.BatchPolicy, policyDelete *aerospike.BatchDeletePolicy) int64 {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
+	if policy == nil {
+		policy = &aerospike.BatchPolicy{}
+		policy.SendKey = true
+	}
+
+	_, err := t.client.BatchDelete(policy, policyDelete, keys)
+
+	if err != nil {
+		return 0
+	}
+
+	return 1
+}
+
+func (t *Aerospike) Operate(ctx context.Context, query []aerospike.BatchRecordIfc) (int64, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -372,23 +258,15 @@ func (t *Aerospike) Batch(ctx context.Context, key interface{}, query interface{
 
 	var opt *aerospike.BatchPolicy
 
-	switch typeOp {
-	case "operate":
-		err := t.client.BatchOperate(opt, query.([]aerospike.BatchRecordIfc))
+	err := t.client.BatchOperate(opt, query)
 
-		if err != nil {
-			return 0, err
-		}
-
-		return 1, nil
-
-	default:
-		break
+	if err != nil {
+		return 0, err
 	}
 
-	return 0, fmt.Errorf("batch query usupported type")
+	return 1, nil
 }
 
-func (t *Aerospike) GetDb() interface{} {
+func (t *Aerospike) GetDb() *aerospike.Client {
 	return t.client
 }
