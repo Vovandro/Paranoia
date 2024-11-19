@@ -3,7 +3,6 @@ package noSql
 import (
 	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -86,7 +85,7 @@ func (t *MongoDB) String() string {
 	return t.Name
 }
 
-func (t *MongoDB) Exists(ctx context.Context, collection string, query bson.D) bool {
+func (t *MongoDB) Exists(ctx context.Context, collection string, query interface{}) bool {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -105,7 +104,7 @@ func (t *MongoDB) Exists(ctx context.Context, collection string, query bson.D) b
 	return find != 0
 }
 
-func (t *MongoDB) Count(ctx context.Context, collection string, query bson.D, opt *options.CountOptions) int64 {
+func (t *MongoDB) Count(ctx context.Context, collection string, query interface{}, opt *options.CountOptions) int64 {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -120,7 +119,7 @@ func (t *MongoDB) Count(ctx context.Context, collection string, query bson.D, op
 	return find
 }
 
-func (t *MongoDB) FindOne(ctx context.Context, collection string, query bson.D, opt *options.FindOneOptions) (interfaces.NoSQLRow, error) {
+func (t *MongoDB) FindOne(ctx context.Context, collection string, query interface{}, opt *options.FindOneOptions) (interfaces.NoSQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -135,7 +134,7 @@ func (t *MongoDB) FindOne(ctx context.Context, collection string, query bson.D, 
 	return &MongoRow{find}, nil
 }
 
-func (t *MongoDB) Find(ctx context.Context, collection string, query bson.D, opt *options.FindOptions) (interfaces.NoSQLRows, error) {
+func (t *MongoDB) Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (interfaces.NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -150,7 +149,7 @@ func (t *MongoDB) Find(ctx context.Context, collection string, query bson.D, opt
 	return &MongoRows{find}, nil
 }
 
-func (t *MongoDB) Exec(ctx context.Context, collection string, query bson.D, opt *options.AggregateOptions) (interfaces.NoSQLRows, error) {
+func (t *MongoDB) Exec(ctx context.Context, collection string, query interface{}, opt *options.AggregateOptions) (interfaces.NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -165,7 +164,7 @@ func (t *MongoDB) Exec(ctx context.Context, collection string, query bson.D, opt
 	return &MongoRows{aggregate}, nil
 }
 
-func (t *MongoDB) Insert(ctx context.Context, collection string, query bson.D, opt *options.InsertOneOptions) (interface{}, error) {
+func (t *MongoDB) Insert(ctx context.Context, collection string, query interface{}, opt *options.InsertOneOptions) (interface{}, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -180,7 +179,7 @@ func (t *MongoDB) Insert(ctx context.Context, collection string, query bson.D, o
 	return res.InsertedID, nil
 }
 
-func (t *MongoDB) Update(ctx context.Context, collection string, query bson.D, update bson.D, opt *options.UpdateOptions) error {
+func (t *MongoDB) Update(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.UpdateOptions) error {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -196,7 +195,7 @@ func (t *MongoDB) Update(ctx context.Context, collection string, query bson.D, u
 
 }
 
-func (t *MongoDB) Delete(ctx context.Context, collection string, query bson.D, opt *options.DeleteOptions) int64 {
+func (t *MongoDB) Delete(ctx context.Context, collection string, query interface{}, opt *options.DeleteOptions) int64 {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())

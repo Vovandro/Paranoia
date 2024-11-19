@@ -19,10 +19,9 @@ func TestMongoDB_Exists(t1 *testing.T) {
 	defer closeMongoTest(db)
 
 	type args struct {
-		key         interface{}
-		queryInsert interface{}
-		queryFind   interface{}
-		args        []interface{}
+		collection  string
+		queryInsert bson.M
+		queryFind   bson.M
 	}
 	tests := []struct {
 		name    string
@@ -36,7 +35,6 @@ func TestMongoDB_Exists(t1 *testing.T) {
 				"exist_test",
 				nil,
 				bson.M{"balance": 0},
-				nil,
 			},
 			true,
 			false,
@@ -47,7 +45,6 @@ func TestMongoDB_Exists(t1 *testing.T) {
 				"exist_test",
 				nil,
 				bson.M{"balance": 1000},
-				nil,
 			},
 			false,
 			false,
@@ -56,10 +53,10 @@ func TestMongoDB_Exists(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			if tt.args.queryInsert != nil {
-				db.Insert(context.Background(), tt.args.key, tt.args.queryInsert)
+				db.Insert(context.Background(), tt.args.collection, tt.args.queryInsert, nil)
 			}
 
-			got := db.Exists(context.Background(), tt.args.key, tt.args.queryFind, tt.args.args...)
+			got := db.Exists(context.Background(), tt.args.collection, tt.args.queryFind)
 
 			if got != tt.want {
 				t1.Errorf("Exists() got = %v, want %v", got, tt.want)
@@ -80,10 +77,9 @@ func TestMongoDB_Find(t1 *testing.T) {
 	name2 := "test2"
 
 	type args struct {
-		key         interface{}
+		collection  string
 		queryInsert interface{}
 		queryFind   interface{}
-		args        []interface{}
 	}
 	tests := []struct {
 		name    string
@@ -97,7 +93,6 @@ func TestMongoDB_Find(t1 *testing.T) {
 				"find_test",
 				nil,
 				bson.M{"balance": bson.M{"$lte": 2}},
-				nil,
 			},
 			[]itemMongo{
 				{
@@ -119,10 +114,10 @@ func TestMongoDB_Find(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			if tt.args.queryInsert != nil {
-				db.Insert(context.Background(), tt.args.key, tt.args.queryInsert)
+				db.Insert(context.Background(), tt.args.collection, tt.args.queryInsert, nil)
 			}
 
-			got, err := db.Find(context.Background(), tt.args.key, tt.args.queryFind, tt.args.args...)
+			got, err := db.Find(context.Background(), tt.args.collection, tt.args.queryFind, nil)
 			if (err != nil) != tt.wantErr {
 				t1.Errorf("Find() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,10 +155,9 @@ func TestMongoDB_FindOne(t1 *testing.T) {
 	name := "test2"
 
 	type args struct {
-		key         interface{}
+		collection  string
 		queryInsert interface{}
 		queryFind   interface{}
-		args        []interface{}
 	}
 	tests := []struct {
 		name    string
@@ -177,7 +171,6 @@ func TestMongoDB_FindOne(t1 *testing.T) {
 				"find_one_test",
 				nil,
 				bson.M{"balance": 0},
-				nil,
 			},
 			itemMongo{
 				Id:        primitive.ObjectID{},
@@ -191,10 +184,10 @@ func TestMongoDB_FindOne(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			if tt.args.queryInsert != nil {
-				db.Insert(context.Background(), tt.args.key, tt.args.queryInsert)
+				db.Insert(context.Background(), tt.args.collection, tt.args.queryInsert, nil)
 			}
 
-			got, err := db.FindOne(context.Background(), tt.args.key, tt.args.queryFind, tt.args.args...)
+			got, err := db.FindOne(context.Background(), tt.args.collection, tt.args.queryFind, nil)
 			if (err != nil) != tt.wantErr {
 				t1.Errorf("FindOne() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -221,9 +214,8 @@ func TestMongoDB_Insert(t1 *testing.T) {
 	defer closeMongoTest(db)
 
 	type args struct {
-		key   interface{}
-		query interface{}
-		args  []interface{}
+		collection string
+		query      interface{}
 	}
 	tests := []struct {
 		name    string
@@ -237,14 +229,13 @@ func TestMongoDB_Insert(t1 *testing.T) {
 				map[string]interface{}{
 					"foo": "bar",
 				},
-				nil,
 			},
 			false,
 		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			got, err := db.Insert(context.TODO(), tt.args.key, tt.args.query, tt.args.args...)
+			got, err := db.Insert(context.TODO(), tt.args.collection, tt.args.query, nil)
 
 			if (err != nil) != tt.wantErr {
 				t1.Errorf("Insert() error = %v, wantErr %v", err, tt.wantErr)
@@ -280,7 +271,7 @@ func TestMongoDB_Update(t1 *testing.T) {
 
 	t1.Run("base test", func(t1 *testing.T) {
 
-		err := db.Update(context.Background(), "update_test", bson.M{"balance": 50}, bson.M{"$set": bson.M{"balance": 100}})
+		err := db.Update(context.Background(), "update_test", bson.M{"balance": 50}, bson.M{"$set": bson.M{"balance": 100}}, nil)
 
 		if err != nil {
 			t1.Errorf("Update() error = %v", err)

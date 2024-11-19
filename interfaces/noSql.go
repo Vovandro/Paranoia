@@ -3,7 +3,6 @@ package interfaces
 import (
 	"context"
 	"github.com/aerospike/aerospike-client-go/v7"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -12,8 +11,6 @@ type INoSql interface {
 	Init(app IEngine) error
 	Stop() error
 	String() string
-
-	GetDb() interface{}
 }
 
 type NoSQLRow interface {
@@ -46,14 +43,14 @@ type IAerospike interface {
 
 type IMongoDB interface {
 	// CRUD operations
-	Exists(ctx context.Context, collection string, query bson.D) bool
-	Count(ctx context.Context, collection string, query bson.D, opt *options.CountOptions) int64
-	FindOne(ctx context.Context, collection string, query bson.D, opt *options.FindOneOptions) (NoSQLRow, error)
-	Find(ctx context.Context, collection string, query bson.D, opt *options.FindOptions) (NoSQLRows, error)
-	Exec(ctx context.Context, collection string, query bson.D, opt *options.AggregateOptions) (NoSQLRows, error)
-	Insert(ctx context.Context, collection string, query bson.D, opt *options.InsertOneOptions) (interface{}, error)
-	Update(ctx context.Context, collection string, query bson.D, update bson.D, opt *options.UpdateOptions) error
-	Delete(ctx context.Context, collection string, query bson.D, opt *options.DeleteOptions) int64
+	Exists(ctx context.Context, collection string, query interface{}) bool
+	Count(ctx context.Context, collection string, query interface{}, opt *options.CountOptions) int64
+	FindOne(ctx context.Context, collection string, query interface{}, opt *options.FindOneOptions) (NoSQLRow, error)
+	Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (NoSQLRows, error)
+	Exec(ctx context.Context, collection string, query interface{}, opt *options.AggregateOptions) (NoSQLRows, error)
+	Insert(ctx context.Context, collection string, query interface{}, opt *options.InsertOneOptions) (interface{}, error)
+	Update(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.UpdateOptions) error
+	Delete(ctx context.Context, collection string, query interface{}, opt *options.DeleteOptions) int64
 
 	// Advanced operations
 	Batch(ctx context.Context, collection string, query []mongo.WriteModel, opt *options.BulkWriteOptions) (int64, error)
