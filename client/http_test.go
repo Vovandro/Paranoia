@@ -37,7 +37,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -53,7 +53,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &Response{
-				[]byte("{\"id\":1}"),
+				bytes.NewBuffer([]byte("{\"id\":1}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -86,8 +86,13 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			}, nil)
 			s.Start()
 
-			if got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers); !bytes.Equal(got.GetBody(), tt.want.GetBody()) {
-				t1.Errorf("Fetch() = %s, want %s", got.GetBody(), tt.want.GetBody())
+			got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers)
+
+			body, _ := got.GetBody()
+			bodyWant, _ := tt.want.GetBody()
+
+			if !bytes.Equal(body, bodyWant) {
+				t1.Errorf("Fetch() = %s, want %s", body, bodyWant)
 			}
 
 			s.Stop()

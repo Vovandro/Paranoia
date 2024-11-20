@@ -1,13 +1,26 @@
 package client
 
+import (
+	"fmt"
+	"io"
+)
+
 type Response struct {
-	Body       []byte
+	Body       io.Reader
 	Header     map[string][]string
 	Err        error
 	RetryCount int
 }
 
-func (t *Response) GetBody() []byte {
+func (t *Response) GetBody() ([]byte, error) {
+	if t.Body == nil {
+		return []byte{}, fmt.Errorf("body cannot be nil")
+	}
+
+	return io.ReadAll(t.Body)
+}
+
+func (t *Response) GetLazyBody() io.Reader {
 	return t.Body
 }
 

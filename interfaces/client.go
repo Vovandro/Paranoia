@@ -3,6 +3,7 @@ package interfaces
 import (
 	"context"
 	"google.golang.org/grpc"
+	"io"
 )
 
 type IClient interface {
@@ -22,7 +23,8 @@ type IClientGrpc interface {
 }
 
 type IClientResponse interface {
-	GetBody() []byte
+	GetBody() ([]byte, error)
+	GetLazyBody() io.Reader
 	GetHeader() map[string][]string
 	Error() error
 	GetRetries() int

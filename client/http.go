@@ -8,7 +8,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"io"
 	"net/http"
 	"time"
 )
@@ -79,12 +78,11 @@ func (t *HTTPClient) Fetch(ctx context.Context, method string, host string, data
 
 			if do.StatusCode == 200 {
 				res.RetryCount = i + 1
-				res.Body, _ = io.ReadAll(do.Body)
+				res.Body = do.Body
 				res.Header = map[string][]string{}
 				for s, strings := range do.Header {
 					res.Header[s] = strings
 				}
-				do.Body.Close()
 				break
 			}
 
@@ -94,7 +92,6 @@ func (t *HTTPClient) Fetch(ctx context.Context, method string, host string, data
 				for s, strings := range do.Header {
 					res.Header[s] = strings
 				}
-				do.Body.Close()
 				break
 			}
 
@@ -103,13 +100,11 @@ func (t *HTTPClient) Fetch(ctx context.Context, method string, host string, data
 					res.RetryCount = i + 1
 					res.Err = fmt.Errorf("max retry count exceeded")
 				}
-				do.Body.Close()
 				continue
 			}
 
 			res.RetryCount = i + 1
 			res.Err = fmt.Errorf("request status code %d", do.StatusCode)
-			do.Body.Close()
 			break
 		}
 

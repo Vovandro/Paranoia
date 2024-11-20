@@ -39,7 +39,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -73,7 +73,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -90,7 +90,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -107,7 +107,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -124,7 +124,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -141,7 +141,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				nil,
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -170,8 +170,13 @@ func TestHTTP_Fetch(t1 *testing.T) {
 
 			s.Start()
 
-			if got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers); !bytes.Equal(got.GetBody(), tt.want.GetBody()) {
-				t1.Errorf("Fetch() = %s, want %s", got.GetBody(), tt.want.GetBody())
+			got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers)
+
+			body, _ := got.GetBody()
+			bodyWant, _ := tt.want.GetBody()
+
+			if !bytes.Equal(body, bodyWant) {
+				t1.Errorf("Fetch() = %s, want %s", body, bodyWant)
 			}
 
 			s.Stop()
@@ -206,7 +211,7 @@ func TestHTTP_Middleware(t1 *testing.T) {
 				[]string{},
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -221,7 +226,7 @@ func TestHTTP_Middleware(t1 *testing.T) {
 				[]string{"timing"},
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -236,7 +241,7 @@ func TestHTTP_Middleware(t1 *testing.T) {
 				[]string{"timing", "restore"},
 			},
 			want: &client.Response{
-				[]byte("{}"),
+				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
 				1,
@@ -266,8 +271,13 @@ func TestHTTP_Middleware(t1 *testing.T) {
 
 			s.Start()
 
-			if got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, nil, nil); !bytes.Equal(got.GetBody(), tt.want.GetBody()) {
-				t1.Errorf("Fetch() = %s, want %s", got.GetBody(), tt.want.GetBody())
+			got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, nil, nil)
+
+			body, _ := got.GetBody()
+			bodyWant, _ := tt.want.GetBody()
+
+			if !bytes.Equal(body, bodyWant) {
+				t1.Errorf("Fetch() = %s, want %s", body, bodyWant)
 			}
 
 			s.Stop()
