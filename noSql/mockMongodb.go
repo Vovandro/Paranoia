@@ -23,6 +23,10 @@ func (t *MockMongoDB) FindOne(ctx context.Context, collection string, query inte
 	return &MongoRow{nil}, nil
 }
 
+func (t *MockMongoDB) FindOneAndUpdate(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.FindOneAndUpdateOptions) (interfaces.NoSQLRow, error) {
+	return &MongoRow{nil}, nil
+}
+
 func (t *MockMongoDB) Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (interfaces.NoSQLRows, error) {
 	return &MongoRows{nil}, nil
 }

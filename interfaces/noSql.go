@@ -46,6 +46,7 @@ type IMongoDB interface {
 	Exists(ctx context.Context, collection string, query interface{}) bool
 	Count(ctx context.Context, collection string, query interface{}, opt *options.CountOptions) int64
 	FindOne(ctx context.Context, collection string, query interface{}, opt *options.FindOneOptions) (NoSQLRow, error)
+	FindOneAndUpdate(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.FindOneAndUpdateOptions) (NoSQLRow, error)
 	Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (NoSQLRows, error)
 	Exec(ctx context.Context, collection string, query interface{}, opt *options.AggregateOptions) (NoSQLRows, error)
 	Insert(ctx context.Context, collection string, query interface{}, opt *options.InsertOneOptions) (interface{}, error)

@@ -134,6 +134,21 @@ func (t *MongoDB) FindOne(ctx context.Context, collection string, query interfac
 	return &MongoRow{find}, nil
 }
 
+func (t *MongoDB) FindOneAndUpdate(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.FindOneAndUpdateOptions) (interfaces.NoSQLRow, error) {
+	defer func(s time.Time) {
+		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	t.counter.Add(context.Background(), 1)
+
+	find := t.db.Collection(collection).FindOneAndUpdate(ctx, query, update, opt)
+
+	if err := find.Err(); err != nil {
+		return nil, err
+	}
+
+	return &MongoRow{find}, nil
+}
+
 func (t *MongoDB) Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (interfaces.NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
