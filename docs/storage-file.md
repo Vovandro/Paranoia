@@ -11,12 +11,13 @@ engine:
   storage:
     - type: file
       name: public
+      folder: tmp
 ```
 
 Инициализация в коде
 
 ```go
-app.PushStorage(storage.NewFile("public"))
+app.PushStorage(storage.NewFile("public"), storage.FileConfig{Folder: "tmp"})
 ```
 
 Далее в необходимых местах можно получить:

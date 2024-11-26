@@ -15,7 +15,7 @@ type File struct {
 }
 
 type FileConfig struct {
-	Folder string `json:"yaml"`
+	Folder string `yaml:"folder"`
 }
 
 func NewFile(name string, cfg FileConfig) interfaces.IStorage {
