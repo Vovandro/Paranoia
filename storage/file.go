@@ -4,19 +4,32 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"io"
 	"os"
+	"path"
 )
 
 type File struct {
 	Name string
 	app  interfaces.IEngine
+
+	config FileConfig
 }
 
-func NewFile(name string) interfaces.IStorage {
-	return &File{Name: name}
+type FileConfig struct {
+	Folder string `yaml:"folder"`
+}
+
+func NewFile(name string, cfg FileConfig) interfaces.IStorage {
+	return &File{
+		Name:   name,
+		config: cfg,
+	}
 }
 
 func (t *File) Init(app interfaces.IEngine) error {
 	t.app = app
+
+	os.MkdirAll(t.config.Folder, 0755)
+
 	return nil
 }
 
@@ -29,7 +42,7 @@ func (t *File) String() string {
 }
 
 func (t *File) Has(name string) bool {
-	_, err := os.Stat(name)
+	_, err := os.Stat(path.Join(t.config.Folder, name))
 
 	if err != nil {
 		return false
@@ -39,7 +52,7 @@ func (t *File) Has(name string) bool {
 }
 
 func (t *File) Put(name string, data io.Reader) error {
-	f, err := os.Create(name)
+	f, err := os.Create(path.Join(t.config.Folder, name))
 
 	if err != nil {
 		return err
@@ -55,11 +68,11 @@ func (t *File) Put(name string, data io.Reader) error {
 }
 
 func (t *File) StoreFolder(name string) error {
-	return os.MkdirAll(name, 0700)
+	return os.MkdirAll(path.Join(t.config.Folder, name), 0755)
 }
 
 func (t *File) Read(name string) (io.ReadCloser, error) {
-	f, err := os.Open(name)
+	f, err := os.Open(path.Join(t.config.Folder, name))
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +81,11 @@ func (t *File) Read(name string) (io.ReadCloser, error) {
 }
 
 func (t *File) Delete(name string) error {
-	return os.Remove(name)
+	return os.Remove(path.Join(t.config.Folder, name))
 }
 
-func (t *File) List(path string) ([]string, error) {
-	info, err := os.Stat(path)
+func (t *File) List(folder string) ([]string, error) {
+	info, err := os.Stat(path.Join(t.config.Folder, folder))
 
 	if err != nil {
 		return nil, ErrFileNotFound
@@ -82,7 +95,7 @@ func (t *File) List(path string) ([]string, error) {
 		return nil, ErrTypeMismatch
 	}
 
-	dir, err := os.ReadDir(path)
+	dir, err := os.ReadDir(path.Join(t.config.Folder, folder))
 
 	if err != nil {
 		return nil, err
@@ -98,7 +111,7 @@ func (t *File) List(path string) ([]string, error) {
 }
 
 func (t *File) IsFolder(name string) (bool, error) {
-	info, err := os.Stat(name)
+	info, err := os.Stat(path.Join(t.config.Folder, name))
 
 	if err != nil {
 		return false, ErrFileNotFound
@@ -108,7 +121,7 @@ func (t *File) IsFolder(name string) (bool, error) {
 }
 
 func (t *File) GetSize(name string) (int64, error) {
-	info, err := os.Stat(name)
+	info, err := os.Stat(path.Join(t.config.Folder, name))
 
 	if err != nil {
 		return 0, ErrFileNotFound
@@ -118,7 +131,7 @@ func (t *File) GetSize(name string) (int64, error) {
 }
 
 func (t *File) GetModified(name string) (int64, error) {
-	info, err := os.Stat(name)
+	info, err := os.Stat(path.Join(t.config.Folder, name))
 
 	if err != nil {
 		return 0, ErrFileNotFound

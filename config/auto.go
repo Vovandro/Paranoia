@@ -378,7 +378,13 @@ func (t *Auto) loadConfig() error {
 			case "storage":
 				switch nameModule {
 				case "file":
-					t.app.PushStorage(storage.NewFile(name.(string)))
+					cfg := storage.FileConfig{}
+					err = mod.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushStorage(storage.NewFile(name.(string), cfg))
 
 				case "s3":
 					cfg := storage.S3Config{}
