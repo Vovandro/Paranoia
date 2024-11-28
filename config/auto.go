@@ -116,6 +116,15 @@ func (t *Auto) loadConfig() error {
 
 					t.app.PushCache(cache.NewRedis(name.(string), cfg))
 
+				case "etcd":
+					cfg := cache.EtcdConfig{}
+					err = mod.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushCache(cache.NewEtcd(name.(string), cfg))
+
 				default:
 					return fmt.Errorf("unknown mod %s", nameModule)
 				}

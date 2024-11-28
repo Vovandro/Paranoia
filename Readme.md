@@ -26,6 +26,7 @@
 - Memory
 - Redis
 - Memcached
+- etcd
 
 ### Servers
 
