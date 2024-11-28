@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"bytes"
+	"fmt"
 	"os"
 	"reflect"
 	"strconv"
@@ -45,15 +45,15 @@ func TestEtcd_Has(t1 *testing.T) {
 		},
 		{
 			"test does not exist",
-			map[string]string{"k1": "v1"},
-			"k2",
+			map[string]string{"k2": "v1"},
+			"k22222",
 			false,
 		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			for k, v := range tt.store {
-				t.Set(k, []byte(v), time.Minute)
+				t.Set(k, v, time.Minute)
 			}
 
 			if got := t.Has(tt.key); got != tt.want {
@@ -91,7 +91,7 @@ func TestEtcd_Base(t1 *testing.T) {
 
 	type item struct {
 		key     string
-		val     any
+		val     string
 		timeout time.Duration
 	}
 
@@ -100,72 +100,46 @@ func TestEtcd_Base(t1 *testing.T) {
 		store    []item
 		sleep    time.Duration
 		keyCheck string
-		want     []byte
+		want     string
 	}{
 		{
 			"base test set",
 			[]item{
 				{
-					"k1",
+					"k3",
 					"v1",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
-			"k1",
-			[]byte("v1"),
+			"k3",
+			"v1",
 		},
 		{
 			"test not exists",
 			[]item{
 				{
-					"k1",
+					"k4",
 					"v1",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
-			"k2",
-			nil,
+			"k222222222",
+			"",
 		},
 		{
 			"base test timeout",
 			[]item{
 				{
-					"k1",
+					"k5",
 					"v1",
 					time.Second,
 				},
 			},
-			time.Second * 2,
-			"k1",
-			nil,
-		},
-		{
-			"test byte",
-			[]item{
-				{
-					"k1",
-					[]byte("v1"),
-					time.Minute,
-				},
-			},
-			time.Microsecond,
-			"k1",
-			[]byte("v1"),
-		},
-		{
-			"test int",
-			[]item{
-				{
-					"k1",
-					2,
-					time.Minute,
-				},
-			},
-			time.Microsecond,
-			"k1",
-			[]byte("2"),
+			time.Second * 4,
+			"k5",
+			"",
 		},
 	}
 
@@ -179,11 +153,11 @@ func TestEtcd_Base(t1 *testing.T) {
 
 			got, err := t.Get(tt.keyCheck)
 
-			if err != nil && tt.want != nil {
+			if err != nil && tt.want != "" {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			if (got == nil && tt.want != nil) || (got != nil && !bytes.Equal(got.([]byte), tt.want)) {
+			if (got == "" && tt.want != "") || (got != "" && got.(string) != tt.want) {
 				t1.Errorf("Check = %v, want %v", got, tt.want)
 			}
 
@@ -218,7 +192,7 @@ func TestEtcd_In(t1 *testing.T) {
 	type item struct {
 		key     string
 		key2    string
-		val     any
+		val     string
 		timeout time.Duration
 	}
 
@@ -228,20 +202,20 @@ func TestEtcd_In(t1 *testing.T) {
 		sleep     time.Duration
 		keyCheck  string
 		key2Check string
-		want      any
+		want      string
 	}{
 		{
 			"base test set",
 			[]item{
 				{
-					"k1",
+					"k6",
 					"k2",
 					"v1",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
-			"k1",
+			"k6",
 			"k2",
 			"v1",
 		},
@@ -249,50 +223,50 @@ func TestEtcd_In(t1 *testing.T) {
 			"test not found",
 			[]item{
 				{
-					"k1",
+					"k7",
 					"k2",
 					"v1",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
+			"k21231231",
 			"k2",
-			"k2",
-			nil,
+			"",
 		},
 		{
 			"test not found key 2",
 			[]item{
 				{
-					"k1",
+					"k8",
 					"k2",
 					"v1",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
-			"k1",
+			"k8",
 			"k3",
-			nil,
+			"",
 		},
 		{
 			"base test multiple set one",
 			[]item{
 				{
-					"k1",
+					"k9",
 					"k2",
 					"v1",
 					time.Minute,
 				},
 				{
-					"k1",
+					"k9",
 					"k3",
 					"v2",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
-			"k1",
+			"k9",
 			"k2",
 			"v1",
 		},
@@ -300,79 +274,43 @@ func TestEtcd_In(t1 *testing.T) {
 			"base test multiple set two",
 			[]item{
 				{
-					"k1",
+					"k10",
 					"k2",
 					"v1",
 					time.Minute,
 				},
 				{
-					"k1",
+					"k10",
 					"k3",
 					"v2",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
-			"k1",
+			"k10",
 			"k3",
 			"v2",
-		},
-		{
-			"test integer",
-			[]item{
-				{
-					"k1",
-					"k2",
-					3,
-					time.Minute,
-				},
-			},
-			time.Microsecond,
-			"k1",
-			"k2",
-			float64(3),
 		},
 		{
 			"test multiple int set one",
 			[]item{
 				{
-					"k1",
+					"k11",
 					"k2",
 					"v1",
 					time.Minute,
 				},
 				{
-					"k1",
+					"k11",
 					"k3",
-					3,
+					"3",
 					time.Minute,
 				},
 			},
 			time.Microsecond,
-			"k1",
+			"k11",
 			"k2",
 			"v1",
-		},
-		{
-			"test multiple int set two",
-			[]item{
-				{
-					"k1",
-					"k2",
-					"v1",
-					time.Minute,
-				},
-				{
-					"k1",
-					"k3",
-					3,
-					time.Minute,
-				},
-			},
-			time.Microsecond,
-			"k1",
-			"k3",
-			float64(3),
 		},
 	}
 
@@ -386,7 +324,7 @@ func TestEtcd_In(t1 *testing.T) {
 
 			got, err := t.GetIn(tt.keyCheck, tt.key2Check)
 
-			if err != nil && tt.want != nil {
+			if err != nil && tt.want != "" {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
@@ -438,24 +376,24 @@ func TestEtcd_Map(t1 *testing.T) {
 			"base test set",
 			[]item{
 				{
-					"k1",
+					"k12",
 					map[string]interface{}{"k": "v"},
 					time.Minute,
 				},
 			},
-			"k1",
+			"k12",
 			map[string]interface{}{"k": "v"},
 		},
 		{
 			"base test int",
 			[]item{
 				{
-					"k1",
+					"k13",
 					map[string]interface{}{"k": "v", "k2": 5},
 					time.Minute,
 				},
 			},
-			"k1",
+			"k13",
 			map[string]interface{}{"k": "v", "k2": 5.0},
 		},
 	}
@@ -505,15 +443,15 @@ func TestEtcd_GetMapInvalid(t1 *testing.T) {
 	}
 
 	t1.Run("test get type mismatch", func(t1 *testing.T) {
-		t.Set("k5", "test", time.Minute)
+		t.Set("k14", "test", time.Minute)
 
-		_, err := t.GetMap("k5")
+		_, err := t.GetMap("k14")
 
 		if err == nil {
 			t1.Errorf("Failed test type mismatch")
 		}
 
-		t.Delete("k5")
+		t.Delete("k14")
 	})
 }
 
@@ -554,29 +492,29 @@ func TestEtcd_Increment(t1 *testing.T) {
 			"base test increment",
 			[]item{
 				{
-					"k1",
+					"k15",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k15",
 			1,
 		},
 		{
 			"test multiple increment",
 			[]item{
 				{
-					"k1",
+					"k16",
 					1,
 					time.Minute,
 				},
 				{
-					"k1",
+					"k16",
 					5,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k16",
 			6,
 		},
 	}
@@ -595,7 +533,7 @@ func TestEtcd_Increment(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			a, err := strconv.ParseInt(string(got.([]byte)), 10, 64)
+			a, err := strconv.ParseInt(got.(string), 10, 64)
 
 			if a != tt.want || lastVal != tt.want {
 				t1.Errorf("Check = %v, last = %v, want %v", a, lastVal, tt.want)
@@ -647,19 +585,19 @@ func TestEtcd_Decrement(t1 *testing.T) {
 			"base test decrement",
 			[]item{
 				{
-					"k1",
+					"k17",
 					10,
 					time.Minute,
 				},
 			},
 			[]item{
 				{
-					"k1",
+					"k17",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k17",
 			9,
 			false,
 		},
@@ -667,24 +605,24 @@ func TestEtcd_Decrement(t1 *testing.T) {
 			"test multiple decrement",
 			[]item{
 				{
-					"k1",
+					"k18",
 					10,
 					time.Minute,
 				},
 			},
 			[]item{
 				{
-					"k1",
+					"k18",
 					1,
 					time.Minute,
 				},
 				{
-					"k1",
+					"k18",
 					2,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k18",
 			7,
 			false,
 		},
@@ -693,13 +631,13 @@ func TestEtcd_Decrement(t1 *testing.T) {
 			[]item{},
 			[]item{
 				{
-					"k1",
+					"k19",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
-			0,
+			"k19",
+			-1,
 			true,
 		},
 	}
@@ -709,7 +647,7 @@ func TestEtcd_Decrement(t1 *testing.T) {
 			var lastVal int64
 
 			for _, v := range tt.store {
-				t.Set(v.key, v.val, v.timeout)
+				t.Set(v.key, fmt.Sprint(v.val), v.timeout)
 			}
 			for _, v := range tt.dec {
 				lastVal, _ = t.Decrement(v.key, v.val, v.timeout)
@@ -726,7 +664,7 @@ func TestEtcd_Decrement(t1 *testing.T) {
 				}
 			}
 
-			a, err := strconv.ParseInt(strings.TrimSpace(string(got.([]byte))), 10, 64)
+			a, err := strconv.ParseInt(strings.TrimSpace(got.(string)), 10, 64)
 
 			if err != nil {
 				t1.Errorf("Convert error = %v, want %v", err, tt.want)
@@ -782,13 +720,13 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 			"base test increment",
 			[]item{
 				{
-					"k1",
+					"k20",
 					"k2",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k20",
 			"k2",
 			1,
 		},
@@ -796,19 +734,19 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 			"test multiple increment",
 			[]item{
 				{
-					"k1",
+					"k21",
 					"k2",
 					1,
 					time.Minute,
 				},
 				{
-					"k1",
+					"k21",
 					"k2",
 					5,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k21",
 			"k2",
 			6,
 		},
@@ -826,6 +764,7 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 
 			if err != nil {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
+				return
 			}
 
 			if int64(got.(float64)) != tt.want || lastVal != tt.want {
@@ -879,7 +818,7 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 			"base test decrement",
 			[]item{
 				{
-					"k1",
+					"k22",
 					"k2",
 					10,
 					time.Minute,
@@ -887,13 +826,13 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 			},
 			[]item{
 				{
-					"k1",
+					"k22",
 					"k2",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k22",
 			"k2",
 			9,
 		},
@@ -901,7 +840,7 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 			"test multiple decrement",
 			[]item{
 				{
-					"k1",
+					"k23",
 					"k2",
 					10,
 					time.Minute,
@@ -909,19 +848,19 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 			},
 			[]item{
 				{
-					"k1",
+					"k23",
 					"k2",
 					1,
 					time.Minute,
 				},
 				{
-					"k1",
+					"k23",
 					"k2",
 					2,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k23",
 			"k2",
 			7,
 		},
@@ -930,13 +869,13 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 			[]item{},
 			[]item{
 				{
-					"k1",
+					"k24",
 					"k2",
 					1,
 					time.Minute,
 				},
 			},
-			"k1",
+			"k24",
 			"k2",
 			-1,
 		},

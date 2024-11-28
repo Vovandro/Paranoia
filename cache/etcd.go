@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/bradfitz/gomemcache/memcache"
+	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.opentelemetry.io/otel"
@@ -91,6 +91,10 @@ func (t *Etcd) Has(key string) bool {
 }
 
 func (t *Etcd) Set(key string, args any, timeout time.Duration) error {
+	if _, ok := args.(string); !ok {
+		return ErrTypeMismatch
+	}
+
 	defer func(s time.Time) {
 		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -133,7 +137,7 @@ func (t *Etcd) SetMap(key string, args any, timeout time.Duration) error {
 		return err
 	}
 
-	return t.Set(key, data, timeout)
+	return t.Set(key, string(data), timeout)
 }
 
 func (t *Etcd) Get(key string) (any, error) {
@@ -144,17 +148,14 @@ func (t *Etcd) Get(key string) (any, error) {
 
 	item, err := t.client.Get(context.Background(), key)
 	if err != nil {
-		if errors.Is(err, memcache.ErrCacheMiss) {
-			return nil, ErrKeyNotFound
-		}
-		return nil, err
+		return "", err
 	}
 
 	if len(item.Kvs) == 0 {
-		return nil, ErrKeyNotFound
+		return "", ErrKeyNotFound
 	}
 
-	return item.Kvs[0].Value, nil
+	return string(item.Kvs[0].Value), nil
 }
 
 func (t *Etcd) GetIn(key string, key2 string) (any, error) {
@@ -166,14 +167,14 @@ func (t *Etcd) GetIn(key string, key2 string) (any, error) {
 	data, err := t.GetMap(key)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if val, ok := data.(map[string]any)[key2]; ok {
 		return val, nil
 	}
 
-	return nil, ErrKeyNotFound
+	return "", ErrKeyNotFound
 }
 
 func (t *Etcd) GetMap(key string) (any, error) {
@@ -185,14 +186,14 @@ func (t *Etcd) GetMap(key string) (any, error) {
 	data, err := t.Get(key)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	res := make(map[string]any)
-	err = json.Unmarshal(data.([]byte), &res)
+	err = json.Unmarshal([]byte(data.(string)), &res)
 
 	if err != nil {
-		return nil, ErrTypeMismatch
+		return "", ErrTypeMismatch
 	}
 
 	return res, nil
@@ -206,10 +207,10 @@ func (t *Etcd) Increment(key string, val int64, timeout time.Duration) (int64, e
 
 	v, _ := t.Get(key)
 
-	conv, _ := strconv.ParseInt(string(v.([]byte)), 10, 64)
+	conv, _ := strconv.ParseInt(v.(string), 10, 64)
 	val += conv
 
-	return val, t.Set(key, val, timeout)
+	return val, t.Set(key, fmt.Sprint(val), timeout)
 }
 
 func (t *Etcd) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
