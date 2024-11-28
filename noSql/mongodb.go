@@ -237,7 +237,7 @@ func (t *MongoDB) Batch(ctx context.Context, collection string, query []mongo.Wr
 		return 0, err
 	}
 
-	return write.ModifiedCount + write.InsertedCount, nil
+	return write.ModifiedCount + write.InsertedCount + write.UpsertedCount, nil
 }
 
 func (t *MongoDB) GetDb() *mongo.Database {
