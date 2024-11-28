@@ -41,4 +41,4 @@ cache := app.GetCache("primary")
 
 Не поддерживается декремент менее 0.
 
-### Далее [SQL базы данных](./database.md)
+### Далее [etcd](./cache-etcd.md)

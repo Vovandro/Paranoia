@@ -13,6 +13,7 @@
    1. [Memory cache](./cache-memory.md)
    2. [Memcached](./cache-memcached.md)
    3. [Redis](./cache-redis.md)
+   3. [etcd](./cache-etcd.md)
 9. [SQL базы данных](./database.md)
    1. [MySQL](./database-mysql.md)
    2. [PostgreSQL](./database-postgres.md)

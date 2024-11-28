@@ -6,6 +6,7 @@
 ## - [Memory cache](./cache-memory.md)
 ## - [Memcached](./cache-memcached.md)
 ## - [Redis](./cache-redis.md)
+## - [etcd](./cache-etcd.md)
 
 Общие методы:
 
