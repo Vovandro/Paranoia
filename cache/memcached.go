@@ -73,11 +73,11 @@ func (t *Memcached) String() string {
 	return t.Name
 }
 
-func (t *Memcached) Has(key string) bool {
+func (t *Memcached) Has(ctx context.Context, key string) bool {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
 	item, err := t.client.Get(key)
 
@@ -88,11 +88,11 @@ func (t *Memcached) Has(key string) bool {
 	return item != nil
 }
 
-func (t *Memcached) Set(key string, args any, timeout time.Duration) error {
+func (t *Memcached) Set(ctx context.Context, key string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	var data []byte
 
@@ -111,13 +111,13 @@ func (t *Memcached) Set(key string, args any, timeout time.Duration) error {
 	})
 }
 
-func (t *Memcached) SetIn(key string, key2 string, args any, timeout time.Duration) error {
+func (t *Memcached) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	data, err := t.GetMap(key)
+	data, err := t.GetMap(ctx, key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -127,14 +127,14 @@ func (t *Memcached) SetIn(key string, key2 string, args any, timeout time.Durati
 
 	data.(map[string]any)[key2] = args
 
-	return t.SetMap(key, data, timeout)
+	return t.SetMap(ctx, key, data, timeout)
 }
 
-func (t *Memcached) SetMap(key string, args any, timeout time.Duration) error {
+func (t *Memcached) SetMap(ctx context.Context, key string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	data, err := json.Marshal(args)
 
@@ -142,14 +142,14 @@ func (t *Memcached) SetMap(key string, args any, timeout time.Duration) error {
 		return err
 	}
 
-	return t.Set(key, data, timeout)
+	return t.Set(ctx, key, data, timeout)
 }
 
-func (t *Memcached) Get(key string) (any, error) {
+func (t *Memcached) Get(ctx context.Context, key string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
 	item, err := t.client.Get(key)
 	if err != nil {
@@ -162,13 +162,13 @@ func (t *Memcached) Get(key string) (any, error) {
 	return item.Value, nil
 }
 
-func (t *Memcached) GetIn(key string, key2 string) (any, error) {
+func (t *Memcached) GetIn(ctx context.Context, key string, key2 string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
-	data, err := t.GetMap(key)
+	data, err := t.GetMap(ctx, key)
 
 	if err != nil {
 		return nil, err
@@ -181,13 +181,13 @@ func (t *Memcached) GetIn(key string, key2 string) (any, error) {
 	return nil, ErrKeyNotFound
 }
 
-func (t *Memcached) GetMap(key string) (any, error) {
+func (t *Memcached) GetMap(ctx context.Context, key string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
-	data, err := t.Get(key)
+	data, err := t.Get(ctx, key)
 
 	if err != nil {
 		return nil, err
@@ -203,16 +203,16 @@ func (t *Memcached) GetMap(key string) (any, error) {
 	return res, nil
 }
 
-func (t *Memcached) Increment(key string, val int64, timeout time.Duration) (int64, error) {
+func (t *Memcached) Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	v, err := t.client.Increment(key, uint64(val))
 
 	if errors.Is(err, memcache.ErrCacheMiss) {
-		return val, t.Set(key, val, timeout)
+		return val, t.Set(ctx, key, val, timeout)
 	} else if err != nil {
 		return 0, err
 	}
@@ -220,13 +220,13 @@ func (t *Memcached) Increment(key string, val int64, timeout time.Duration) (int
 	return int64(v), t.client.Touch(key, int32(timeout.Seconds()))
 }
 
-func (t *Memcached) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+func (t *Memcached) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	data, err := t.GetMap(key)
+	data, err := t.GetMap(ctx, key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -240,14 +240,14 @@ func (t *Memcached) IncrementIn(key string, key2 string, val int64, timeout time
 		data.(map[string]any)[key2] = val
 	}
 
-	return data.(map[string]any)[key2].(int64), t.SetMap(key, data, timeout)
+	return data.(map[string]any)[key2].(int64), t.SetMap(ctx, key, data, timeout)
 }
 
-func (t *Memcached) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
+func (t *Memcached) Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	v, err := t.client.Decrement(key, uint64(val))
 
@@ -260,13 +260,13 @@ func (t *Memcached) Decrement(key string, val int64, timeout time.Duration) (int
 	return int64(v), t.client.Touch(key, int32(timeout.Seconds()))
 }
 
-func (t *Memcached) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+func (t *Memcached) DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	data, err := t.GetMap(key)
+	data, err := t.GetMap(ctx, key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -280,14 +280,14 @@ func (t *Memcached) DecrementIn(key string, key2 string, val int64, timeout time
 		data.(map[string]any)[key2] = val * -1
 	}
 
-	return data.(map[string]any)[key2].(int64), t.SetMap(key, data, timeout)
+	return data.(map[string]any)[key2].(int64), t.SetMap(ctx, key, data, timeout)
 }
 
-func (t *Memcached) Delete(key string) error {
+func (t *Memcached) Delete(ctx context.Context, key string) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	err := t.client.Delete(key)
 
@@ -298,11 +298,11 @@ func (t *Memcached) Delete(key string) error {
 	return err
 }
 
-func (t *Memcached) Expire(key string, timeout time.Duration) error {
+func (t *Memcached) Expire(ctx context.Context, key string, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	err := t.client.Touch(key, int32(timeout.Seconds()))
 

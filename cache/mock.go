@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"time"
 )
@@ -21,54 +22,54 @@ func (t *Mock) String() string {
 	return t.Name
 }
 
-func (t *Mock) Has(key string) bool {
+func (t *Mock) Has(ctx context.Context, key string) bool {
 	return false
 }
 
-func (t *Mock) Set(key string, args any, timeout time.Duration) error {
+func (t *Mock) Set(ctx context.Context, key string, args any, timeout time.Duration) error {
 	return nil
 }
 
-func (t *Mock) SetIn(key string, key2 string, args any, timeout time.Duration) error {
+func (t *Mock) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
 	return nil
 }
 
-func (t *Mock) SetMap(key string, args any, timeout time.Duration) error {
+func (t *Mock) SetMap(ctx context.Context, key string, args any, timeout time.Duration) error {
 	return nil
 }
 
-func (t *Mock) Get(key string) (any, error) {
+func (t *Mock) Get(ctx context.Context, key string) (any, error) {
 	return nil, nil
 }
 
-func (t *Mock) GetIn(key string, key2 string) (any, error) {
+func (t *Mock) GetIn(ctx context.Context, key string, key2 string) (any, error) {
 	return nil, nil
 }
 
-func (t *Mock) GetMap(key string) (any, error) {
+func (t *Mock) GetMap(ctx context.Context, key string) (any, error) {
 	return nil, nil
 }
 
-func (t *Mock) Increment(key string, val int64, timeout time.Duration) (int64, error) {
+func (t *Mock) Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	return 0, nil
 }
 
-func (t *Mock) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+func (t *Mock) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	return 0, nil
 }
 
-func (t *Mock) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
+func (t *Mock) Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	return 0, nil
 }
 
-func (t *Mock) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+func (t *Mock) DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	return 0, nil
 }
 
-func (t *Mock) Delete(key string) error {
+func (t *Mock) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (t *Mock) Expire(key string, timeout time.Duration) error {
+func (t *Mock) Expire(ctx context.Context, key string, timeout time.Duration) error {
 	return nil
 }

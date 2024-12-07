@@ -101,11 +101,11 @@ func (t *Memory) String() string {
 	return t.Name
 }
 
-func (t *Memory) Has(key string) bool {
+func (t *Memory) Has(ctx context.Context, key string) bool {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
@@ -118,11 +118,11 @@ func (t *Memory) Has(key string) bool {
 	return false
 }
 
-func (t *Memory) Set(key string, args any, timeout time.Duration) error {
+func (t *Memory) Set(ctx context.Context, key string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -147,11 +147,11 @@ func (t *Memory) Set(key string, args any, timeout time.Duration) error {
 	return nil
 }
 
-func (t *Memory) SetIn(key string, key2 string, args any, timeout time.Duration) error {
+func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -182,15 +182,15 @@ func (t *Memory) SetIn(key string, key2 string, args any, timeout time.Duration)
 	return nil
 }
 
-func (t *Memory) SetMap(key string, args any, timeout time.Duration) error {
-	return t.Set(key, args, timeout)
+func (t *Memory) SetMap(ctx context.Context, key string, args any, timeout time.Duration) error {
+	return t.Set(ctx, key, args, timeout)
 }
 
-func (t *Memory) Get(key string) (any, error) {
+func (t *Memory) Get(ctx context.Context, key string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
@@ -204,11 +204,11 @@ func (t *Memory) Get(key string) (any, error) {
 	return nil, ErrKeyNotFound
 }
 
-func (t *Memory) GetIn(key string, key2 string) (any, error) {
+func (t *Memory) GetIn(ctx context.Context, key string, key2 string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
@@ -230,15 +230,15 @@ func (t *Memory) GetIn(key string, key2 string) (any, error) {
 	return nil, ErrKeyNotFound
 }
 
-func (t *Memory) GetMap(key string) (any, error) {
-	return t.Get(key)
+func (t *Memory) GetMap(ctx context.Context, key string) (any, error) {
+	return t.Get(ctx, key)
 }
 
-func (t *Memory) Increment(key string, val int64, timeout time.Duration) (int64, error) {
+func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -268,11 +268,11 @@ func (t *Memory) Increment(key string, val int64, timeout time.Duration) (int64,
 	return v.data.(int64), nil
 }
 
-func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -311,19 +311,19 @@ func (t *Memory) IncrementIn(key string, key2 string, val int64, timeout time.Du
 	return v.data.(map[string]any)[key2].(int64), nil
 }
 
-func (t *Memory) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
-	return t.Increment(key, val*-1, timeout)
+func (t *Memory) Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
+	return t.Increment(ctx, key, val*-1, timeout)
 }
 
-func (t *Memory) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
-	return t.IncrementIn(key, key2, val*-1, timeout)
+func (t *Memory) DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+	return t.IncrementIn(ctx, key, key2, val*-1, timeout)
 }
 
-func (t *Memory) Delete(key string) error {
+func (t *Memory) Delete(ctx context.Context, key string) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -338,11 +338,11 @@ func (t *Memory) Delete(key string) error {
 	return nil
 }
 
-func (t *Memory) Expire(key string, timeout time.Duration) error {
+func (t *Memory) Expire(ctx context.Context, key string, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
 	defer t.mutex.Unlock()

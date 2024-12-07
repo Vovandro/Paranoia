@@ -100,60 +100,60 @@ func (t *Redis) String() string {
 	return t.Name
 }
 
-func (t *Redis) Has(key string) bool {
+func (t *Redis) Has(ctx context.Context, key string) bool {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
-	return t.client.Exists(context.Background(), key).Val() != 0
+	return t.client.Exists(ctx, key).Val() != 0
 }
 
-func (t *Redis) Set(key string, args any, timeout time.Duration) error {
+func (t *Redis) Set(ctx context.Context, key string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	return t.client.Set(context.Background(), key, args, timeout).Err()
+	return t.client.Set(ctx, key, args, timeout).Err()
 }
 
-func (t *Redis) SetIn(key string, key2 string, args any, timeout time.Duration) error {
+func (t *Redis) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	err := t.client.HSet(context.Background(), key, map[string]interface{}{key2: args}).Err()
+	err := t.client.HSet(ctx, key, map[string]interface{}{key2: args}).Err()
 
 	if err != nil {
 		return err
 	}
 
-	return t.client.Expire(context.Background(), key, timeout).Err()
+	return t.client.Expire(ctx, key, timeout).Err()
 }
 
-func (t *Redis) SetMap(key string, args any, timeout time.Duration) error {
+func (t *Redis) SetMap(ctx context.Context, key string, args any, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	err := t.client.HSet(context.Background(), key, args).Err()
+	err := t.client.HSet(ctx, key, args).Err()
 	if err != nil {
 		return err
 	}
 
-	return t.client.Expire(context.Background(), key, timeout).Err()
+	return t.client.Expire(ctx, key, timeout).Err()
 }
 
-func (t *Redis) Get(key string) (any, error) {
+func (t *Redis) Get(ctx context.Context, key string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
-	v, err := t.client.Get(context.Background(), key).Result()
+	v, err := t.client.Get(ctx, key).Result()
 
 	if errors.Is(err, redis.Nil) {
 		return nil, ErrKeyNotFound
@@ -164,13 +164,13 @@ func (t *Redis) Get(key string) (any, error) {
 	return v, nil
 }
 
-func (t *Redis) GetIn(key string, key2 string) (any, error) {
+func (t *Redis) GetIn(ctx context.Context, key string, key2 string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
-	v, err := t.client.HGet(context.Background(), key, key2).Result()
+	v, err := t.client.HGet(ctx, key, key2).Result()
 
 	if errors.Is(err, redis.Nil) {
 		return nil, ErrKeyNotFound
@@ -181,13 +181,13 @@ func (t *Redis) GetIn(key string, key2 string) (any, error) {
 	return v, nil
 }
 
-func (t *Redis) GetMap(key string) (any, error) {
+func (t *Redis) GetMap(ctx context.Context, key string) (any, error) {
 	defer func(s time.Time) {
-		t.timeRead.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterRead.Add(context.Background(), 1)
+	t.counterRead.Add(ctx, 1)
 
-	v, err := t.client.HGetAll(context.Background(), key).Result()
+	v, err := t.client.HGetAll(ctx, key).Result()
 
 	if errors.Is(err, redis.Nil) {
 		return nil, ErrKeyNotFound
@@ -198,78 +198,78 @@ func (t *Redis) GetMap(key string) (any, error) {
 	return v, nil
 }
 
-func (t *Redis) Increment(key string, val int64, timeout time.Duration) (int64, error) {
+func (t *Redis) Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	v := t.client.IncrBy(context.Background(), key, val)
+	v := t.client.IncrBy(ctx, key, val)
 	if v.Err() != nil {
 		return 0, v.Err()
 	}
 
-	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(ctx, key, timeout).Err()
 }
 
-func (t *Redis) IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+func (t *Redis) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	v := t.client.HIncrBy(context.Background(), key, key2, val)
+	v := t.client.HIncrBy(ctx, key, key2, val)
 	if v.Err() != nil {
 		return 0, v.Err()
 	}
 
-	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(ctx, key, timeout).Err()
 }
 
-func (t *Redis) Decrement(key string, val int64, timeout time.Duration) (int64, error) {
+func (t *Redis) Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	v := t.client.DecrBy(context.Background(), key, val)
+	v := t.client.DecrBy(ctx, key, val)
 	if v.Err() != nil {
 		return 0, v.Err()
 	}
 
-	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(ctx, key, timeout).Err()
 }
 
-func (t *Redis) DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error) {
+func (t *Redis) DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	v := t.client.HIncrBy(context.Background(), key, key2, val*-1)
+	v := t.client.HIncrBy(ctx, key, key2, val*-1)
 	if v.Err() != nil {
 		return 0, v.Err()
 	}
 
-	return v.Val(), t.client.Expire(context.Background(), key, timeout).Err()
+	return v.Val(), t.client.Expire(ctx, key, timeout).Err()
 }
 
-func (t *Redis) Delete(key string) error {
+func (t *Redis) Delete(ctx context.Context, key string) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	return t.client.Del(context.Background(), key).Err()
+	return t.client.Del(ctx, key).Err()
 }
 
-func (t *Redis) Expire(key string, timeout time.Duration) error {
+func (t *Redis) Expire(ctx context.Context, key string, timeout time.Duration) error {
 	defer func(s time.Time) {
-		t.timeWrite.Record(context.Background(), time.Since(s).Milliseconds())
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	}(time.Now())
-	t.counterWrite.Add(context.Background(), 1)
+	t.counterWrite.Add(ctx, 1)
 
-	err := t.client.Expire(context.Background(), key, timeout).Err()
+	err := t.client.Expire(ctx, key, timeout).Err()
 
 	if errors.Is(err, redis.Nil) {
 		return ErrKeyNotFound
