@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -53,15 +54,15 @@ func TestEtcd_Has(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			for k, v := range tt.store {
-				t.Set(k, v, time.Minute)
+				t.Set(context.Background(), k, v, time.Minute)
 			}
 
-			if got := t.Has(tt.key); got != tt.want {
+			if got := t.Has(context.Background(), tt.key); got != tt.want {
 				t1.Errorf("Has() = %v, want %v", got, tt.want)
 			}
 
 			for k, _ := range tt.store {
-				t.Delete(k)
+				t.Delete(context.Background(), k)
 			}
 		})
 	}
@@ -146,12 +147,12 @@ func TestEtcd_Base(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			for _, v := range tt.store {
-				t.Set(v.key, v.val, v.timeout)
+				t.Set(context.Background(), v.key, v.val, v.timeout)
 			}
 
 			time.Sleep(tt.sleep)
 
-			got, err := t.Get(tt.keyCheck)
+			got, err := t.Get(context.Background(), tt.keyCheck)
 
 			if err != nil && tt.want != "" {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
@@ -162,7 +163,7 @@ func TestEtcd_Base(t1 *testing.T) {
 			}
 
 			for _, v := range tt.store {
-				t.Delete(v.key)
+				t.Delete(context.Background(), v.key)
 			}
 		})
 	}
@@ -317,12 +318,12 @@ func TestEtcd_In(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			for _, v := range tt.store {
-				t.SetIn(v.key, v.key2, v.val, v.timeout)
+				t.SetIn(context.Background(), v.key, v.key2, v.val, v.timeout)
 			}
 
 			time.Sleep(tt.sleep)
 
-			got, err := t.GetIn(tt.keyCheck, tt.key2Check)
+			got, err := t.GetIn(context.Background(), tt.keyCheck, tt.key2Check)
 
 			if err != nil && tt.want != "" {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
@@ -333,7 +334,7 @@ func TestEtcd_In(t1 *testing.T) {
 			}
 
 			for _, v := range tt.store {
-				t.Delete(v.key)
+				t.Delete(context.Background(), v.key)
 			}
 		})
 	}
@@ -401,10 +402,10 @@ func TestEtcd_Map(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			for _, v := range tt.store {
-				t.SetMap(v.key, v.val, v.timeout)
+				t.SetMap(context.Background(), v.key, v.val, v.timeout)
 			}
 
-			got, err := t.GetMap(tt.keyCheck)
+			got, err := t.GetMap(context.Background(), tt.keyCheck)
 
 			if err != nil && tt.want != nil {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
@@ -415,7 +416,7 @@ func TestEtcd_Map(t1 *testing.T) {
 			}
 
 			for _, v := range tt.store {
-				t.Delete(v.key)
+				t.Delete(context.Background(), v.key)
 			}
 		})
 	}
@@ -443,15 +444,15 @@ func TestEtcd_GetMapInvalid(t1 *testing.T) {
 	}
 
 	t1.Run("test get type mismatch", func(t1 *testing.T) {
-		t.Set("k14", "test", time.Minute)
+		t.Set(context.Background(), "k14", "test", time.Minute)
 
-		_, err := t.GetMap("k14")
+		_, err := t.GetMap(context.Background(), "k14")
 
 		if err == nil {
 			t1.Errorf("Failed test type mismatch")
 		}
 
-		t.Delete("k14")
+		t.Delete(context.Background(), "k14")
 	})
 }
 
@@ -524,10 +525,10 @@ func TestEtcd_Increment(t1 *testing.T) {
 			var lastVal int64
 
 			for _, v := range tt.store {
-				lastVal, _ = t.Increment(v.key, v.val, v.timeout)
+				lastVal, _ = t.Increment(context.Background(), v.key, v.val, v.timeout)
 			}
 
-			got, err := t.Get(tt.keyCheck)
+			got, err := t.Get(context.Background(), tt.keyCheck)
 
 			if err != nil {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
@@ -540,7 +541,7 @@ func TestEtcd_Increment(t1 *testing.T) {
 			}
 
 			for _, v := range tt.store {
-				t.Delete(v.key)
+				t.Delete(context.Background(), v.key)
 			}
 		})
 	}
@@ -647,13 +648,13 @@ func TestEtcd_Decrement(t1 *testing.T) {
 			var lastVal int64
 
 			for _, v := range tt.store {
-				t.Set(v.key, fmt.Sprint(v.val), v.timeout)
+				t.Set(context.Background(), v.key, fmt.Sprint(v.val), v.timeout)
 			}
 			for _, v := range tt.dec {
-				lastVal, _ = t.Decrement(v.key, v.val, v.timeout)
+				lastVal, _ = t.Decrement(context.Background(), v.key, v.val, v.timeout)
 			}
 
-			got, err := t.Get(tt.keyCheck)
+			got, err := t.Get(context.Background(), tt.keyCheck)
 
 			if err != nil {
 				if tt.wantErr {
@@ -675,7 +676,7 @@ func TestEtcd_Decrement(t1 *testing.T) {
 			}
 
 			for _, v := range tt.store {
-				t.Delete(v.key)
+				t.Delete(context.Background(), v.key)
 			}
 		})
 	}
@@ -757,10 +758,10 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 			var lastVal int64
 
 			for _, v := range tt.store {
-				lastVal, _ = t.IncrementIn(v.key, v.key2, v.val, v.timeout)
+				lastVal, _ = t.IncrementIn(context.Background(), v.key, v.key2, v.val, v.timeout)
 			}
 
-			got, err := t.GetIn(tt.keyCheck, tt.key2Check)
+			got, err := t.GetIn(context.Background(), tt.keyCheck, tt.key2Check)
 
 			if err != nil {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
@@ -772,7 +773,7 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 			}
 
 			for _, v := range tt.store {
-				t.Delete(v.key)
+				t.Delete(context.Background(), v.key)
 			}
 		})
 	}
@@ -886,13 +887,13 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 			var lastVal int64
 
 			for _, v := range tt.store {
-				t.SetIn(v.key, v.key2, v.val, v.timeout)
+				t.SetIn(context.Background(), v.key, v.key2, v.val, v.timeout)
 			}
 			for _, v := range tt.dec {
-				lastVal, _ = t.DecrementIn(v.key, v.key2, v.val, v.timeout)
+				lastVal, _ = t.DecrementIn(context.Background(), v.key, v.key2, v.val, v.timeout)
 			}
 
-			got, err := t.GetIn(tt.keyCheck, tt.key2Check)
+			got, err := t.GetIn(context.Background(), tt.keyCheck, tt.key2Check)
 
 			if err != nil {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
@@ -904,7 +905,7 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 			}
 
 			for _, v := range tt.store {
-				t.Delete(v.key)
+				t.Delete(context.Background(), v.key)
 			}
 		})
 	}

@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -43,7 +44,7 @@ func TestMemory_Delete(t1 *testing.T) {
 
 			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
-			if err := t.Delete(tt.args); (err != nil) != tt.wantErr {
+			if err := t.Delete(context.Background(), tt.args); (err != nil) != tt.wantErr {
 				t1.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -101,7 +102,7 @@ func TestMemory_Get(t1 *testing.T) {
 
 			t.data[tt.fields.key] = &cacheItem{tt.fields.val, time.Now().Add(time.Minute)}
 
-			got, err := t.Get(tt.args)
+			got, err := t.Get(context.Background(), tt.args)
 			if (err != nil) != tt.wantErr {
 				t1.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -141,7 +142,7 @@ func TestMemory_Has(t1 *testing.T) {
 
 			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
-			if got := t.Has(tt.args); got != tt.want {
+			if got := t.Has(context.Background(), tt.args); got != tt.want {
 				t1.Errorf("Has() = %v, want %v", got, tt.want)
 			}
 		})
@@ -250,14 +251,14 @@ func TestMemory_Set(t1 *testing.T) {
 			defer t.Stop()
 
 			for i := 0; i < len(tt.args); i++ {
-				if err := t.Set(tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
+				if err := t.Set(context.Background(), tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
 					t1.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}
 
 			time.Sleep(tt.sleep)
 
-			got, ok := t.Get(tt.args[0].key)
+			got, ok := t.Get(context.Background(), tt.args[0].key)
 
 			if (ok == nil) != tt.wantExists || !reflect.DeepEqual(got, tt.want) {
 				t1.Errorf("Get() got = %v, want %v", got, tt.want)
@@ -376,14 +377,14 @@ func TestMemory_SetIn(t1 *testing.T) {
 			defer t.Stop()
 
 			for i := 0; i < len(tt.args); i++ {
-				if err := t.SetIn(tt.args[i].key, tt.args[i].key2, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
+				if err := t.SetIn(context.Background(), tt.args[i].key, tt.args[i].key2, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
 					t1.Errorf("SetIn() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}
 
 			time.Sleep(tt.sleep)
 
-			got, ok := t.GetIn(tt.args[0].key, tt.args[0].key2)
+			got, ok := t.GetIn(context.Background(), tt.args[0].key, tt.args[0].key2)
 
 			if (ok == nil) != tt.wantExists || !reflect.DeepEqual(got, tt.want) {
 				t1.Errorf("GetIn() got = %v, want %v", got, tt.want)
@@ -494,14 +495,14 @@ func TestMemory_Increment(t1 *testing.T) {
 			defer t.Stop()
 
 			for i := 0; i < len(tt.args); i++ {
-				if _, err := t.Increment(tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
+				if _, err := t.Increment(context.Background(), tt.args[i].key, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
 					t1.Errorf("Increment() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}
 
 			time.Sleep(tt.sleep)
 
-			got, ok := t.Get(tt.args[0].key)
+			got, ok := t.Get(context.Background(), tt.args[0].key)
 
 			if (ok == nil) != tt.wantExists || !reflect.DeepEqual(got, tt.want) {
 				t1.Errorf("Get() got = %v, want %v", got, tt.want)
@@ -620,14 +621,14 @@ func TestMemory_IncrementIn(t1 *testing.T) {
 			defer t.Stop()
 
 			for i := 0; i < len(tt.args); i++ {
-				if _, err := t.IncrementIn(tt.args[i].key, tt.args[i].key2, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
+				if _, err := t.IncrementIn(context.Background(), tt.args[i].key, tt.args[i].key2, tt.args[i].args, tt.args[i].timeout); (err != nil) != tt.wantErr {
 					t1.Errorf("IncrementIn() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}
 
 			time.Sleep(tt.sleep)
 
-			got, ok := t.GetIn(tt.args[0].key, tt.args[0].key2)
+			got, ok := t.GetIn(context.Background(), tt.args[0].key, tt.args[0].key2)
 
 			if (ok == nil) != tt.wantExists || !reflect.DeepEqual(got, tt.want) {
 				t1.Errorf("GetIn() got = %v, want %v", got, tt.want)
@@ -646,7 +647,7 @@ func TestMemory_ClearTimeout(t1 *testing.T) {
 		t.Init(nil)
 		defer t.Stop()
 
-		err := t.Set("test", "test", time.Millisecond)
+		err := t.Set(context.Background(), "test", "test", time.Millisecond)
 
 		if err != nil {
 			t1.Errorf("Set() error = %v", err)
@@ -700,7 +701,7 @@ func BenchmarkStore(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
-		err := t.Set(k, k, time.Hour)
+		err := t.Set(context.Background(), k, k, time.Hour)
 
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
@@ -719,7 +720,7 @@ func BenchmarkStoreMutex(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
-		err := t.Set(k, k, time.Hour)
+		err := t.Set(context.Background(), k, k, time.Hour)
 
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
@@ -738,13 +739,13 @@ func BenchmarkCheckAndStore(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
-		err := t.Set(k, k, time.Hour)
+		err := t.Set(context.Background(), k, k, time.Hour)
 
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
 		}
 
-		if val, ok := t.Get(k); ok != nil || val.(string) != k {
+		if val, ok := t.Get(context.Background(), k); ok != nil || val.(string) != k {
 			b.Fatalf("Unexpected error data")
 		}
 	}
@@ -757,13 +758,13 @@ func BenchmarkCheckAndStoreMutex(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
-		err := t.Set(k, k, time.Hour)
+		err := t.Set(context.Background(), k, k, time.Hour)
 
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
 		}
 
-		if val, ok := t.Get(k); ok != nil || val.(string) != k {
+		if val, ok := t.Get(context.Background(), k); ok != nil || val.(string) != k {
 			b.Fatalf("Unexpected error data")
 		}
 	}
@@ -776,13 +777,13 @@ func BenchmarkCheckAndStoreArray(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
-		err := t.Set(k, []string{k}, time.Hour)
+		err := t.Set(context.Background(), k, []string{k}, time.Hour)
 
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
 		}
 
-		if val, ok := t.Get(k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
+		if val, ok := t.Get(context.Background(), k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
 			b.Fatalf("Unexpected error data")
 		}
 	}
@@ -795,13 +796,13 @@ func BenchmarkCheckAndStoreArrayMutex(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		k := fmt.Sprintf("%d", i)
-		err := t.Set(k, []string{k}, time.Hour)
+		err := t.Set(context.Background(), k, []string{k}, time.Hour)
 
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
 		}
 
-		if val, ok := t.Get(k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
+		if val, ok := t.Get(context.Background(), k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
 			b.Fatalf("Unexpected error data")
 		}
 	}

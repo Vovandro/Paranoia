@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"context"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type ICache interface {
 	   Returns:
 	   - bool: true if the key exists, false otherwise.
 	*/
-	Has(key string) bool
+	Has(ctx context.Context, key string) bool
 
 	/*
 	   Set sets a key with the provided data and expiration time.
@@ -32,7 +33,7 @@ type ICache interface {
 	   Returns:
 	   - error: an error if the key could not be set
 	*/
-	Set(key string, args any, timeout time.Duration) error
+	Set(ctx context.Context, key string, args any, timeout time.Duration) error
 
 	/*
 	   SetIn updates the value of a specific key within a map stored. If the key does not exist, a new map is created.
@@ -47,7 +48,7 @@ type ICache interface {
 	   Returns:
 	   - error: an error if the operation fails, nil otherwise
 	*/
-	SetIn(key string, key2 string, args any, timeout time.Duration) error
+	SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error
 
 	/*
 	   SetMap sets a key-value pair by marshaling the input args into JSON format before calling the Set method.
@@ -60,7 +61,7 @@ type ICache interface {
 	   Returns:
 	   - error: an error if the operation encounters any issues, nil otherwise
 	*/
-	SetMap(key string, args any, timeout time.Duration) error
+	SetMap(ctx context.Context, key string, args any, timeout time.Duration) error
 
 	/*
 	   Get retrieves the value associated with the given key.
@@ -72,7 +73,7 @@ type ICache interface {
 	   - any: The value associated with the key.
 	   - error: An error, if any occurred during the retrieval process. Returns ErrKeyNotFound if the key is not found in the cache.
 	*/
-	Get(key string) (any, error)
+	Get(ctx context.Context, key string) (any, error)
 
 	/*
 	   GetIn retrieves the value associated with the specified key and subkey.
@@ -88,7 +89,7 @@ type ICache interface {
 	   Notes:
 	   - If the key or subkey is not found, an error with ErrKeyNotFound will be returned.
 	*/
-	GetIn(key string, key2 string) (any, error)
+	GetIn(ctx context.Context, key string, key2 string) (any, error)
 
 	/*
 	   GetMap retrieves a value using the specified key and returns it as a map[string]interface{}.
@@ -100,7 +101,7 @@ type ICache interface {
 	   - map[string]interface{}: The value retrieved stored as a map.
 	   - error: An error if any occurred during the retrieval or unmarshalling process.
 	*/
-	GetMap(key string) (any, error)
+	GetMap(ctx context.Context, key string) (any, error)
 
 	/*
 	   Increment increments the value of the given key by the specified amount.
@@ -115,7 +116,7 @@ type ICache interface {
 	   - int64: New value
 	   - error: An error if any occurred during the increment operation, or setting the key, or touching the key with the new expiration time.
 	*/
-	Increment(key string, val int64, timeout time.Duration) (int64, error)
+	Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error)
 
 	/*
 	   IncrementIn increments the value associated with key2 in the map stored at key by the specified value val.
@@ -132,7 +133,7 @@ type ICache interface {
 	   - int64: New value
 	   - error: An error if any occurred during the operation.
 	*/
-	IncrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error)
+	IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error)
 
 	/*
 	   Decrement decrements the value associated with the given key by the specified amount.
@@ -149,7 +150,7 @@ type ICache interface {
 	   - int64: New value
 	   - error: An error if the decrement operation or updating the expiration time fails.
 	*/
-	Decrement(key string, val int64, timeout time.Duration) (int64, error)
+	Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error)
 
 	/*
 	   DecrementIn decrements the value associated with key2 in the map stored at key by the specified val.
@@ -167,7 +168,7 @@ type ICache interface {
 	   - int64: New value
 	   - error: An error if the operation encounters any issues, nil otherwise.
 	*/
-	DecrementIn(key string, key2 string, val int64, timeout time.Duration) (int64, error)
+	DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error)
 
 	/*
 	   Delete deletes the value for a key.
@@ -181,6 +182,6 @@ type ICache interface {
 	   Returns:
 	   - error: An error if the deletion operation encounters any issues.
 	*/
-	Delete(key string) error
-	Expire(key string, timeout time.Duration) error
+	Delete(ctx context.Context, key string) error
+	Expire(ctx context.Context, key string, timeout time.Duration) error
 }
