@@ -102,9 +102,7 @@ func (t *Memory) String() string {
 }
 
 func (t *Memory) Has(ctx context.Context, key string) bool {
-	defer func(s time.Time) {
-		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
 	t.mutex.RLock()
@@ -112,16 +110,16 @@ func (t *Memory) Has(ctx context.Context, key string) bool {
 	val, ok := t.data[key]
 
 	if ok && val.timeout.After(time.Now()) {
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 		return true
 	}
 
+	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	return false
 }
 
 func (t *Memory) Set(ctx context.Context, key string, args any, timeout time.Duration) error {
-	defer func(s time.Time) {
-		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
@@ -144,13 +142,12 @@ func (t *Memory) Set(ctx context.Context, key string, args any, timeout time.Dur
 		time: val.timeout,
 	})
 
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return nil
 }
 
 func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
-	defer func(s time.Time) {
-		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
@@ -162,6 +159,7 @@ func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, t
 		if _, ok := val.data.(map[string]any); ok {
 			val.data.(map[string]any)[key2] = args
 		} else {
+			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 			return ErrTypeMismatch
 		}
 
@@ -179,6 +177,8 @@ func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, t
 		time: val.timeout,
 	})
 
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
+
 	return nil
 }
 
@@ -187,9 +187,7 @@ func (t *Memory) SetMap(ctx context.Context, key string, args any, timeout time.
 }
 
 func (t *Memory) Get(ctx context.Context, key string) (any, error) {
-	defer func(s time.Time) {
-		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
 	t.mutex.RLock()
@@ -198,16 +196,16 @@ func (t *Memory) Get(ctx context.Context, key string) (any, error) {
 	val, ok := t.data[key]
 
 	if ok && val.timeout.After(time.Now()) {
+		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 		return val.data, nil
 	}
 
+	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	return nil, ErrKeyNotFound
 }
 
 func (t *Memory) GetIn(ctx context.Context, key string, key2 string) (any, error) {
-	defer func(s time.Time) {
-		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
 	t.mutex.RLock()
@@ -215,6 +213,7 @@ func (t *Memory) GetIn(ctx context.Context, key string, key2 string) (any, error
 
 	val, ok := t.data[key]
 
+	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if ok && val.timeout.After(time.Now()) {
 		if val2, ok := val.data.(map[string]any); ok {
 			if v, ok := val2[key2]; ok {
@@ -235,9 +234,7 @@ func (t *Memory) GetMap(ctx context.Context, key string) (any, error) {
 }
 
 func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
-	defer func(s time.Time) {
-		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
@@ -251,6 +248,7 @@ func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout t
 		if _, ok := v.data.(int64); ok {
 			v.data = v.data.(int64) + val
 		} else {
+			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 			return 0, ErrTypeMismatch
 		}
 	} else {
@@ -265,13 +263,12 @@ func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout t
 		time: v.timeout,
 	})
 
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return v.data.(int64), nil
 }
 
 func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
-	defer func(s time.Time) {
-		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
@@ -287,12 +284,14 @@ func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val i
 				if v2, ok := v.data.(map[string]any)[key2].(int64); ok {
 					v.data.(map[string]any)[key2] = v2 + val
 				} else {
+					t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 					return 0, ErrTypeMismatch
 				}
 			} else {
 				v.data.(map[string]any)[key2] = val
 			}
 		} else {
+			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 			return 0, ErrTypeMismatch
 		}
 	} else {
@@ -308,6 +307,7 @@ func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val i
 		time: v.timeout,
 	})
 
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return v.data.(map[string]any)[key2].(int64), nil
 }
 
@@ -320,9 +320,7 @@ func (t *Memory) DecrementIn(ctx context.Context, key string, key2 string, val i
 }
 
 func (t *Memory) Delete(ctx context.Context, key string) error {
-	defer func(s time.Time) {
-		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
@@ -335,13 +333,12 @@ func (t *Memory) Delete(ctx context.Context, key string) error {
 		t.pool.Put(val)
 	}
 
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return nil
 }
 
 func (t *Memory) Expire(ctx context.Context, key string, timeout time.Duration) error {
-	defer func(s time.Time) {
-		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	}(time.Now())
+	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
 	t.mutex.Lock()
@@ -350,10 +347,12 @@ func (t *Memory) Expire(ctx context.Context, key string, timeout time.Duration) 
 	val, ok := t.data[key]
 
 	if !ok {
+		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 		return ErrKeyNotFound
 	}
 
 	val.timeout = time.Now().Add(timeout)
 
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return nil
 }
