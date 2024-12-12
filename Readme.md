@@ -58,6 +58,7 @@
 - Regulatory task system 
 - Sentry log
 - JWT native support (module and middleware)
+- Concurrency patterns in template
 
 Generating RSA keys for JWT:
 
