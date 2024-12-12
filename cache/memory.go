@@ -6,18 +6,23 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
+	"hash/crc32"
 	"sync"
 	"time"
 )
 
-type Memory struct {
-	Name     string
-	Config   MemoryConfig
+type cacheMemory struct {
 	data     map[string]*cacheItem
-	pool     sync.Pool
 	mutex    sync.RWMutex
 	timeHeap TimeHeap
-	done     chan interface{}
+}
+
+type Memory struct {
+	Name   string
+	Config MemoryConfig
+	pool   sync.Pool
+	done   chan interface{}
+	data   []cacheMemory
 
 	counterRead  metric.Int64Counter
 	counterWrite metric.Int64Counter
@@ -26,7 +31,8 @@ type Memory struct {
 }
 
 type MemoryConfig struct {
-	TimeClear time.Duration `yaml:"time_clear"`
+	TimeClear  time.Duration `yaml:"time_clear"`
+	ShardCount int           `yaml:"shard_count"`
 }
 
 type cacheItem struct {
@@ -46,9 +52,21 @@ func (t *Memory) Init(app interfaces.IEngine) error {
 		return &cacheItem{}
 	}
 
-	t.data = make(map[string]*cacheItem, 100)
-	t.timeHeap = make(TimeHeap, 0, 100)
-	heap.Init(&t.timeHeap)
+	if t.Config.ShardCount < 1 {
+		t.Config.ShardCount = 1
+	}
+
+	t.data = make([]cacheMemory, t.Config.ShardCount)
+
+	for i := 0; i < t.Config.ShardCount; i++ {
+		t.data[i] = cacheMemory{
+			data:     make(map[string]*cacheItem, 100),
+			mutex:    sync.RWMutex{},
+			timeHeap: make(TimeHeap, 0, 100),
+		}
+
+		heap.Init(&t.data[i].timeHeap)
+	}
 
 	t.done = make(chan interface{})
 
@@ -72,27 +90,29 @@ func (t *Memory) Stop() error {
 }
 
 func (t *Memory) run() {
-	for true {
+	for {
 		select {
 		case <-t.done:
 			return
 
 		case <-time.After(t.Config.TimeClear):
 			now := time.Now()
-			t.mutex.Lock()
-			for true {
-				i := t.timeHeap.Top()
-				if i != nil && i.(*TimeHeapItem).time.Before(now) {
-					item := heap.Pop(&t.timeHeap).(*TimeHeapItem)
-					if val, ok := t.data[item.key]; ok {
-						delete(t.data, item.key)
-						t.pool.Put(val)
+			for i := 0; i < t.Config.ShardCount; i++ {
+				t.data[i].mutex.Lock()
+				for {
+					it := t.data[i].timeHeap.Top()
+					if it != nil && it.(*TimeHeapItem).time.Before(now) {
+						item := heap.Pop(&t.data[i].timeHeap).(*TimeHeapItem)
+						if val, ok := t.data[i].data[item.key]; ok {
+							delete(t.data[i].data, item.key)
+							t.pool.Put(val)
+						}
+					} else {
+						break
 					}
-				} else {
-					break
 				}
+				t.data[i].mutex.Unlock()
 			}
-			t.mutex.Unlock()
 		}
 	}
 }
@@ -101,13 +121,19 @@ func (t *Memory) String() string {
 	return t.Name
 }
 
+func (t Memory) getShardNum(key string) int {
+	return int(crc32.ChecksumIEEE([]byte(key))) % t.Config.ShardCount
+}
+
 func (t *Memory) Has(ctx context.Context, key string) bool {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
-	t.mutex.RLock()
-	defer t.mutex.RUnlock()
-	val, ok := t.data[key]
+	shard := t.getShardNum(key)
+
+	t.data[shard].mutex.RLock()
+	defer t.data[shard].mutex.RUnlock()
+	val, ok := t.data[shard].data[key]
 
 	if ok && val.timeout.After(time.Now()) {
 		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
@@ -122,10 +148,12 @@ func (t *Memory) Set(ctx context.Context, key string, args any, timeout time.Dur
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	shard := t.getShardNum(key)
 
-	val, ok := t.data[key]
+	t.data[shard].mutex.Lock()
+	defer t.data[shard].mutex.Unlock()
+
+	val, ok := t.data[shard].data[key]
 
 	if ok {
 		val.timeout = time.Now().Add(timeout)
@@ -134,10 +162,10 @@ func (t *Memory) Set(ctx context.Context, key string, args any, timeout time.Dur
 		val = t.pool.Get().(*cacheItem)
 		val.timeout = time.Now().Add(timeout)
 		val.data = args
-		t.data[key] = val
+		t.data[shard].data[key] = val
 	}
 
-	heap.Push(&t.timeHeap, &TimeHeapItem{
+	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
 		time: val.timeout,
 	})
@@ -150,10 +178,12 @@ func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, t
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	shard := t.getShardNum(key)
 
-	val, ok := t.data[key]
+	t.data[shard].mutex.Lock()
+	defer t.data[shard].mutex.Unlock()
+
+	val, ok := t.data[shard].data[key]
 
 	if ok {
 		if _, ok := val.data.(map[string]any); ok {
@@ -169,10 +199,10 @@ func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, t
 		val.timeout = time.Now().Add(timeout)
 		val.data = make(map[string]any)
 		val.data.(map[string]any)[key2] = args
-		t.data[key] = val
+		t.data[shard].data[key] = val
 	}
 
-	heap.Push(&t.timeHeap, &TimeHeapItem{
+	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
 		time: val.timeout,
 	})
@@ -190,10 +220,12 @@ func (t *Memory) Get(ctx context.Context, key string) (any, error) {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
-	t.mutex.RLock()
-	defer t.mutex.RUnlock()
+	shard := t.getShardNum(key)
 
-	val, ok := t.data[key]
+	t.data[shard].mutex.RLock()
+	defer t.data[shard].mutex.RUnlock()
+
+	val, ok := t.data[shard].data[key]
 
 	if ok && val.timeout.After(time.Now()) {
 		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
@@ -208,10 +240,12 @@ func (t *Memory) GetIn(ctx context.Context, key string, key2 string) (any, error
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
-	t.mutex.RLock()
-	defer t.mutex.RUnlock()
+	shard := t.getShardNum(key)
 
-	val, ok := t.data[key]
+	t.data[shard].mutex.RLock()
+	defer t.data[shard].mutex.RUnlock()
+
+	val, ok := t.data[shard].data[key]
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if ok && val.timeout.After(time.Now()) {
@@ -237,10 +271,12 @@ func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout t
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	shard := t.getShardNum(key)
 
-	v, ok := t.data[key]
+	t.data[shard].mutex.Lock()
+	defer t.data[shard].mutex.Unlock()
+
+	v, ok := t.data[shard].data[key]
 
 	if ok {
 		v.timeout = time.Now().Add(timeout)
@@ -255,10 +291,10 @@ func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout t
 		v = t.pool.Get().(*cacheItem)
 		v.timeout = time.Now().Add(timeout)
 		v.data = val
-		t.data[key] = v
+		t.data[shard].data[key] = v
 	}
 
-	heap.Push(&t.timeHeap, &TimeHeapItem{
+	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
 		time: v.timeout,
 	})
@@ -271,10 +307,12 @@ func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val i
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	shard := t.getShardNum(key)
 
-	v, ok := t.data[key]
+	t.data[shard].mutex.Lock()
+	defer t.data[shard].mutex.Unlock()
+
+	v, ok := t.data[shard].data[key]
 
 	if ok {
 		v.timeout = time.Now().Add(timeout)
@@ -299,10 +337,10 @@ func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val i
 		v.timeout = time.Now().Add(timeout)
 		v.data = make(map[string]any)
 		v.data.(map[string]any)[key2] = val
-		t.data[key] = v
+		t.data[shard].data[key] = v
 	}
 
-	heap.Push(&t.timeHeap, &TimeHeapItem{
+	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
 		time: v.timeout,
 	})
@@ -323,13 +361,15 @@ func (t *Memory) Delete(ctx context.Context, key string) error {
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	shard := t.getShardNum(key)
 
-	val, ok := t.data[key]
+	t.data[shard].mutex.Lock()
+	defer t.data[shard].mutex.Unlock()
+
+	val, ok := t.data[shard].data[key]
 
 	if ok {
-		delete(t.data, key)
+		delete(t.data[shard].data, key)
 		t.pool.Put(val)
 	}
 
@@ -341,10 +381,12 @@ func (t *Memory) Expire(ctx context.Context, key string, timeout time.Duration) 
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	shard := t.getShardNum(key)
 
-	val, ok := t.data[key]
+	t.data[shard].mutex.Lock()
+	defer t.data[shard].mutex.Unlock()
+
+	val, ok := t.data[shard].data[key]
 
 	if !ok {
 		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())

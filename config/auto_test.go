@@ -59,7 +59,7 @@ func Test_cfgItem_Scan(t *testing.T) {
 
 func TestConfigEngine_LoadConfig(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {
-		_ = os.WriteFile("./test.yaml", []byte("engine:\n cache:\n  -\n   type: memory\n   name: test_cache\n   time_clear: 10s"), 0666)
+		_ = os.WriteFile("./test.yaml", []byte("engine:\n cache:\n  -\n   type: memory\n   name: test_cache\n   time_clear: 10s\n   shard_count: 1"), 0666)
 
 		t := NewAuto(AutoConfig{"./test.yaml"})
 

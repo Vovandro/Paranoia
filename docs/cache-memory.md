@@ -15,6 +15,7 @@ engine:
     - type: memory
       name: secondary
       time_clear: 10m
+      shard_count: 10
 ```
 
 Инициализация в коде
@@ -22,10 +23,12 @@ engine:
 ```go
 app.PushCache(cache.NewMemory("secondary", cache.MemoryConfig{
     TimeClear: time.Minute * 10,
+	ShardCount: 10,
 }))
 ```
 
 Время очистки устанавливает время прохода сборщика мусора
+Количество шардов позволяет разграничить блокировки и ускорить работу кеша
 
 Далее в необходимых местах можно получить кеш:
 

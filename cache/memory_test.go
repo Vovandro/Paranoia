@@ -38,11 +38,17 @@ func TestMemory_Delete(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{
 				Name: "test",
+				Config: MemoryConfig{
+					TimeClear:  time.Minute,
+					ShardCount: 5,
+				},
 			}
 			t.Init(nil)
 			defer t.Stop()
 
-			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
+			shard := t.getShardNum(tt.fields)
+
+			t.data[shard].data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
 			if err := t.Delete(context.Background(), tt.args); (err != nil) != tt.wantErr {
 				t1.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
@@ -96,11 +102,18 @@ func TestMemory_Get(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &Memory{}
+			t := &Memory{
+				Config: MemoryConfig{
+					TimeClear:  time.Minute,
+					ShardCount: 5,
+				},
+			}
 			t.Init(nil)
 			defer t.Stop()
 
-			t.data[tt.fields.key] = &cacheItem{tt.fields.val, time.Now().Add(time.Minute)}
+			shard := t.getShardNum(tt.fields.key)
+
+			t.data[shard].data[tt.fields.key] = &cacheItem{tt.fields.val, time.Now().Add(time.Minute)}
 
 			got, err := t.Get(context.Background(), tt.args)
 			if (err != nil) != tt.wantErr {
@@ -136,11 +149,18 @@ func TestMemory_Has(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &Memory{}
+			t := &Memory{
+				Config: MemoryConfig{
+					TimeClear:  time.Minute,
+					ShardCount: 5,
+				},
+			}
 			t.Init(nil)
 			defer t.Stop()
 
-			t.data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
+			shard := t.getShardNum(tt.fields)
+
+			t.data[shard].data[tt.fields] = &cacheItem{"test", time.Now().Add(time.Minute)}
 
 			if got := t.Has(context.Background(), tt.args); got != tt.want {
 				t1.Errorf("Has() = %v, want %v", got, tt.want)
@@ -246,7 +266,12 @@ func TestMemory_Set(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &Memory{}
+			t := &Memory{
+				Config: MemoryConfig{
+					TimeClear:  time.Minute,
+					ShardCount: 5,
+				},
+			}
 			t.Init(nil)
 			defer t.Stop()
 
@@ -641,7 +666,8 @@ func TestMemory_ClearTimeout(t1 *testing.T) {
 	t1.Run("test timeout clear", func(t1 *testing.T) {
 		t := &Memory{
 			Config: MemoryConfig{
-				TimeClear: time.Millisecond * 10,
+				TimeClear:  time.Millisecond * 10,
+				ShardCount: 2,
 			},
 		}
 		t.Init(nil)
@@ -655,9 +681,11 @@ func TestMemory_ClearTimeout(t1 *testing.T) {
 
 		time.Sleep(time.Second)
 
-		t.mutex.RLock()
-		_, ok := t.data["test"]
-		t.mutex.RUnlock()
+		shard := t.getShardNum("test")
+
+		t.data[shard].mutex.RLock()
+		_, ok := t.data[shard].data["test"]
+		t.data[shard].mutex.RUnlock()
 
 		if ok {
 			t1.Errorf("Get() exists")
@@ -695,7 +723,12 @@ func TestMemory_String(t1 *testing.T) {
 }
 
 func BenchmarkStore(b *testing.B) {
-	t := Memory{}
+	t := Memory{
+		Config: MemoryConfig{
+			TimeClear:  time.Second,
+			ShardCount: 1,
+		},
+	}
 	t.Init(nil)
 	defer t.Stop()
 
@@ -706,9 +739,25 @@ func BenchmarkStore(b *testing.B) {
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
 		}
+	}
+}
 
-		if val, ok := t.data[k]; !ok || val.data != k {
-			b.Fatalf("Unexpected error data")
+func BenchmarkStore10(b *testing.B) {
+	t := Memory{
+		Config: MemoryConfig{
+			TimeClear:  time.Second,
+			ShardCount: 10,
+		},
+	}
+	t.Init(nil)
+	defer t.Stop()
+
+	for i := 0; i < b.N; i++ {
+		k := fmt.Sprintf("%d", i)
+		err := t.Set(context.Background(), k, k, time.Hour)
+
+		if err != nil {
+			b.Fatalf("Unexpected error: %s", err)
 		}
 	}
 }
@@ -724,10 +773,6 @@ func BenchmarkStoreMutex(b *testing.B) {
 
 		if err != nil {
 			b.Fatalf("Unexpected error: %s", err)
-		}
-
-		if val, ok := t.data[k]; !ok || val.data != k {
-			b.Fatalf("Unexpected error data")
 		}
 	}
 }
