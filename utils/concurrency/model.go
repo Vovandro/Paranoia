@@ -21,23 +21,21 @@ func Pipeline[IN, OUT any](fn func(IN) OUT) func(<-chan IN) <-chan OUT {
 	}
 }
 
-func Split[IN, OUT1, OUT2 any](fn func(IN) (OUT1, OUT2)) func(<-chan IN) (<-chan OUT1, <-chan OUT2) {
-	return func(in <-chan IN) (<-chan OUT1, <-chan OUT2) {
-		out1 := make(chan OUT1)
-		out2 := make(chan OUT2)
+func Split[IN, OUT1, OUT2 any](in <-chan IN, fn func(IN) (OUT1, OUT2)) (<-chan OUT1, <-chan OUT2) {
+	out1 := make(chan OUT1)
+	out2 := make(chan OUT2)
 
-		go func() {
-			for val := range in {
-				v1, v2 := fn(val)
-				out1 <- v1
-				out2 <- v2
-			}
-			close(out1)
-			close(out2)
-		}()
+	go func() {
+		for val := range in {
+			v1, v2 := fn(val)
+			out1 <- v1
+			out2 <- v2
+		}
+		close(out1)
+		close(out2)
+	}()
 
-		return out1, out2
-	}
+	return out1, out2
 }
 
 // FanIn split channels
