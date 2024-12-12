@@ -41,6 +41,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -57,6 +58,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 	}

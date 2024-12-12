@@ -68,8 +68,19 @@ func (t *HTTPClient) Fetch(ctx context.Context, method string, host string, data
 		res := &Response{}
 		request, _ := http.NewRequestWithContext(ctx, method, host, bytes.NewBuffer(data))
 
+		if headers != nil {
+			for key, value := range headers {
+				if len(value) > 0 {
+					request.Header.Set(key, value[0])
+				}
+			}
+		}
+
 		for i := 0; i <= t.Config.RetryCount; i++ {
 			do, err := t.client.Do(request)
+
+			res.Code = do.StatusCode
+
 			if err != nil {
 				res.Err = err
 				res.RetryCount = i + 1
@@ -88,6 +99,7 @@ func (t *HTTPClient) Fetch(ctx context.Context, method string, host string, data
 
 			if do.StatusCode > 200 && do.StatusCode < 300 {
 				res.RetryCount = i + 1
+				res.Body = do.Body
 				res.Header = map[string][]string{}
 				for s, strings := range do.Header {
 					res.Header[s] = strings
