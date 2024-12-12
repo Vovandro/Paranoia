@@ -10,6 +10,7 @@ type Response struct {
 	Header     map[string][]string
 	Err        error
 	RetryCount int
+	Code       int
 }
 
 func (t *Response) GetBody() ([]byte, error) {
@@ -34,4 +35,8 @@ func (t *Response) Error() error {
 
 func (t *Response) GetRetries() int {
 	return t.RetryCount
+}
+
+func (t *Response) GetCode() int {
+	return t.Code
 }

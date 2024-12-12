@@ -125,11 +125,11 @@ func (t *task) Start() {
 }
 
 func (t *task) Stop() {
-	t.taskMutex.Lock()
-	defer t.taskMutex.Unlock()
-
 	close(t.done)
 	t.end.Wait()
+	
+	t.taskMutex.Lock()
+	defer t.taskMutex.Unlock()
 
 	for _, item := range t.tasks {
 		if _, ok := t.runCfg[item.String()]; ok {

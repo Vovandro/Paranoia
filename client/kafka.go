@@ -118,6 +118,8 @@ func (t *KafkaClient) Fetch(ctx context.Context, _ string, topic string, data []
 				continue
 			}
 
+			res.Code = 200
+
 			break
 		}
 

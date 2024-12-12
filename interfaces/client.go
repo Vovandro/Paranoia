@@ -28,4 +28,5 @@ type IClientResponse interface {
 	GetHeader() map[string][]string
 	Error() error
 	GetRetries() int
+	GetCode() int
 }

@@ -43,6 +43,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -60,6 +61,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				fmt.Errorf("not found"),
 				1,
+				404,
 			},
 		},
 		{
@@ -77,6 +79,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -94,6 +97,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -111,6 +115,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -128,6 +133,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -145,6 +151,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 	}
@@ -215,6 +222,7 @@ func TestHTTP_Middleware(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -230,6 +238,7 @@ func TestHTTP_Middleware(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 		{
@@ -245,6 +254,7 @@ func TestHTTP_Middleware(t1 *testing.T) {
 				map[string][]string{},
 				nil,
 				1,
+				200,
 			},
 		},
 	}
