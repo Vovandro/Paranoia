@@ -18,4 +18,9 @@ type IConfig interface {
 	GetSliceBool(key string, def []bool) []bool
 	GetSliceInt(key string, def []int) []int
 	GetSliceFloat(key string, def []float64) []float64
+	GetConfigItem(typeName string, name string, dst interface{}) error
+}
+
+type IConfigItem interface {
+	GetConfigItem(typeName string, name string, dst interface{}) error
 }

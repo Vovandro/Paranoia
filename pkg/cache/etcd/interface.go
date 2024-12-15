@@ -2,8 +2,8 @@ package etcd
 
 import "errors"
 
-type IConfig interface {
-	GetMapInterface(key string, def map[string]interface{}) map[string]interface{}
+type IConfigItem interface {
+	GetConfigItem(typeName string, name string, dst interface{}) error
 }
 
 var ErrKeyNotFound = errors.New("key not found")

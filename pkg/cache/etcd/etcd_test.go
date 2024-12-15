@@ -21,7 +21,7 @@ func TestEtcd_Has(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -78,7 +78,7 @@ func TestEtcd_Base(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -179,7 +179,7 @@ func TestEtcd_In(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -350,7 +350,7 @@ func TestEtcd_Map(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -432,7 +432,7 @@ func TestEtcd_GetMapInvalid(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -466,7 +466,7 @@ func TestEtcd_Increment(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -557,7 +557,7 @@ func TestEtcd_Decrement(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -692,7 +692,7 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -789,7 +789,7 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 
 	t := &Etcd{
 		Name: "test",
-		Config: EtcdConfig{
+		Config: Config{
 			Hosts: host + ":2379",
 		},
 	}

@@ -15,7 +15,7 @@ import (
 
 type Etcd struct {
 	Name   string
-	Config EtcdConfig
+	Config Config
 
 	client *clientv3.Client
 
@@ -25,7 +25,7 @@ type Etcd struct {
 	timeWrite    metric.Int64Histogram
 }
 
-type EtcdConfig struct {
+type Config struct {
 	Hosts    string `yaml:"hosts"`
 	Username string `yaml:"username,omitempty"`
 	Password string `yaml:"password,omitempty"`
@@ -37,14 +37,16 @@ func NewEtcd(name string) *Etcd {
 	}
 }
 
-func (t *Etcd) Init(cfg IConfig) error {
-	var err error
+func (t *Etcd) Init(cfg IConfigItem) error {
+	err := cfg.GetConfigItem("cache", t.Name, &t.Config)
 
-	configData := cfg.GetMapInterface(t.Name, map[string]interface{}{
-		"hosts": "127.0.0.1:2379",
-	})
+	if err != nil {
+		return err
+	}
 
-	t.Config
+	if t.Config.Hosts == "" {
+		return errors.New("hosts is empty")
+	}
 
 	t.client, err = clientv3.New(clientv3.Config{
 		Endpoints:   strings.Split(t.Config.Hosts, ","),

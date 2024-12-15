@@ -6,7 +6,7 @@ import (
 )
 
 type ICache interface {
-	Init(app IEngine) error
+	Init(app IConfigItem) error
 	Stop() error
 	String() string
 
