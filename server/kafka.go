@@ -9,7 +9,6 @@ import (
 	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"golang.org/x/net/trace"
 	"sync"
 	"time"
 )
@@ -162,19 +161,19 @@ func (t *Kafka) Handle(msg *kafka.Message) {
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	tr := trace.New(t.Name, msg.TopicPartition.String())
-	defer tr.Finish()
+	c, tr := otel.Tracer("").Start(context.Background(), msg.TopicPartition.String())
+	defer tr.End()
 
 	ctx := srvUtils.KafkaCtxPool.Get().(*srvUtils.KafkaCtx)
 	defer srvUtils.KafkaCtxPool.Put(ctx)
 	ctx.Fill(msg)
 
-	route, _ := t.router.Find("KAFKA", *msg.TopicPartition.Topic)
+	route, _ := t.router.Find("RABBITMQ", *msg.TopicPartition.Topic)
 
 	if route == nil {
 		ctx.GetResponse().SetStatus(404)
 	} else {
-		t.md(route)(context.Background(), ctx)
+		t.md(route)(c, ctx)
 	}
 
 	if ctx.GetResponse().GetStatus() >= 400 {
