@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"gitlab.com/devpro_studio/Paranoia"
-	"gitlab.com/devpro_studio/Paranoia/client"
+	"gitlab.com/devpro_studio/Paranoia/client/grpc-client"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server/example"
 	"testing"
@@ -35,7 +35,7 @@ func TestGrpc_RegisterService(t1 *testing.T) {
 		s.Start()
 		defer s.Stop()
 
-		c := client.NewGrpcClient("test", client.GrpcClientConfig{Url: "localhost:8091"})
+		c := grpc_client.NewGrpcClient("test", grpc_client.GrpcClientConfig{Url: "localhost:8091"})
 		c.Init(app)
 		defer c.Stop()
 

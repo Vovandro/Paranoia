@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/client"
+	"gitlab.com/devpro_studio/Paranoia/client/http-client"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
@@ -157,8 +158,8 @@ func TestHTTP_Fetch(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &client.HTTPClient{
-				Config: client.HTTPClientConfig{
+			t := &http_client.HTTPClient{
+				Config: http_client.HTTPClientConfig{
 					RetryCount: tt.RetryCount,
 				},
 			}
@@ -260,8 +261,8 @@ func TestHTTP_Middleware(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &client.HTTPClient{
-				Config: client.HTTPClientConfig{
+			t := &http_client.HTTPClient{
+				Config: http_client.HTTPClientConfig{
 					RetryCount: tt.RetryCount,
 				},
 			}
