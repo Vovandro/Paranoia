@@ -32,6 +32,7 @@
 
 - http
 - Kafka
+- RabbitMQ
 - GRPC
 
 ### Server middlewares
@@ -45,6 +46,7 @@
 
 - http
 - Kafka
+- RabbitMQ
 - GRPC
 
 ### Storage
