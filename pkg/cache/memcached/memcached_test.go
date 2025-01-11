@@ -22,7 +22,7 @@ func TestMemcached_Has(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -82,7 +82,7 @@ func TestMemcached_Base(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -209,7 +209,7 @@ func TestMemcached_In(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -416,7 +416,7 @@ func TestMemcached_Map(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -498,7 +498,7 @@ func TestMemcached_GetMapInvalid(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -532,7 +532,7 @@ func TestMemcached_Increment(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -623,7 +623,7 @@ func TestMemcached_Decrement(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -758,7 +758,7 @@ func TestMemcached_IncrementIn(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -854,7 +854,7 @@ func TestMemcached_DecrementIn(t1 *testing.T) {
 
 	t := &Memcached{
 		Name: "test",
-		Config: MemcachedConfig{
+		Config: Config{
 			Hosts: host + ":11211",
 		},
 	}

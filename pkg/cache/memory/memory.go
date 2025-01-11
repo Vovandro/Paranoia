@@ -3,8 +3,7 @@ package memory
 import (
 	"container/heap"
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/cache"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"hash/crc32"
@@ -20,7 +19,7 @@ type cacheMemory struct {
 
 type Memory struct {
 	Name   string
-	Config MemoryConfig
+	Config Config
 	pool   sync.Pool
 	done   chan interface{}
 	data   []cacheMemory
@@ -31,7 +30,7 @@ type Memory struct {
 	timeWrite    metric.Int64Histogram
 }
 
-type MemoryConfig struct {
+type Config struct {
 	TimeClear  time.Duration `yaml:"time_clear"`
 	ShardCount int           `yaml:"shard_count"`
 }
@@ -41,20 +40,24 @@ type cacheItem struct {
 	timeout time.Time
 }
 
-func NewMemory(name string, cfg MemoryConfig) *Memory {
+func NewMemory(name string) *Memory {
 	return &Memory{
-		Name:   name,
-		Config: cfg,
+		Name: name,
 	}
 }
 
-func (t *Memory) Init(app interfaces.IEngine) error {
-	t.pool.New = func() any {
-		return &cacheItem{}
+func (t *Memory) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
 	}
 
 	if t.Config.ShardCount < 1 {
 		t.Config.ShardCount = 1
+	}
+
+	t.pool.New = func() any {
+		return &cacheItem{}
 	}
 
 	t.data = make([]cacheMemory, t.Config.ShardCount)
@@ -70,10 +73,6 @@ func (t *Memory) Init(app interfaces.IEngine) error {
 	}
 
 	t.done = make(chan interface{})
-
-	if t.Config.TimeClear <= 0 {
-		t.Config.TimeClear = time.Second * 10
-	}
 
 	t.counterRead, _ = otel.Meter("").Int64Counter("cache_memory." + t.Name + ".countRead")
 	t.counterWrite, _ = otel.Meter("").Int64Counter("cache_memory." + t.Name + ".countWrite")
@@ -91,6 +90,11 @@ func (t *Memory) Stop() error {
 }
 
 func (t *Memory) run() {
+	if t.Config.TimeClear == 0 {
+		<-t.done
+		return
+	}
+
 	for {
 		select {
 		case <-t.done:
@@ -191,7 +195,7 @@ func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, t
 			val.data.(map[string]any)[key2] = args
 		} else {
 			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-			return cache.ErrTypeMismatch
+			return ErrTypeMismatch
 		}
 
 		val.timeout = time.Now().Add(timeout)
@@ -234,7 +238,7 @@ func (t *Memory) Get(ctx context.Context, key string) (any, error) {
 	}
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
-	return nil, cache.ErrKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 func (t *Memory) GetIn(ctx context.Context, key string, key2 string) (any, error) {
@@ -254,14 +258,14 @@ func (t *Memory) GetIn(ctx context.Context, key string, key2 string) (any, error
 			if v, ok := val2[key2]; ok {
 				return v, nil
 			} else {
-				return nil, cache.ErrKeyNotFound
+				return nil, ErrKeyNotFound
 			}
 		} else {
-			return nil, cache.ErrTypeMismatch
+			return nil, ErrTypeMismatch
 		}
 	}
 
-	return nil, cache.ErrKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 func (t *Memory) GetMap(ctx context.Context, key string) (any, error) {
@@ -286,7 +290,7 @@ func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout t
 			v.data = v.data.(int64) + val
 		} else {
 			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-			return 0, cache.ErrTypeMismatch
+			return 0, ErrTypeMismatch
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)
@@ -324,14 +328,14 @@ func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val i
 					v.data.(map[string]any)[key2] = v2 + val
 				} else {
 					t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-					return 0, cache.ErrTypeMismatch
+					return 0, ErrTypeMismatch
 				}
 			} else {
 				v.data.(map[string]any)[key2] = val
 			}
 		} else {
 			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-			return 0, cache.ErrTypeMismatch
+			return 0, ErrTypeMismatch
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)
@@ -391,7 +395,7 @@ func (t *Memory) Expire(ctx context.Context, key string, timeout time.Duration) 
 
 	if !ok {
 		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-		return cache.ErrKeyNotFound
+		return ErrKeyNotFound
 	}
 
 	val.timeout = time.Now().Add(timeout)

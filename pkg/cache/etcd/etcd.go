@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
@@ -37,15 +38,14 @@ func NewEtcd(name string) *Etcd {
 	}
 }
 
-func (t *Etcd) Init(cfg IConfigItem) error {
-	err := cfg.GetConfigItem("cache", t.Name, &t.Config)
-
+func (t *Etcd) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
 	if t.Config.Hosts == "" {
-		return errors.New("hosts is empty")
+		return errors.New("hosts is required")
 	}
 
 	t.client, err = clientv3.New(clientv3.Config{

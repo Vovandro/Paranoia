@@ -6,8 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
-	"gitlab.com/devpro_studio/Paranoia/cache"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"strings"
@@ -16,9 +15,8 @@ import (
 
 type Memcached struct {
 	Name   string
-	Config MemcachedConfig
+	Config Config
 
-	app          interfaces.IEngine
 	client       *memcache.Client
 	counterRead  metric.Int64Counter
 	counterWrite metric.Int64Counter
@@ -26,33 +24,35 @@ type Memcached struct {
 	timeWrite    metric.Int64Histogram
 }
 
-type MemcachedConfig struct {
+type Config struct {
 	Hosts   string        `yaml:"hosts"`
 	Timeout time.Duration `yaml:"timeout"`
 }
 
-func NewMemcached(name string, cfg MemcachedConfig) *Memcached {
+func NewMemcached(name string) *Memcached {
 	return &Memcached{
-		Name:   name,
-		Config: cfg,
+		Name: name,
 	}
 }
 
-func (t *Memcached) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *Memcached) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
 
 	if t.Config.Timeout == 0 {
 		t.Config.Timeout = 5 * time.Second
 	}
 
 	if t.Config.Hosts == "" {
-		t.Config.Hosts = "localhost:11211"
+		return errors.New("hosts is required")
 	}
 
 	t.client = memcache.New(strings.Split(t.Config.Hosts, ",")...)
 	t.client.Timeout = t.Config.Timeout
 
-	err := t.client.Ping()
+	err = t.client.Ping()
 
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (t *Memcached) Set(ctx context.Context, key string, args any, timeout time.
 func (t *Memcached) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
 	data, err := t.GetMap(ctx, key)
 
-	if errors.Is(err, cache.ErrKeyNotFound) {
+	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
 	} else if err != nil {
 		return err
@@ -144,7 +144,7 @@ func (t *Memcached) Get(ctx context.Context, key string) (any, error) {
 
 	if err != nil {
 		if errors.Is(err, memcache.ErrCacheMiss) {
-			return nil, cache.ErrKeyNotFound
+			return nil, ErrKeyNotFound
 		}
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (t *Memcached) GetIn(ctx context.Context, key string, key2 string) (any, er
 		return val, nil
 	}
 
-	return nil, cache.ErrKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 func (t *Memcached) GetMap(ctx context.Context, key string) (any, error) {
@@ -177,7 +177,7 @@ func (t *Memcached) GetMap(ctx context.Context, key string) (any, error) {
 	err = json.Unmarshal(data.([]byte), &res)
 
 	if err != nil {
-		return nil, cache.ErrTypeMismatch
+		return nil, ErrTypeMismatch
 	}
 
 	return res, nil
@@ -205,7 +205,7 @@ func (t *Memcached) IncrementIn(ctx context.Context, key string, key2 string, va
 	s := time.Now()
 	data, err := t.GetMap(ctx, key)
 
-	if errors.Is(err, cache.ErrKeyNotFound) {
+	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
 	} else if err != nil {
 		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
@@ -232,7 +232,7 @@ func (t *Memcached) Decrement(ctx context.Context, key string, val int64, timeou
 
 	if errors.Is(err, memcache.ErrCacheMiss) {
 		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-		return 0, cache.ErrKeyNotFound
+		return 0, ErrKeyNotFound
 	} else if err != nil {
 		t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 		return 0, err
@@ -247,7 +247,7 @@ func (t *Memcached) DecrementIn(ctx context.Context, key string, key2 string, va
 	s := time.Now()
 	data, err := t.GetMap(ctx, key)
 
-	if errors.Is(err, cache.ErrKeyNotFound) {
+	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
 	} else if err != nil {
 		return 0, err
@@ -272,7 +272,7 @@ func (t *Memcached) Delete(ctx context.Context, key string) error {
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 
 	if errors.Is(err, memcache.ErrCacheMiss) {
-		return cache.ErrKeyNotFound
+		return ErrKeyNotFound
 	}
 
 	return err
@@ -287,7 +287,7 @@ func (t *Memcached) Expire(ctx context.Context, key string, timeout time.Duratio
 
 	if err != nil {
 		if errors.Is(err, memcache.ErrCacheMiss) {
-			return cache.ErrKeyNotFound
+			return ErrKeyNotFound
 		}
 		return err
 	}

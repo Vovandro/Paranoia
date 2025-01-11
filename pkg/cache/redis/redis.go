@@ -4,8 +4,7 @@ import (
 	"context"
 	"errors"
 	redisExt "github.com/redis/go-redis/v9"
-	"gitlab.com/devpro_studio/Paranoia/cache"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"strings"
@@ -14,9 +13,8 @@ import (
 
 type Redis struct {
 	Name   string
-	Config RedisConfig
+	Config Config
 
-	app    interfaces.IEngine
 	client redisExt.UniversalClient
 
 	counterRead  metric.Int64Counter
@@ -25,7 +23,7 @@ type Redis struct {
 	timeWrite    metric.Int64Histogram
 }
 
-type RedisConfig struct {
+type Config struct {
 	Hosts      string        `yaml:"hosts"`
 	UseCluster bool          `yaml:"use_cluster,omitempty"`
 	DBNum      int           `yaml:"db_num,omitempty"`
@@ -34,19 +32,25 @@ type RedisConfig struct {
 	Password   string        `yaml:"password,omitempty"`
 }
 
-func NewRedis(name string, cfg RedisConfig) *Redis {
+func NewRedis(name string) *Redis {
 	return &Redis{
-		Name:   name,
-		Config: cfg,
+		Name: name,
 	}
 }
 
-func (t *Redis) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *Redis) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.Config.Hosts == "" {
+		return errors.New("hosts is required")
+	}
 
 	if t.Config.UseCluster {
 		if t.Config.DBNum != 0 {
-			t.app.GetLogger().Warn(context.Background(), "Database number not available when using Redis cluster")
+			return errors.New("database number not available when using Redis cluster")
 		}
 
 		t.client = redisExt.NewClusterClient(&redisExt.ClusterOptions{
@@ -63,7 +67,7 @@ func (t *Redis) Init(app interfaces.IEngine) error {
 		})
 	}
 
-	_, err := t.client.Ping(context.Background()).Result()
+	_, err = t.client.Ping(context.Background()).Result()
 
 	if err != nil {
 		return err
@@ -142,7 +146,7 @@ func (t *Redis) Get(ctx context.Context, key string) (any, error) {
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if errors.Is(err, redisExt.Nil) {
-		return nil, cache.ErrKeyNotFound
+		return nil, ErrKeyNotFound
 	} else if err != nil {
 		return nil, err
 	}
@@ -158,7 +162,7 @@ func (t *Redis) GetIn(ctx context.Context, key string, key2 string) (any, error)
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if errors.Is(err, redisExt.Nil) {
-		return nil, cache.ErrKeyNotFound
+		return nil, ErrKeyNotFound
 	} else if err != nil {
 		return nil, err
 	}
@@ -174,7 +178,7 @@ func (t *Redis) GetMap(ctx context.Context, key string) (any, error) {
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if errors.Is(err, redisExt.Nil) {
-		return nil, cache.ErrKeyNotFound
+		return nil, ErrKeyNotFound
 	} else if err != nil {
 		return nil, err
 	}
@@ -259,7 +263,7 @@ func (t *Redis) Expire(ctx context.Context, key string, timeout time.Duration) e
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	if errors.Is(err, redisExt.Nil) {
-		return cache.ErrKeyNotFound
+		return ErrKeyNotFound
 	} else if err != nil {
 		return err
 	}

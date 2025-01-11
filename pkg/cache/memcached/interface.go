@@ -1,4 +1,4 @@
-package etcd
+package memcached
 
 import "errors"
 

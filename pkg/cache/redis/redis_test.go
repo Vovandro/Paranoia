@@ -19,7 +19,7 @@ func TestRedis_Has(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -76,7 +76,7 @@ func TestRedis_Base(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -202,7 +202,7 @@ func TestRedis_In(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -379,7 +379,7 @@ func TestRedis_Map(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -461,7 +461,7 @@ func TestRedis_Increment(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -552,7 +552,7 @@ func TestRedis_Decrement(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -687,7 +687,7 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -790,7 +790,7 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 
 	t := &Redis{
 		Name: "test",
-		Config: RedisConfig{
+		Config: Config{
 			Hosts: host + ":6379",
 		},
 	}
