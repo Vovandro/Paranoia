@@ -244,10 +244,10 @@ func TestMySQL_String(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &MySQL{
-				Name: tt.fields.Name,
+				name: tt.fields.Name,
 			}
-			if got := t.String(); got != tt.want {
-				t1.Errorf("String() = %v, want %v", got, tt.want)
+			if got := t.Name(); got != tt.want {
+				t1.Errorf("name() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -285,6 +285,6 @@ func initMySQLTest(name string) *MySQL {
 }
 
 func closeMySQLTest(db *MySQL) {
-	db.Exec(context.Background(), "drop table if exists "+db.Name+";")
+	db.Exec(context.Background(), "drop table if exists "+db.name+";")
 	db.Stop()
 }

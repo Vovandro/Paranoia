@@ -222,10 +222,10 @@ func TestSqlite3_String(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Sqlite3{
-				Name: tt.fields.Name,
+				name: tt.fields.Name,
 			}
-			if got := t.String(); got != tt.want {
-				t1.Errorf("String() = %v, want %v", got, tt.want)
+			if got := t.Name(); got != tt.want {
+				t1.Errorf("name() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -252,7 +252,7 @@ func initSQLite3Test(name string) *Sqlite3 {
 	_, err = db.client.Exec("create table test (id integer primary key, name varchar(255), balance float not null, created_at datetime)")
 
 	if err != nil {
-		os.Remove(db.Name + ".db")
+		os.Remove(db.name + ".db")
 		panic(err)
 	}
 
@@ -260,7 +260,7 @@ func initSQLite3Test(name string) *Sqlite3 {
 						 (1, 'test', 1.0, datetime()), (2, 'test2', 0.0, datetime()), (3, null, 50.0, datetime());`)
 
 	if err != nil {
-		os.Remove(db.Name + ".db")
+		os.Remove(db.name + ".db")
 		panic(err)
 	}
 
@@ -270,5 +270,5 @@ func initSQLite3Test(name string) *Sqlite3 {
 func closeSQLite3Test(db *Sqlite3) {
 	db.Stop()
 
-	os.Remove(db.Name + ".db")
+	os.Remove(db.name + ".db")
 }

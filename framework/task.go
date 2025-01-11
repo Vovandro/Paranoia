@@ -1,4 +1,4 @@
-package Paranoia
+package framework
 
 import (
 	"context"
@@ -127,7 +127,7 @@ func (t *task) Start() {
 func (t *task) Stop() {
 	close(t.done)
 	t.end.Wait()
-	
+
 	t.taskMutex.Lock()
 	defer t.taskMutex.Unlock()
 

@@ -12,8 +12,8 @@ import (
 )
 
 type MySQL struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 	client *sql.DB
 
 	counter     metric.Int64Counter
@@ -26,28 +26,28 @@ type Config struct {
 
 func NewMySQL(name string) *MySQL {
 	return &MySQL{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *MySQL) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.URI == "" {
+	if t.config.URI == "" {
 		return errors.New("URI is required")
 	}
 
-	t.client, err = sql.Open("mysql", t.Config.URI)
+	t.client, err = sql.Open("mysql", t.config.URI)
 
 	if err != nil {
 		return err
 	}
 
-	t.counter, _ = otel.Meter("").Int64Counter("mysql." + t.Name + ".count")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("mysql." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("mysql." + t.name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("mysql." + t.name + ".time")
 
 	return t.client.Ping()
 }
@@ -56,8 +56,12 @@ func (t *MySQL) Stop() error {
 	return t.client.Close()
 }
 
-func (t *MySQL) String() string {
-	return t.Name
+func (t *MySQL) Name() string {
+	return t.name
+}
+
+func (t *MySQL) Type() string {
+	return "database"
 }
 
 func (t *MySQL) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {

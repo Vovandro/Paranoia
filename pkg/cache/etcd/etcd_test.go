@@ -20,8 +20,8 @@ func TestEtcd_Has(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -77,8 +77,8 @@ func TestEtcd_Base(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -158,7 +158,7 @@ func TestEtcd_Base(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			if (got == "" && tt.want != "") || (got != "" && got.(string) != tt.want) {
+			if (got == nil && tt.want != "") || (got != nil && string(got) != tt.want) {
 				t1.Errorf("Check = %v, want %v", got, tt.want)
 			}
 
@@ -178,8 +178,8 @@ func TestEtcd_In(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -349,8 +349,8 @@ func TestEtcd_Map(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -431,8 +431,8 @@ func TestEtcd_GetMapInvalid(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -465,8 +465,8 @@ func TestEtcd_Increment(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -534,7 +534,7 @@ func TestEtcd_Increment(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			a, err := strconv.ParseInt(got.(string), 10, 64)
+			a, err := strconv.ParseInt(string(got), 10, 64)
 
 			if a != tt.want || lastVal != tt.want {
 				t1.Errorf("Check = %v, last = %v, want %v", a, lastVal, tt.want)
@@ -556,8 +556,8 @@ func TestEtcd_Decrement(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -665,7 +665,7 @@ func TestEtcd_Decrement(t1 *testing.T) {
 				}
 			}
 
-			a, err := strconv.ParseInt(strings.TrimSpace(got.(string)), 10, 64)
+			a, err := strconv.ParseInt(strings.TrimSpace(string(got)), 10, 64)
 
 			if err != nil {
 				t1.Errorf("Convert error = %v, want %v", err, tt.want)
@@ -691,8 +691,8 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -788,8 +788,8 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Etcd{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":2379",
 		},
 	}
@@ -931,10 +931,10 @@ func TestEtcd_String(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Etcd{
-				Name: tt.fields.Name,
+				name: tt.fields.Name,
 			}
-			if got := t.String(); got != tt.want {
-				t1.Errorf("String() = %v, want %v", got, tt.want)
+			if got := t.Name(); got != tt.want {
+				t1.Errorf("name() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -1,36 +1,41 @@
 package grpc_client
 
 import (
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"errors"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 type GrpcClient struct {
-	Name   string
-	Config GrpcClientConfig
-	app    interfaces.IEngine
+	name   string
+	config Config
 	client *grpc.ClientConn
 }
 
-type GrpcClientConfig struct {
+type Config struct {
 	Url string `yaml:"url"`
 }
 
-func NewGrpcClient(name string, cfg GrpcClientConfig) *GrpcClient {
+func NewGrpcClient(name string) *GrpcClient {
 	return &GrpcClient{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *GrpcClient) Init(app interfaces.IEngine) error {
-	var err error
-	t.app = app
+func (t *GrpcClient) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.Url == "" {
+		return errors.New("url is required")
+	}
 
 	t.client, err = grpc.NewClient(
-		t.Config.Url,
+		t.config.Url,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	)
@@ -42,8 +47,12 @@ func (t *GrpcClient) Stop() error {
 	return t.client.Close()
 }
 
-func (t *GrpcClient) String() string {
-	return t.Name
+func (t *GrpcClient) Name() string {
+	return t.name
+}
+
+func (t *GrpcClient) Type() string {
+	return "client"
 }
 
 func (t *GrpcClient) GetClient() *grpc.ClientConn {

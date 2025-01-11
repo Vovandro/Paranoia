@@ -13,8 +13,8 @@ import (
 )
 
 type ClickHouse struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 	client driver.Conn
 
 	counter     metric.Int64Counter
@@ -30,30 +30,30 @@ type Config struct {
 
 func NewClickHouse(name string) *ClickHouse {
 	return &ClickHouse{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *ClickHouse) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.Hosts == "" {
+	if t.config.Hosts == "" {
 		return errors.New("hosts is required")
 	}
 
-	if t.Config.Database == "" {
+	if t.config.Database == "" {
 		return errors.New("database is required")
 	}
 
 	t.client, err = click.Open(&click.Options{
-		Addr: strings.Split(t.Config.Hosts, ","),
+		Addr: strings.Split(t.config.Hosts, ","),
 		Auth: click.Auth{
-			Database: t.Config.Database,
-			Username: t.Config.Username,
-			Password: t.Config.Password,
+			Database: t.config.Database,
+			Username: t.config.Username,
+			Password: t.config.Password,
 		},
 	})
 
@@ -61,8 +61,8 @@ func (t *ClickHouse) Init(cfg map[string]interface{}) error {
 		return err
 	}
 
-	t.counter, _ = otel.Meter("").Int64Counter("clickhouse." + t.Name + ".count")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("clickhouse." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("clickhouse." + t.name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("clickhouse." + t.name + ".time")
 
 	return t.client.Ping(context.Background())
 }
@@ -71,8 +71,12 @@ func (t *ClickHouse) Stop() error {
 	return t.client.Close()
 }
 
-func (t *ClickHouse) String() string {
-	return t.Name
+func (t *ClickHouse) Name() string {
+	return t.name
+}
+
+func (t *ClickHouse) Type() string {
+	return "database"
 }
 
 func (t *ClickHouse) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {

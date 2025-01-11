@@ -1,13 +1,13 @@
 package tests
 
 import (
-	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/cache/memory"
+	"gitlab.com/devpro_studio/Paranoia/framework"
 	"testing"
 )
 
 func TestEngine_PushCache(t1 *testing.T) {
-	s := Paranoia.New("test", nil, nil)
+	s := framework.New("test", nil, nil)
 
 	mockCache := memory.Memory{Name: "mock"}
 

@@ -18,8 +18,8 @@ type cacheMemory struct {
 }
 
 type Memory struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 	pool   sync.Pool
 	done   chan interface{}
 	data   []cacheMemory
@@ -42,27 +42,27 @@ type cacheItem struct {
 
 func NewMemory(name string) *Memory {
 	return &Memory{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *Memory) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.ShardCount < 1 {
-		t.Config.ShardCount = 1
+	if t.config.ShardCount < 1 {
+		t.config.ShardCount = 1
 	}
 
 	t.pool.New = func() any {
 		return &cacheItem{}
 	}
 
-	t.data = make([]cacheMemory, t.Config.ShardCount)
+	t.data = make([]cacheMemory, t.config.ShardCount)
 
-	for i := 0; i < t.Config.ShardCount; i++ {
+	for i := 0; i < t.config.ShardCount; i++ {
 		t.data[i] = cacheMemory{
 			data:     make(map[string]*cacheItem, 100),
 			mutex:    sync.RWMutex{},
@@ -74,10 +74,10 @@ func (t *Memory) Init(cfg map[string]interface{}) error {
 
 	t.done = make(chan interface{})
 
-	t.counterRead, _ = otel.Meter("").Int64Counter("cache_memory." + t.Name + ".countRead")
-	t.counterWrite, _ = otel.Meter("").Int64Counter("cache_memory." + t.Name + ".countWrite")
-	t.timeRead, _ = otel.Meter("").Int64Histogram("cache_memory." + t.Name + ".timeRead")
-	t.timeWrite, _ = otel.Meter("").Int64Histogram("cache_memory." + t.Name + ".timeWrite")
+	t.counterRead, _ = otel.Meter("").Int64Counter("cache_memory." + t.name + ".countRead")
+	t.counterWrite, _ = otel.Meter("").Int64Counter("cache_memory." + t.name + ".countWrite")
+	t.timeRead, _ = otel.Meter("").Int64Histogram("cache_memory." + t.name + ".timeRead")
+	t.timeWrite, _ = otel.Meter("").Int64Histogram("cache_memory." + t.name + ".timeWrite")
 
 	go t.run()
 
@@ -90,7 +90,7 @@ func (t *Memory) Stop() error {
 }
 
 func (t *Memory) run() {
-	if t.Config.TimeClear == 0 {
+	if t.config.TimeClear == 0 {
 		<-t.done
 		return
 	}
@@ -100,9 +100,9 @@ func (t *Memory) run() {
 		case <-t.done:
 			return
 
-		case <-time.After(t.Config.TimeClear):
+		case <-time.After(t.config.TimeClear):
 			now := time.Now()
-			for i := 0; i < t.Config.ShardCount; i++ {
+			for i := 0; i < t.config.ShardCount; i++ {
 				t.data[i].mutex.Lock()
 				for {
 					it := t.data[i].timeHeap.Top()
@@ -122,12 +122,16 @@ func (t *Memory) run() {
 	}
 }
 
-func (t *Memory) String() string {
-	return t.Name
+func (t *Memory) Name() string {
+	return t.name
+}
+
+func (t *Memory) Type() string {
+	return "cache"
 }
 
 func (t *Memory) getShardNum(key string) int {
-	return int(crc32.ChecksumIEEE([]byte(key))) % t.Config.ShardCount
+	return int(crc32.ChecksumIEEE([]byte(key))) % t.config.ShardCount
 }
 
 func (t *Memory) Has(ctx context.Context, key string) bool {

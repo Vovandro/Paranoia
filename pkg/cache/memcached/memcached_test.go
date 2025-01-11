@@ -21,8 +21,8 @@ func TestMemcached_Has(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -81,8 +81,8 @@ func TestMemcached_Base(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -188,7 +188,7 @@ func TestMemcached_Base(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			if (got == nil && tt.want != nil) || (got != nil && !bytes.Equal(got.([]byte), tt.want)) {
+			if (got == nil && tt.want != nil) || (got != nil && !bytes.Equal(got, tt.want)) {
 				t1.Errorf("Check = %v, want %v", got, tt.want)
 			}
 
@@ -208,8 +208,8 @@ func TestMemcached_In(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -415,8 +415,8 @@ func TestMemcached_Map(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -497,8 +497,8 @@ func TestMemcached_GetMapInvalid(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -531,8 +531,8 @@ func TestMemcached_Increment(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -600,7 +600,7 @@ func TestMemcached_Increment(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			a, err := strconv.ParseInt(string(got.([]byte)), 10, 64)
+			a, err := strconv.ParseInt(string(got), 10, 64)
 
 			if a != tt.want || lastVal != tt.want {
 				t1.Errorf("Check = %v, last = %v, want %v", a, lastVal, tt.want)
@@ -622,8 +622,8 @@ func TestMemcached_Decrement(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -731,7 +731,7 @@ func TestMemcached_Decrement(t1 *testing.T) {
 				}
 			}
 
-			a, err := strconv.ParseInt(strings.TrimSpace(string(got.([]byte))), 10, 64)
+			a, err := strconv.ParseInt(strings.TrimSpace(string(got)), 10, 64)
 
 			if err != nil {
 				t1.Errorf("Convert error = %v, want %v", err, tt.want)
@@ -757,8 +757,8 @@ func TestMemcached_IncrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -853,8 +853,8 @@ func TestMemcached_DecrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Memcached{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":11211",
 		},
 	}
@@ -996,10 +996,10 @@ func TestMemcached_String(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memcached{
-				Name: tt.fields.Name,
+				name: tt.fields.Name,
 			}
-			if got := t.String(); got != tt.want {
-				t1.Errorf("String() = %v, want %v", got, tt.want)
+			if got := t.Name(); got != tt.want {
+				t1.Errorf("name() = %v, want %v", got, tt.want)
 			}
 		})
 	}

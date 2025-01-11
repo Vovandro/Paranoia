@@ -15,8 +15,8 @@ import (
 )
 
 type Etcd struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 
 	client *clientv3.Client
 
@@ -34,24 +34,24 @@ type Config struct {
 
 func NewEtcd(name string) *Etcd {
 	return &Etcd{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *Etcd) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.Hosts == "" {
+	if t.config.Hosts == "" {
 		return errors.New("hosts is required")
 	}
 
 	t.client, err = clientv3.New(clientv3.Config{
-		Endpoints:   strings.Split(t.Config.Hosts, ","),
-		Username:    t.Config.Username,
-		Password:    t.Config.Password,
+		Endpoints:   strings.Split(t.config.Hosts, ","),
+		Username:    t.config.Username,
+		Password:    t.config.Password,
 		DialTimeout: time.Second * 3,
 	})
 
@@ -59,10 +59,10 @@ func (t *Etcd) Init(cfg map[string]interface{}) error {
 		return err
 	}
 
-	t.counterRead, _ = otel.Meter("").Int64Counter("redis." + t.Name + ".countRead")
-	t.counterWrite, _ = otel.Meter("").Int64Counter("redis." + t.Name + ".countWrite")
-	t.timeRead, _ = otel.Meter("").Int64Histogram("redis." + t.Name + ".timeRead")
-	t.timeWrite, _ = otel.Meter("").Int64Histogram("redis." + t.Name + ".timeWrite")
+	t.counterRead, _ = otel.Meter("").Int64Counter("redis." + t.name + ".countRead")
+	t.counterWrite, _ = otel.Meter("").Int64Counter("redis." + t.name + ".countWrite")
+	t.timeRead, _ = otel.Meter("").Int64Histogram("redis." + t.name + ".timeRead")
+	t.timeWrite, _ = otel.Meter("").Int64Histogram("redis." + t.name + ".timeWrite")
 
 	return nil
 }
@@ -71,8 +71,12 @@ func (t *Etcd) Stop() error {
 	return t.client.Close()
 }
 
-func (t *Etcd) String() string {
-	return t.Name
+func (t *Etcd) Name() string {
+	return t.name
+}
+
+func (t *Etcd) Type() string {
+	return "cache"
 }
 
 func (t *Etcd) Has(ctx context.Context, key string) bool {
@@ -93,16 +97,12 @@ func (t *Etcd) Has(ctx context.Context, key string) bool {
 	return true
 }
 
-func (t *Etcd) Set(ctx context.Context, key string, args any, timeout time.Duration) error {
-	if _, ok := args.(string); !ok {
-		return ErrTypeMismatch
-	}
-
+func (t *Etcd) Set(ctx context.Context, key string, args string, timeout time.Duration) error {
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 	lease, _ := t.client.Grant(ctx, int64(timeout.Seconds()))
 
-	_, err := t.client.Put(ctx, key, args.(string), clientv3.WithLease(lease.ID))
+	_, err := t.client.Put(ctx, key, args, clientv3.WithLease(lease.ID))
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 
 	return err
@@ -142,7 +142,7 @@ func (t *Etcd) SetMap(ctx context.Context, key string, args any, timeout time.Du
 	return err
 }
 
-func (t *Etcd) Get(ctx context.Context, key string) (any, error) {
+func (t *Etcd) Get(ctx context.Context, key string) ([]byte, error) {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
@@ -150,14 +150,14 @@ func (t *Etcd) Get(ctx context.Context, key string) (any, error) {
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 
 	if len(item.Kvs) == 0 {
-		return "", ErrKeyNotFound
+		return []byte(""), ErrKeyNotFound
 	}
 
-	return string(item.Kvs[0].Value), nil
+	return item.Kvs[0].Value, nil
 }
 
 func (t *Etcd) GetIn(ctx context.Context, key string, key2 string) (any, error) {
@@ -185,7 +185,7 @@ func (t *Etcd) GetMap(ctx context.Context, key string) (any, error) {
 	}
 
 	res := make(map[string]any)
-	err = json.Unmarshal([]byte(data.(string)), &res)
+	err = json.Unmarshal(data, &res)
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 
 	if err != nil {
@@ -200,7 +200,7 @@ func (t *Etcd) Increment(ctx context.Context, key string, val int64, timeout tim
 
 	v, _ := t.Get(ctx, key)
 
-	conv, _ := strconv.ParseInt(v.(string), 10, 64)
+	conv, _ := strconv.ParseInt(string(v), 10, 64)
 	val += conv
 
 	err := t.Set(ctx, key, fmt.Sprint(val), timeout)

@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia
+module gitlab.com/devpro_studio/Paranoia/framework
 
 go 1.23.0
 

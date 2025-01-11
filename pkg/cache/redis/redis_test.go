@@ -18,8 +18,8 @@ func TestRedis_Has(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -75,8 +75,8 @@ func TestRedis_Base(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -181,7 +181,7 @@ func TestRedis_Base(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			if (got == nil && tt.want != "") || (got != nil && got.(string) != tt.want) {
+			if (got == "" && tt.want != "") || (got != "" && got != tt.want) {
 				t1.Errorf("Check = %v, want %v", got, tt.want)
 			}
 
@@ -201,8 +201,8 @@ func TestRedis_In(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -358,7 +358,7 @@ func TestRedis_In(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			if got.(string) != tt.want {
+			if got != tt.want {
 				t1.Errorf("Check = %v, want %v", got, tt.want)
 			}
 
@@ -378,8 +378,8 @@ func TestRedis_Map(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -460,8 +460,8 @@ func TestRedis_Increment(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -529,7 +529,7 @@ func TestRedis_Increment(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			a, err := strconv.ParseInt(got.(string), 10, 64)
+			a, err := strconv.ParseInt(got, 10, 64)
 
 			if a != tt.want || lastVal != tt.want {
 				t1.Errorf("Check = %v, last = %v, want %v", a, lastVal, tt.want)
@@ -551,8 +551,8 @@ func TestRedis_Decrement(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -660,7 +660,7 @@ func TestRedis_Decrement(t1 *testing.T) {
 				}
 			}
 
-			a, err := strconv.ParseInt(got.(string), 10, 64)
+			a, err := strconv.ParseInt(got, 10, 64)
 
 			if err != nil {
 				t1.Errorf("Convert error = %v, want %v", err, tt.want)
@@ -686,8 +686,8 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -758,12 +758,12 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 
 			got, err := t.GetIn(context.Background(), tt.keyCheck, tt.key2Check)
 
-			if err != nil || got == nil {
+			if err != nil || got == "" {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 				return
 			}
 
-			a, err := strconv.ParseInt(got.(string), 10, 64)
+			a, err := strconv.ParseInt(got, 10, 64)
 
 			if err != nil {
 				t1.Errorf("Convert error = %v, want %v", err, tt.want)
@@ -789,8 +789,8 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
 	t := &Redis{
-		Name: "test",
-		Config: Config{
+		name: "test",
+		config: Config{
 			Hosts: host + ":6379",
 		},
 	}
@@ -901,7 +901,7 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 				return
 			}
 
-			a, err := strconv.ParseInt(got.(string), 10, 64)
+			a, err := strconv.ParseInt(got, 10, 64)
 
 			if err != nil {
 				t1.Errorf("Convert error = %v, want %v", err, tt.want)
@@ -938,10 +938,10 @@ func TestRedis_String(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Redis{
-				Name: tt.fields.Name,
+				name: tt.fields.Name,
 			}
-			if got := t.String(); got != tt.want {
-				t1.Errorf("String() = %v, want %v", got, tt.want)
+			if got := t.Name(); got != tt.want {
+				t1.Errorf("name() = %v, want %v", got, tt.want)
 			}
 		})
 	}

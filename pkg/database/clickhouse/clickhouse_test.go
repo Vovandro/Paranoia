@@ -247,10 +247,10 @@ func TestClickhouse_String(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &ClickHouse{
-				Name: tt.fields.Name,
+				name: tt.fields.Name,
 			}
-			if got := t.String(); got != tt.want {
-				t1.Errorf("String() = %v, want %v", got, tt.want)
+			if got := t.Name(); got != tt.want {
+				t1.Errorf("name() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -297,6 +297,6 @@ func initClickhouseTest(name string) *ClickHouse {
 }
 
 func closeClickhouseTest(db *ClickHouse) {
-	db.Exec(context.Background(), "drop table if exists test."+db.Name+";")
+	db.Exec(context.Background(), "drop table if exists test."+db.name+";")
 	db.Stop()
 }

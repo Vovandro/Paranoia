@@ -3,19 +3,12 @@ package http_client
 import (
 	"bytes"
 	"context"
-	"gitlab.com/devpro_studio/Paranoia"
-	"gitlab.com/devpro_studio/Paranoia/client"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
-	"gitlab.com/devpro_studio/Paranoia/logger"
-	"gitlab.com/devpro_studio/Paranoia/server"
 	"io"
 	"net/http"
 	"testing"
 )
 
 func TestHTTPClient_Fetch(t1 *testing.T) {
-	app := Paranoia.New("test", nil, &logger.Mock{})
-
 	type args struct {
 		method  string
 		host    string
@@ -26,7 +19,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 		name       string
 		RetryCount int
 		args       args
-		want       interfaces.IClientResponse
+		want       IClientResponse
 	}{
 		{
 			name:       "base test 200",
@@ -37,7 +30,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				nil,
 				nil,
 			},
-			want: &client.Response{
+			want: &Response{
 				bytes.NewBuffer([]byte("{}")),
 				map[string][]string{},
 				nil,
@@ -52,9 +45,11 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				"POST",
 				"http://127.0.0.1:8008/test",
 				[]byte("{\"id\":1}"),
-				nil,
+				map[string][]string{
+					"Content-Type": {"application/json"},
+				},
 			},
-			want: &client.Response{
+			want: &Response{
 				bytes.NewBuffer([]byte("{\"id\":1}")),
 				map[string][]string{},
 				nil,
@@ -65,29 +60,36 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &HTTPClient{
-				Config: HTTPClientConfig{
-					RetryCount: tt.RetryCount,
-				},
-				client: http.Client{},
-			}
-			t.Init(app)
-			s := server.Http{
-				Config: server.HttpConfig{
-					Port: "8008",
-				},
-			}
-			s.Init(app)
+			t := NewHTTPClient("test")
 
-			s.PushRoute("GET", "/", func(c context.Context, ctx interfaces.ICtx) {
-				ctx.GetResponse().SetBody([]byte("{}"))
-			}, nil)
+			t.Init(map[string]interface{}{
+				"retry_count": tt.RetryCount,
+			})
 
-			s.PushRoute("POST", "/test", func(c context.Context, ctx interfaces.ICtx) {
-				d, _ := io.ReadAll(ctx.GetRequest().GetBody())
-				ctx.GetResponse().SetBody(d)
-			}, nil)
-			s.Start()
+			server := &http.Server{Addr: ":8008"}
+
+			server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.RequestURI {
+				case "/":
+					if r.Method == "GET" {
+						w.Write([]byte("{}"))
+						return
+					}
+
+				case "/test":
+					if r.Method == "POST" {
+						data, _ := io.ReadAll(r.Body)
+						w.Write(data)
+						return
+					}
+				}
+
+				w.WriteHeader(http.StatusNotFound)
+			})
+
+			go func() {
+				server.ListenAndServe()
+			}()
 
 			got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers)
 
@@ -98,7 +100,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				t1.Errorf("Fetch() = %s, want %s", body, bodyWant)
 			}
 
-			s.Stop()
+			server.Shutdown(context.Background())
 		})
 	}
 }

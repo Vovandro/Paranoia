@@ -7,8 +7,8 @@ type IEngine interface {
 	GetConfig() IConfig
 	SetMetrics(c IMetrics)
 	SetTrace(c ITrace)
-	PushCache(c ICache) IEngine
-	GetCache(key string) ICache
+	PushCache(c IPkg) IEngine
+	GetCache(key string) IPkg
 	PushDatabase(c IDatabase) IEngine
 	GetDatabase(key string) IDatabase
 	PushNoSql(c INoSql) IEngine

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/client"
 	"gitlab.com/devpro_studio/Paranoia/client/http-client"
+	"gitlab.com/devpro_studio/Paranoia/framework"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server/middleware"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestHTTP_Fetch(t1 *testing.T) {
-	app := Paranoia.New("test", nil, &logger.Mock{})
+	app := framework.New("test", nil, &logger.Mock{})
 
 	type args struct {
 		method  string
@@ -193,7 +193,7 @@ func TestHTTP_Fetch(t1 *testing.T) {
 }
 
 func TestHTTP_Middleware(t1 *testing.T) {
-	app := Paranoia.New("test", nil, &logger.Mock{}).
+	app := framework.New("test", nil, &logger.Mock{}).
 		PushMiddleware(&middleware.TimingMiddleware{}).
 		PushMiddleware(&middleware.RestoreMiddleware{})
 

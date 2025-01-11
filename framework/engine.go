@@ -1,8 +1,9 @@
-package Paranoia
+package framework
 
 import (
 	"context"
 	"fmt"
+	"gitlab.com/devpro_studio/Paranoia"
 	"time"
 
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
@@ -19,9 +20,9 @@ type Engine struct {
 	metricExporter interfaces.IMetrics
 	trace          interfaces.ITrace
 
-	task task
+	task Paranoia.task
 
-	cache       map[string]interfaces.ICache
+	cache       map[string]interfaces.IPkg
 	database    map[string]interfaces.IDatabase
 	noSql       map[string]interfaces.INoSql
 	controllers map[string]interfaces.IController
@@ -42,7 +43,7 @@ func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Eng
 	t.config = config
 	t.logger = logger
 
-	t.cache = make(map[string]interfaces.ICache)
+	t.cache = make(map[string]interfaces.IPkg)
 	t.database = make(map[string]interfaces.IDatabase)
 	t.noSql = make(map[string]interfaces.INoSql)
 	t.controllers = make(map[string]interfaces.IController)
@@ -117,7 +118,7 @@ func (t *Engine) SetTrace(c interfaces.ITrace) {
 	}
 }
 
-func (t *Engine) PushCache(c interfaces.ICache) interfaces.IEngine {
+func (t *Engine) PushCache(c interfaces.IPkg) interfaces.IEngine {
 	if _, ok := t.cache[c.String()]; ok {
 		t.logger.Fatal(context.Background(), fmt.Errorf("cache %s already exists", c.String()))
 	} else {
@@ -127,7 +128,7 @@ func (t *Engine) PushCache(c interfaces.ICache) interfaces.IEngine {
 	return t
 }
 
-func (t *Engine) GetCache(key string) interfaces.ICache {
+func (t *Engine) GetCache(key string) interfaces.IPkg {
 	return t.cache[key]
 }
 

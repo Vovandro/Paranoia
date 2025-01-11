@@ -14,8 +14,8 @@ import (
 )
 
 type Memcached struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 
 	client       *memcache.Client
 	counterRead  metric.Int64Counter
@@ -31,26 +31,26 @@ type Config struct {
 
 func NewMemcached(name string) *Memcached {
 	return &Memcached{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *Memcached) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.Timeout == 0 {
-		t.Config.Timeout = 5 * time.Second
+	if t.config.Timeout == 0 {
+		t.config.Timeout = 5 * time.Second
 	}
 
-	if t.Config.Hosts == "" {
+	if t.config.Hosts == "" {
 		return errors.New("hosts is required")
 	}
 
-	t.client = memcache.New(strings.Split(t.Config.Hosts, ",")...)
-	t.client.Timeout = t.Config.Timeout
+	t.client = memcache.New(strings.Split(t.config.Hosts, ",")...)
+	t.client.Timeout = t.config.Timeout
 
 	err = t.client.Ping()
 
@@ -58,10 +58,10 @@ func (t *Memcached) Init(cfg map[string]interface{}) error {
 		return err
 	}
 
-	t.counterRead, _ = otel.Meter("").Int64Counter("memcached." + t.Name + ".countRead")
-	t.counterWrite, _ = otel.Meter("").Int64Counter("memcached." + t.Name + ".countWrite")
-	t.timeRead, _ = otel.Meter("").Int64Histogram("memcached." + t.Name + ".timeRead")
-	t.timeWrite, _ = otel.Meter("").Int64Histogram("memcached." + t.Name + ".timeWrite")
+	t.counterRead, _ = otel.Meter("").Int64Counter("memcached." + t.name + ".countRead")
+	t.counterWrite, _ = otel.Meter("").Int64Counter("memcached." + t.name + ".countWrite")
+	t.timeRead, _ = otel.Meter("").Int64Histogram("memcached." + t.name + ".timeRead")
+	t.timeWrite, _ = otel.Meter("").Int64Histogram("memcached." + t.name + ".timeWrite")
 
 	return nil
 }
@@ -70,8 +70,12 @@ func (t *Memcached) Stop() error {
 	return t.client.Close()
 }
 
-func (t *Memcached) String() string {
-	return t.Name
+func (t *Memcached) Name() string {
+	return t.name
+}
+
+func (t *Memcached) Type() string {
+	return "cache"
 }
 
 func (t *Memcached) Has(ctx context.Context, key string) bool {
@@ -120,7 +124,7 @@ func (t *Memcached) SetIn(ctx context.Context, key string, key2 string, args any
 		return err
 	}
 
-	data.(map[string]any)[key2] = args
+	data[key2] = args
 
 	return t.SetMap(ctx, key, data, timeout)
 }
@@ -135,7 +139,7 @@ func (t *Memcached) SetMap(ctx context.Context, key string, args any, timeout ti
 	return t.Set(ctx, key, data, timeout)
 }
 
-func (t *Memcached) Get(ctx context.Context, key string) (any, error) {
+func (t *Memcached) Get(ctx context.Context, key string) ([]byte, error) {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
@@ -159,14 +163,14 @@ func (t *Memcached) GetIn(ctx context.Context, key string, key2 string) (any, er
 		return nil, err
 	}
 
-	if val, ok := data.(map[string]any)[key2]; ok {
+	if val, ok := data[key2]; ok {
 		return val, nil
 	}
 
 	return nil, ErrKeyNotFound
 }
 
-func (t *Memcached) GetMap(ctx context.Context, key string) (any, error) {
+func (t *Memcached) GetMap(ctx context.Context, key string) (map[string]any, error) {
 	data, err := t.Get(ctx, key)
 
 	if err != nil {
@@ -174,7 +178,7 @@ func (t *Memcached) GetMap(ctx context.Context, key string) (any, error) {
 	}
 
 	res := make(map[string]any)
-	err = json.Unmarshal(data.([]byte), &res)
+	err = json.Unmarshal(data, &res)
 
 	if err != nil {
 		return nil, ErrTypeMismatch
@@ -212,16 +216,16 @@ func (t *Memcached) IncrementIn(ctx context.Context, key string, key2 string, va
 		return 0, err
 	}
 
-	if v, ok := data.(map[string]any)[key2]; ok {
-		data.(map[string]any)[key2] = int64(v.(float64)) + val
+	if v, ok := data[key2]; ok {
+		data[key2] = int64(v.(float64)) + val
 	} else {
-		data.(map[string]any)[key2] = val
+		data[key2] = val
 	}
 
 	err = t.SetMap(ctx, key, data, timeout)
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	return data.(map[string]any)[key2].(int64), err
+	return data[key2].(int64), err
 }
 
 func (t *Memcached) Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
@@ -253,15 +257,15 @@ func (t *Memcached) DecrementIn(ctx context.Context, key string, key2 string, va
 		return 0, err
 	}
 
-	if v, ok := data.(map[string]any)[key2]; ok {
-		data.(map[string]any)[key2] = int64(v.(float64)) - val
+	if v, ok := data[key2]; ok {
+		data[key2] = int64(v.(float64)) - val
 	} else {
-		data.(map[string]any)[key2] = val * -1
+		data[key2] = val * -1
 	}
 
 	err = t.SetMap(ctx, key, data, timeout)
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	return data.(map[string]any)[key2].(int64), err
+	return data[key2].(int64), err
 }
 
 func (t *Memcached) Delete(ctx context.Context, key string) error {

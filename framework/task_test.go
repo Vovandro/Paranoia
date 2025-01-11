@@ -1,4 +1,4 @@
-package Paranoia
+package framework
 
 import (
 	"context"

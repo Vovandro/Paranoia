@@ -12,8 +12,8 @@ import (
 )
 
 type Sqlite3 struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 	client *sql.DB
 
 	counter     metric.Int64Counter
@@ -26,28 +26,28 @@ type Config struct {
 
 func NewSqlite3(name string) *Sqlite3 {
 	return &Sqlite3{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *Sqlite3) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.Database == "" {
+	if t.config.Database == "" {
 		return errors.New("database file name is required")
 	}
 
-	t.client, err = sql.Open("sqlite3", t.Config.Database)
+	t.client, err = sql.Open("sqlite3", t.config.Database)
 
 	if err != nil {
 		return err
 	}
 
-	t.counter, _ = otel.Meter("").Int64Counter("sqlite." + t.Name + ".count")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("sqlite." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("sqlite." + t.name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("sqlite." + t.name + ".time")
 
 	return t.client.Ping()
 }
@@ -56,8 +56,12 @@ func (t *Sqlite3) Stop() error {
 	return t.client.Close()
 }
 
-func (t *Sqlite3) String() string {
-	return t.Name
+func (t *Sqlite3) Name() string {
+	return t.name
+}
+
+func (t *Sqlite3) Type() string {
+	return "database"
 }
 
 func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {

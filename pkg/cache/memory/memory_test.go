@@ -37,8 +37,8 @@ func TestMemory_Delete(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{
-				Name: "test",
-				Config: Config{
+				name: "test",
+				config: Config{
 					TimeClear:  time.Minute,
 					ShardCount: 5,
 				},
@@ -103,7 +103,7 @@ func TestMemory_Get(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{
-				Config: Config{
+				config: Config{
 					TimeClear:  time.Minute,
 					ShardCount: 5,
 				},
@@ -150,7 +150,7 @@ func TestMemory_Has(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{
-				Config: Config{
+				config: Config{
 					TimeClear:  time.Minute,
 					ShardCount: 5,
 				},
@@ -267,7 +267,7 @@ func TestMemory_Set(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{
-				Config: Config{
+				config: Config{
 					TimeClear:  time.Minute,
 					ShardCount: 5,
 				},
@@ -665,7 +665,7 @@ func TestMemory_IncrementIn(t1 *testing.T) {
 func TestMemory_ClearTimeout(t1 *testing.T) {
 	t1.Run("test timeout clear", func(t1 *testing.T) {
 		t := &Memory{
-			Config: Config{
+			config: Config{
 				TimeClear:  time.Millisecond * 10,
 				ShardCount: 2,
 			},
@@ -713,10 +713,10 @@ func TestMemory_String(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := &Memory{
-				Name: tt.fields.Name,
+				name: tt.fields.Name,
 			}
-			if got := t.String(); got != tt.want {
-				t1.Errorf("String() = %v, want %v", got, tt.want)
+			if got := t.Name(); got != tt.want {
+				t1.Errorf("name() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -724,7 +724,7 @@ func TestMemory_String(t1 *testing.T) {
 
 func BenchmarkStore(b *testing.B) {
 	t := Memory{
-		Config: Config{
+		config: Config{
 			TimeClear:  time.Second,
 			ShardCount: 1,
 		},
@@ -744,7 +744,7 @@ func BenchmarkStore(b *testing.B) {
 
 func BenchmarkStore10(b *testing.B) {
 	t := Memory{
-		Config: Config{
+		config: Config{
 			TimeClear:  time.Second,
 			ShardCount: 10,
 		},

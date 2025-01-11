@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia"
 	"gitlab.com/devpro_studio/Paranoia/client/grpc-client"
+	"gitlab.com/devpro_studio/Paranoia/framework"
 	"gitlab.com/devpro_studio/Paranoia/logger"
 	"gitlab.com/devpro_studio/Paranoia/server/example"
 	"testing"
@@ -23,7 +23,7 @@ func (t *server) Do(c context.Context, r *example.Request) (*example.Response, e
 
 func TestGrpc_RegisterService(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {
-		app := Paranoia.New("test", nil, &logger.Mock{})
+		app := framework.New("test", nil, &logger.Mock{})
 
 		s := NewGrpc("test", GrpcConfig{Port: "8091"})
 		s.Init(app)

@@ -12,8 +12,8 @@ import (
 )
 
 type Redis struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 
 	client redisExt.UniversalClient
 
@@ -34,36 +34,36 @@ type Config struct {
 
 func NewRedis(name string) *Redis {
 	return &Redis{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *Redis) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.Hosts == "" {
+	if t.config.Hosts == "" {
 		return errors.New("hosts is required")
 	}
 
-	if t.Config.UseCluster {
-		if t.Config.DBNum != 0 {
+	if t.config.UseCluster {
+		if t.config.DBNum != 0 {
 			return errors.New("database number not available when using Redis cluster")
 		}
 
 		t.client = redisExt.NewClusterClient(&redisExt.ClusterOptions{
-			Addrs:    strings.Split(t.Config.Hosts, ","),
-			Username: t.Config.Username,
-			Password: t.Config.Password,
+			Addrs:    strings.Split(t.config.Hosts, ","),
+			Username: t.config.Username,
+			Password: t.config.Password,
 		})
 	} else {
 		t.client = redisExt.NewClient(&redisExt.Options{
-			Addr:     t.Config.Hosts,
-			DB:       t.Config.DBNum,
-			Username: t.Config.Username,
-			Password: t.Config.Password,
+			Addr:     t.config.Hosts,
+			DB:       t.config.DBNum,
+			Username: t.config.Username,
+			Password: t.config.Password,
 		})
 	}
 
@@ -73,10 +73,10 @@ func (t *Redis) Init(cfg map[string]interface{}) error {
 		return err
 	}
 
-	t.counterRead, _ = otel.Meter("").Int64Counter("redis." + t.Name + ".countRead")
-	t.counterWrite, _ = otel.Meter("").Int64Counter("redis." + t.Name + ".countWrite")
-	t.timeRead, _ = otel.Meter("").Int64Histogram("redis." + t.Name + ".timeRead")
-	t.timeWrite, _ = otel.Meter("").Int64Histogram("redis." + t.Name + ".timeWrite")
+	t.counterRead, _ = otel.Meter("").Int64Counter("redis." + t.name + ".countRead")
+	t.counterWrite, _ = otel.Meter("").Int64Counter("redis." + t.name + ".countWrite")
+	t.timeRead, _ = otel.Meter("").Int64Histogram("redis." + t.name + ".timeRead")
+	t.timeWrite, _ = otel.Meter("").Int64Histogram("redis." + t.name + ".timeWrite")
 
 	return nil
 }
@@ -85,8 +85,12 @@ func (t *Redis) Stop() error {
 	return t.client.Close()
 }
 
-func (t *Redis) String() string {
-	return t.Name
+func (t *Redis) Name() string {
+	return t.name
+}
+
+func (t *Redis) Type() string {
+	return "cache"
 }
 
 func (t *Redis) Has(ctx context.Context, key string) bool {
@@ -138,7 +142,7 @@ func (t *Redis) SetMap(ctx context.Context, key string, args any, timeout time.D
 	return err
 }
 
-func (t *Redis) Get(ctx context.Context, key string) (any, error) {
+func (t *Redis) Get(ctx context.Context, key string) (string, error) {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
@@ -146,15 +150,15 @@ func (t *Redis) Get(ctx context.Context, key string) (any, error) {
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if errors.Is(err, redisExt.Nil) {
-		return nil, ErrKeyNotFound
+		return "", ErrKeyNotFound
 	} else if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	return v, nil
 }
 
-func (t *Redis) GetIn(ctx context.Context, key string, key2 string) (any, error) {
+func (t *Redis) GetIn(ctx context.Context, key string, key2 string) (string, error) {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
@@ -162,15 +166,15 @@ func (t *Redis) GetIn(ctx context.Context, key string, key2 string) (any, error)
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if errors.Is(err, redisExt.Nil) {
-		return nil, ErrKeyNotFound
+		return "", ErrKeyNotFound
 	} else if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	return v, nil
 }
 
-func (t *Redis) GetMap(ctx context.Context, key string) (any, error) {
+func (t *Redis) GetMap(ctx context.Context, key string) (map[string]string, error) {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 

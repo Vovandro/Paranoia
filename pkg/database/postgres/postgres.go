@@ -12,8 +12,8 @@ import (
 )
 
 type Postgres struct {
-	Name   string
-	Config Config
+	name   string
+	config Config
 	client *pgx.Conn
 
 	counter     metric.Int64Counter
@@ -26,28 +26,28 @@ type Config struct {
 
 func NewPostgres(name string) *Postgres {
 	return &Postgres{
-		Name: name,
+		name: name,
 	}
 }
 
 func (t *Postgres) Init(cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}
 
-	if t.Config.URI == "" {
+	if t.config.URI == "" {
 		return errors.New("URI is required")
 	}
 
-	t.client, err = pgx.Connect(context.TODO(), t.Config.URI)
+	t.client, err = pgx.Connect(context.TODO(), t.config.URI)
 
 	if err != nil {
 		return err
 	}
 
-	t.counter, _ = otel.Meter("").Int64Counter("postgres." + t.Name + ".count")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("postgres." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("postgres." + t.name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("postgres." + t.name + ".time")
 
 	return t.client.Ping(context.TODO())
 }
@@ -56,8 +56,12 @@ func (t *Postgres) Stop() error {
 	return t.client.Close(context.TODO())
 }
 
-func (t *Postgres) String() string {
-	return t.Name
+func (t *Postgres) Name() string {
+	return t.name
+}
+
+func (t *Postgres) Type() string {
+	return "database"
 }
 
 func (t *Postgres) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
