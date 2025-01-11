@@ -1,8 +1,7 @@
-package noSql
+package mongodb
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -19,19 +18,19 @@ func (t *MockMongoDB) Count(ctx context.Context, collection string, query interf
 	return 0
 }
 
-func (t *MockMongoDB) FindOne(ctx context.Context, collection string, query interface{}, opt *options.FindOneOptions) (interfaces.NoSQLRow, error) {
+func (t *MockMongoDB) FindOne(ctx context.Context, collection string, query interface{}, opt *options.FindOneOptions) (NoSQLRow, error) {
 	return &MongoRow{nil}, nil
 }
 
-func (t *MockMongoDB) FindOneAndUpdate(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.FindOneAndUpdateOptions) (interfaces.NoSQLRow, error) {
+func (t *MockMongoDB) FindOneAndUpdate(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.FindOneAndUpdateOptions) (NoSQLRow, error) {
 	return &MongoRow{nil}, nil
 }
 
-func (t *MockMongoDB) Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (interfaces.NoSQLRows, error) {
+func (t *MockMongoDB) Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (NoSQLRows, error) {
 	return &MongoRows{nil}, nil
 }
 
-func (t *MockMongoDB) Exec(ctx context.Context, collection string, query interface{}, opt *options.AggregateOptions) (interfaces.NoSQLRows, error) {
+func (t *MockMongoDB) Exec(ctx context.Context, collection string, query interface{}, opt *options.AggregateOptions) (NoSQLRows, error) {
 	return &MongoRows{nil}, nil
 }
 

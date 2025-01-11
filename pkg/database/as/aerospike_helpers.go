@@ -1,8 +1,8 @@
-package noSql
+package as
 
 import (
 	"github.com/aerospike/aerospike-client-go/v7"
-	"gitlab.com/devpro_studio/Paranoia/utils/decoder"
+	"gitlab.com/devpro_studio/go_utils/decode"
 )
 
 type ASRow struct {
@@ -20,7 +20,7 @@ func (t *ASRow) Scan(dest any) error {
 			dest.(map[string]interface{})[k] = v
 		}
 	} else {
-		err := decoder.Decode(t.row.Bins, &dest, "db", false)
+		err := decode.Decode(t.row.Bins, &dest, "db", 0)
 
 		if err != nil {
 			return err
@@ -42,7 +42,7 @@ func (t *ASRows) Scan(dest any) error {
 			dest.(map[string]interface{})[k] = v
 		}
 	} else {
-		err := decoder.Decode(t.row.Record.Bins, &dest, "db", false)
+		err := decode.Decode(t.row.Record.Bins, &dest, "db", 0)
 
 		if err != nil {
 			return err

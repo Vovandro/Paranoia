@@ -1,9 +1,8 @@
-package noSql
+package as
 
 import (
 	"context"
 	"github.com/aerospike/aerospike-client-go/v7"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type MockAerospike struct {
@@ -18,15 +17,15 @@ func (t *MockAerospike) Count(ctx context.Context, key *aerospike.Key, policy *a
 	return 0
 }
 
-func (t *MockAerospike) FindOne(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy, bins []string) (interfaces.NoSQLRow, error) {
+func (t *MockAerospike) FindOne(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy, bins []string) (NoSQLRow, error) {
 	return &ASRow{nil}, nil
 }
 
-func (t *MockAerospike) Find(ctx context.Context, query *aerospike.Statement, policy *aerospike.QueryPolicy) (interfaces.NoSQLRows, error) {
+func (t *MockAerospike) Find(ctx context.Context, query *aerospike.Statement, policy *aerospike.QueryPolicy) (NoSQLRows, error) {
 	return &ASRows{rows: nil}, nil
 }
 
-func (t *MockAerospike) Exec(ctx context.Context, key *aerospike.Key, policy *aerospike.WritePolicy, packageName string, functionName string) (interfaces.NoSQLRows, error) {
+func (t *MockAerospike) Exec(ctx context.Context, key *aerospike.Key, policy *aerospike.WritePolicy, packageName string, functionName string) (NoSQLRows, error) {
 	return nil, nil
 }
 

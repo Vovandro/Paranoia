@@ -1,10 +1,11 @@
-package noSql
+package as
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/aerospike/aerospike-client-go/v7"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"strconv"
@@ -13,40 +14,44 @@ import (
 )
 
 type Aerospike struct {
-	Name   string
-	Config AerospikeConfig
-	app    interfaces.IEngine
+	name   string
+	config Config
 	client *aerospike.Client
 
 	counter     metric.Int64Counter
 	timeCounter metric.Int64Histogram
 }
 
-type AerospikeConfig struct {
+type Config struct {
 	User     string `yaml:"user,omitempty"`
 	Password string `yaml:"password,omitempty"`
 	Hosts    string `yaml:"hosts"`
 }
 
-func NewAerospike(name string, cfg AerospikeConfig) *Aerospike {
+func NewAerospike(name string) *Aerospike {
 	return &Aerospike{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *Aerospike) Init(app interfaces.IEngine) error {
-	t.app = app
-	var err error
+func (t *Aerospike) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.Hosts == "" {
+		return errors.New("hosts is required")
+	}
 
 	cp := aerospike.NewClientPolicy()
 
-	cp.User = t.Config.User
-	cp.Password = t.Config.Password
+	cp.User = t.config.User
+	cp.Password = t.config.Password
 	cp.Timeout = 3 * time.Second
 	hostsArr := make([]*aerospike.Host, 0)
 
-	for _, s := range strings.Split(t.Config.Hosts, ",") {
+	for _, s := range strings.Split(t.config.Hosts, ",") {
 		item := strings.Split(s, ":")
 		p, _ := strconv.ParseInt(item[1], 10, 64)
 		hostsArr = append(hostsArr, aerospike.NewHost(item[0], int(p)))
@@ -70,8 +75,8 @@ func (t *Aerospike) Init(app interfaces.IEngine) error {
 	t.client.DefaultWritePolicy = &wPolicy
 	t.client.DefaultBatchPolicy = &bPolicy
 
-	t.counter, _ = otel.Meter("").Int64Counter("aerospike." + t.Name + ".count")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("aerospike." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("aerospike." + t.name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("aerospike." + t.name + ".time")
 
 	return nil
 }
@@ -82,8 +87,12 @@ func (t *Aerospike) Stop() error {
 	return nil
 }
 
-func (t *Aerospike) String() string {
-	return t.Name
+func (t *Aerospike) Name() string {
+	return t.name
+}
+
+func (t *Aerospike) Type() string {
+	return "database"
 }
 
 func (t *Aerospike) Exists(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy) bool {
@@ -119,7 +128,7 @@ func (t *Aerospike) Count(ctx context.Context, key *aerospike.Key, policy *aeros
 	return 0
 }
 
-func (t *Aerospike) FindOne(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy, bins []string) (interfaces.NoSQLRow, error) {
+func (t *Aerospike) FindOne(ctx context.Context, key *aerospike.Key, policy *aerospike.BasePolicy, bins []string) (NoSQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -139,7 +148,7 @@ func (t *Aerospike) FindOne(ctx context.Context, key *aerospike.Key, policy *aer
 	return &ASRow{find}, nil
 }
 
-func (t *Aerospike) Find(ctx context.Context, query *aerospike.Statement, policy *aerospike.QueryPolicy) (interfaces.NoSQLRows, error) {
+func (t *Aerospike) Find(ctx context.Context, query *aerospike.Statement, policy *aerospike.QueryPolicy) (NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -159,7 +168,7 @@ func (t *Aerospike) Find(ctx context.Context, query *aerospike.Statement, policy
 	return &ASRows{rows: q}, nil
 }
 
-func (t *Aerospike) Exec(ctx context.Context, key *aerospike.Key, policy *aerospike.WritePolicy, packageName string, functionName string) (interfaces.NoSQLRows, error) {
+func (t *Aerospike) Exec(ctx context.Context, key *aerospike.Key, policy *aerospike.WritePolicy, packageName string, functionName string) (NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())

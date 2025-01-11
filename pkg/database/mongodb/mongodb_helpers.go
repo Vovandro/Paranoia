@@ -1,4 +1,4 @@
-package noSql
+package mongodb
 
 import (
 	"context"

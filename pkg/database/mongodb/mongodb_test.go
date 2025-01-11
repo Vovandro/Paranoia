@@ -1,4 +1,4 @@
-package noSql
+package mongodb
 
 import (
 	"context"
@@ -252,7 +252,7 @@ func TestMongoDB_String(t1 *testing.T) {
 
 	t1.Run("test name", func(t1 *testing.T) {
 		t := &MongoDB{
-			Name: "test",
+			name: "test",
 		}
 		if got := t.String(); got != "test" {
 			t1.Errorf("name() = %v, want %v", got, "test")
@@ -294,14 +294,14 @@ type itemMongo struct {
 func initMongoTest(name string) *MongoDB {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := NewMongoDB(name, MongoDBConfig{
-		Database: "tests",
-		User:     "test",
-		Password: "test",
-		Hosts:    host + ":27017",
-	})
+	db := NewMongoDB(name)
 
-	err := db.Init(nil)
+	err := db.Init(map[string]interface{}{
+		"database": "tests",
+		"user":     "test",
+		"password": "test",
+		"hosts":    host + ":27017",
+	})
 
 	if err != nil {
 		panic(err)
@@ -335,6 +335,6 @@ func initMongoTest(name string) *MongoDB {
 }
 
 func closeMongoTest(db *MongoDB) {
-	db.db.Collection(db.Name).Drop(context.Background())
+	db.db.Collection(db.name).Drop(context.Background())
 	db.Stop()
 }

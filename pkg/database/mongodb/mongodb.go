@@ -1,8 +1,9 @@
-package noSql
+package mongodb
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"errors"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -13,9 +14,8 @@ import (
 )
 
 type MongoDB struct {
-	Name   string
-	Config MongoDBConfig
-	app    interfaces.IEngine
+	name   string
+	config Config
 	client *mongo.Client
 	db     *mongo.Database
 
@@ -23,7 +23,7 @@ type MongoDB struct {
 	timeCounter metric.Int64Histogram
 }
 
-type MongoDBConfig struct {
+type Config struct {
 	Database string        `yaml:"database"`
 	User     string        `yaml:"user,omitempty"`
 	Password string        `yaml:"password,omitempty"`
@@ -32,29 +32,35 @@ type MongoDBConfig struct {
 	URI      string        `yaml:"uri,omitempty"`
 }
 
-func NewMongoDB(name string, cfg MongoDBConfig) *MongoDB {
+func NewMongoDB(name string) *MongoDB {
 	return &MongoDB{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *MongoDB) Init(app interfaces.IEngine) error {
-	t.app = app
-	var err error
+func (t *MongoDB) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.Hosts == "" && t.config.URI == "" {
+		return errors.New("hosts or uri is required")
+	}
+
 	var opt options.ClientOptions
 
-	if t.Config.URI != "" {
-		opt.ApplyURI(t.Config.URI)
+	if t.config.URI != "" {
+		opt.ApplyURI(t.config.URI)
 	} else {
-		opt.Hosts = strings.Split(t.Config.Hosts, ",")
-		opt.ReadPreference, _ = readpref.New(t.Config.Mode)
+		opt.Hosts = strings.Split(t.config.Hosts, ",")
+		opt.ReadPreference, _ = readpref.New(t.config.Mode)
 
-		if t.Config.User != "" {
+		if t.config.User != "" {
 			opt.Auth = &options.Credential{
-				Username:   t.Config.User,
-				Password:   t.Config.Password,
-				AuthSource: t.Config.Database,
+				Username:   t.config.User,
+				Password:   t.config.Password,
+				AuthSource: t.config.Database,
 			}
 		}
 	}
@@ -65,10 +71,10 @@ func (t *MongoDB) Init(app interfaces.IEngine) error {
 		return err
 	}
 
-	t.db = t.client.Database(t.Config.Database)
+	t.db = t.client.Database(t.config.Database)
 
-	t.counter, _ = otel.Meter("").Int64Counter("mongodb." + t.Name + ".count")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("mongodb." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("mongodb." + t.name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("mongodb." + t.name + ".time")
 
 	return t.client.Ping(context.TODO(), nil)
 }
@@ -82,7 +88,7 @@ func (t *MongoDB) Stop() error {
 }
 
 func (t *MongoDB) String() string {
-	return t.Name
+	return t.name
 }
 
 func (t *MongoDB) Exists(ctx context.Context, collection string, query interface{}) bool {
@@ -119,7 +125,7 @@ func (t *MongoDB) Count(ctx context.Context, collection string, query interface{
 	return find
 }
 
-func (t *MongoDB) FindOne(ctx context.Context, collection string, query interface{}, opt *options.FindOneOptions) (interfaces.NoSQLRow, error) {
+func (t *MongoDB) FindOne(ctx context.Context, collection string, query interface{}, opt *options.FindOneOptions) (NoSQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -134,7 +140,7 @@ func (t *MongoDB) FindOne(ctx context.Context, collection string, query interfac
 	return &MongoRow{find}, nil
 }
 
-func (t *MongoDB) FindOneAndUpdate(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.FindOneAndUpdateOptions) (interfaces.NoSQLRow, error) {
+func (t *MongoDB) FindOneAndUpdate(ctx context.Context, collection string, query interface{}, update interface{}, opt *options.FindOneAndUpdateOptions) (NoSQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -149,7 +155,7 @@ func (t *MongoDB) FindOneAndUpdate(ctx context.Context, collection string, query
 	return &MongoRow{find}, nil
 }
 
-func (t *MongoDB) Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (interfaces.NoSQLRows, error) {
+func (t *MongoDB) Find(ctx context.Context, collection string, query interface{}, opt *options.FindOptions) (NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -164,7 +170,7 @@ func (t *MongoDB) Find(ctx context.Context, collection string, query interface{}
 	return &MongoRows{find}, nil
 }
 
-func (t *MongoDB) Exec(ctx context.Context, collection string, query interface{}, opt *options.AggregateOptions) (interfaces.NoSQLRows, error) {
+func (t *MongoDB) Exec(ctx context.Context, collection string, query interface{}, opt *options.AggregateOptions) (NoSQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
