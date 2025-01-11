@@ -1,22 +1,28 @@
-package postgres
+package mysql
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/database"
 	"os"
 	"reflect"
 	"testing"
 	"time"
 )
 
-func TestPostgres_Exec(t1 *testing.T) {
+type testSQLItem struct {
+	Id        int64
+	Name      *string
+	Balance   float64
+	CreatedAt time.Time
+}
+
+func TestMySQL_Exec(t1 *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
 		t1.Skip()
 		return
 	}
 
-	db := initPostgresTest("test_exec")
-	defer closePostgresTest(db)
+	db := initMySQLTest("test_exec")
+	defer closeMySQLTest(db)
 
 	type args struct {
 		ctx   context.Context
@@ -34,7 +40,7 @@ func TestPostgres_Exec(t1 *testing.T) {
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "insert into test_exec values ($1, $2, $3, now());",
+				query: "insert into test_exec values (?, ?, ?, now());",
 				check: "select exists(select id from test_exec where id = 10);",
 				args: []interface{}{
 					10,
@@ -72,14 +78,14 @@ func TestPostgres_Exec(t1 *testing.T) {
 	}
 }
 
-func TestPostgres_Query(t1 *testing.T) {
+func TestMySQL_Query(t1 *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
 		t1.Skip()
 		return
 	}
 
-	db := initPostgresTest("test_rows")
-	defer closePostgresTest(db)
+	db := initMySQLTest("test_rows")
+	defer closeMySQLTest(db)
 
 	name1 := "test"
 	name2 := "test2"
@@ -92,19 +98,19 @@ func TestPostgres_Query(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []database.testSQLiteItem
+		want    []testSQLItem
 		wantErr bool
 	}{
 		{
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "select * from test_rows where id <= $1;",
+				query: "select * from test_rows where id <= ?;",
 				args: []interface{}{
 					2,
 				},
 			},
-			want: []database.testSQLiteItem{
+			want: []testSQLItem{
 				{
 					1,
 					&name1,
@@ -131,10 +137,10 @@ func TestPostgres_Query(t1 *testing.T) {
 				return
 			}
 
-			items := make([]database.testSQLiteItem, 0, 5)
+			items := make([]testSQLItem, 0, 5)
 
 			for got.Next() {
-				var item database.testSQLiteItem
+				var item testSQLItem
 
 				err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 				if err != nil {
@@ -153,14 +159,14 @@ func TestPostgres_Query(t1 *testing.T) {
 	}
 }
 
-func TestPostgres_QueryRow(t1 *testing.T) {
+func TestMySQL_QueryRow(t1 *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
 		t1.Skip()
 		return
 	}
 
-	db := initPostgresTest("test_row")
-	defer closePostgresTest(db)
+	db := initMySQLTest("test_row")
+	defer closeMySQLTest(db)
 
 	name1 := "test"
 
@@ -172,7 +178,7 @@ func TestPostgres_QueryRow(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    database.testSQLiteItem
+		want    testSQLItem
 		wantErr bool
 	}{
 		{
@@ -182,7 +188,7 @@ func TestPostgres_QueryRow(t1 *testing.T) {
 				query: "select * from test_row where id = 1;",
 				args:  []interface{}{},
 			},
-			want: database.testSQLiteItem{
+			want: testSQLItem{
 				1,
 				&name1,
 				1,
@@ -201,7 +207,7 @@ func TestPostgres_QueryRow(t1 *testing.T) {
 				return
 			}
 
-			var item database.testSQLiteItem
+			var item testSQLItem
 
 			err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 			if err != nil {
@@ -218,7 +224,7 @@ func TestPostgres_QueryRow(t1 *testing.T) {
 	}
 }
 
-func TestPostgres_String(t1 *testing.T) {
+func TestMySQL_String(t1 *testing.T) {
 	type fields struct {
 		Name string
 	}
@@ -237,7 +243,7 @@ func TestPostgres_String(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &Postgres{
+			t := &MySQL{
 				Name: tt.fields.Name,
 			}
 			if got := t.String(); got != tt.want {
@@ -247,38 +253,38 @@ func TestPostgres_String(t1 *testing.T) {
 	}
 }
 
-func initPostgresTest(name string) *Postgres {
+func initMySQLTest(name string) *MySQL {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := NewPostgres(name, PostgresConfig{
-		URI: "postgres://test:test@" + host + ":5432/test",
+	db := NewMySQL(name)
+
+	err := db.Init(map[string]interface{}{
+		"uri": "test:test@(" + host + ":3306)/test?parseTime=true",
 	})
 
-	err := db.Init(nil)
-
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = db.client.Exec(context.Background(), "create table if not exists "+name+" (id integer primary key, name varchar(255), balance float not null, created_at timestamp)")
+	_, err = db.client.Exec("create table if not exists " + name + " (id integer primary key, name varchar(255), balance float not null, created_at datetime)")
 
 	if err != nil {
-		closePostgresTest(db)
+		closeMySQLTest(db)
 		panic(err)
 	}
 
-	_, err = db.client.Exec(context.Background(), `insert into `+name+` (id, name, balance, created_at) values 
+	_, err = db.client.Exec(`insert into ` + name + ` (id, name, balance, created_at) values 
 						 (1, 'test', 1.0, now()), (2, 'test2', 0.0, now()), (3, null, 50.0, now());`)
 
 	if err != nil {
-		closePostgresTest(db)
+		closeMySQLTest(db)
 		panic(err)
 	}
 
 	return db
 }
 
-func closePostgresTest(db *Postgres) {
+func closeMySQLTest(db *MySQL) {
 	db.Exec(context.Background(), "drop table if exists "+db.Name+";")
 	db.Stop()
 }

@@ -1,22 +1,28 @@
-package clickhouse
+package postgres
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/database"
 	"os"
 	"reflect"
 	"testing"
 	"time"
 )
 
-func TestClickhouse_Exec(t1 *testing.T) {
+type testSQLItem struct {
+	Id        int64
+	Name      *string
+	Balance   float64
+	CreatedAt time.Time
+}
+
+func TestPostgres_Exec(t1 *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
 		t1.Skip()
 		return
 	}
 
-	db := initClickhouseTest("test_exec")
-	defer closeClickhouseTest(db)
+	db := initPostgresTest("test_exec")
+	defer closePostgresTest(db)
 
 	type args struct {
 		ctx   context.Context
@@ -34,8 +40,8 @@ func TestClickhouse_Exec(t1 *testing.T) {
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "insert into test.test_exec values (?, ?, ?, now());",
-				check: "select id from test.test_exec where id = 10;",
+				query: "insert into test_exec values ($1, $2, $3, now());",
+				check: "select exists(select id from test_exec where id = 10);",
 				args: []interface{}{
 					10,
 					"test",
@@ -55,12 +61,9 @@ func TestClickhouse_Exec(t1 *testing.T) {
 				return
 			}
 
-			var exist *int64
+			var exist bool
 
 			got, err := db.QueryRow(context.Background(), tt.args.check)
-			if (err != nil) != tt.wantErr {
-				t1.Errorf("QueryRow() error = %v, wantErr %v", err, tt.wantErr)
-			}
 
 			err = got.Scan(&exist)
 			if err != nil {
@@ -68,21 +71,21 @@ func TestClickhouse_Exec(t1 *testing.T) {
 				return
 			}
 
-			if tt.want != (exist != nil) {
+			if tt.want != exist {
 				t1.Errorf("QueryRow() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestClickhouse_Query(t1 *testing.T) {
+func TestPostgres_Query(t1 *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
 		t1.Skip()
 		return
 	}
 
-	db := initClickhouseTest("test_rows")
-	defer closeClickhouseTest(db)
+	db := initPostgresTest("test_rows")
+	defer closePostgresTest(db)
 
 	name1 := "test"
 	name2 := "test2"
@@ -95,19 +98,19 @@ func TestClickhouse_Query(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []database.testSQLiteItem
+		want    []testSQLItem
 		wantErr bool
 	}{
 		{
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "select * from test.test_rows where id <= ?;",
+				query: "select * from test_rows where id <= $1;",
 				args: []interface{}{
 					2,
 				},
 			},
-			want: []database.testSQLiteItem{
+			want: []testSQLItem{
 				{
 					1,
 					&name1,
@@ -134,10 +137,10 @@ func TestClickhouse_Query(t1 *testing.T) {
 				return
 			}
 
-			items := make([]database.testSQLiteItem, 0, 5)
+			items := make([]testSQLItem, 0, 5)
 
 			for got.Next() {
-				var item database.testSQLiteItem
+				var item testSQLItem
 
 				err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 				if err != nil {
@@ -156,14 +159,14 @@ func TestClickhouse_Query(t1 *testing.T) {
 	}
 }
 
-func TestClickhouse_QueryRow(t1 *testing.T) {
+func TestPostgres_QueryRow(t1 *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
 		t1.Skip()
 		return
 	}
 
-	db := initClickhouseTest("test_row")
-	defer closeClickhouseTest(db)
+	db := initPostgresTest("test_row")
+	defer closePostgresTest(db)
 
 	name1 := "test"
 
@@ -175,17 +178,17 @@ func TestClickhouse_QueryRow(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    database.testSQLiteItem
+		want    testSQLItem
 		wantErr bool
 	}{
 		{
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "select * from test.test_row where id = 1;",
+				query: "select * from test_row where id = 1;",
 				args:  []interface{}{},
 			},
-			want: database.testSQLiteItem{
+			want: testSQLItem{
 				1,
 				&name1,
 				1,
@@ -204,7 +207,7 @@ func TestClickhouse_QueryRow(t1 *testing.T) {
 				return
 			}
 
-			var item database.testSQLiteItem
+			var item testSQLItem
 
 			err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 			if err != nil {
@@ -221,7 +224,7 @@ func TestClickhouse_QueryRow(t1 *testing.T) {
 	}
 }
 
-func TestClickhouse_String(t1 *testing.T) {
+func TestPostgres_String(t1 *testing.T) {
 	type fields struct {
 		Name string
 	}
@@ -240,7 +243,7 @@ func TestClickhouse_String(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &ClickHouse{
+			t := &Postgres{
 				Name: tt.fields.Name,
 			}
 			if got := t.String(); got != tt.want {
@@ -250,47 +253,38 @@ func TestClickhouse_String(t1 *testing.T) {
 	}
 }
 
-func initClickhouseTest(name string) *ClickHouse {
+func initPostgresTest(name string) *Postgres {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := NewClickHouse(name, ClickHouseConfig{
-		Database: "test",
-		Username: "test",
-		Password: "test",
-		Hosts:    host + ":8124",
+	db := NewPostgres(name)
+
+	err := db.Init(map[string]interface{}{
+		"uri": "postgres://test:test@" + host + ":5432/test",
 	})
 
-	err := db.Init(nil)
-
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.client.Exec(context.Background(), `create table test.`+name+`
-(
-    id         Int64,
-    name       Nullable(varchar(255)),
-    balance    Nullable(Float64),
-    created_at timestamp
-)
-    engine = Memory;`)
+	_, err = db.client.Exec(context.Background(), "create table if not exists "+name+" (id integer primary key, name varchar(255), balance float not null, created_at timestamp)")
 
 	if err != nil {
+		closePostgresTest(db)
 		panic(err)
 	}
 
-	err = db.client.Exec(context.Background(), `insert into test.`+name+` (id, name, balance, created_at) values 
+	_, err = db.client.Exec(context.Background(), `insert into `+name+` (id, name, balance, created_at) values 
 						 (1, 'test', 1.0, now()), (2, 'test2', 0.0, now()), (3, null, 50.0, now());`)
 
 	if err != nil {
-		closeClickhouseTest(db)
+		closePostgresTest(db)
 		panic(err)
 	}
 
 	return db
 }
 
-func closeClickhouseTest(db *ClickHouse) {
-	db.Exec(context.Background(), "drop table if exists test."+db.Name+";")
+func closePostgresTest(db *Postgres) {
+	db.Exec(context.Background(), "drop table if exists "+db.Name+";")
 	db.Stop()
 }

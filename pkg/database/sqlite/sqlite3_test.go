@@ -1,22 +1,16 @@
-package mysql
+package sqlite
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/database"
 	"os"
 	"reflect"
 	"testing"
 	"time"
 )
 
-func TestMySQL_Exec(t1 *testing.T) {
-	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
-		t1.Skip()
-		return
-	}
-
-	db := initMySQLTest("test_exec")
-	defer closeMySQLTest(db)
+func TestSqlite3_Exec(t1 *testing.T) {
+	db := initSQLite3Test("test_exec")
+	defer closeSQLite3Test(db)
 
 	type args struct {
 		ctx   context.Context
@@ -34,8 +28,8 @@ func TestMySQL_Exec(t1 *testing.T) {
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "insert into test_exec values (?, ?, ?, now());",
-				check: "select exists(select id from test_exec where id = 10);",
+				query: "insert into test values (?, ?, ?, datetime());",
+				check: "select exists(select id from test where id = 10);",
 				args: []interface{}{
 					10,
 					"test",
@@ -72,14 +66,9 @@ func TestMySQL_Exec(t1 *testing.T) {
 	}
 }
 
-func TestMySQL_Query(t1 *testing.T) {
-	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
-		t1.Skip()
-		return
-	}
-
-	db := initMySQLTest("test_rows")
-	defer closeMySQLTest(db)
+func TestSqlite3_Query(t1 *testing.T) {
+	db := initSQLite3Test("test_rows")
+	defer closeSQLite3Test(db)
 
 	name1 := "test"
 	name2 := "test2"
@@ -92,19 +81,19 @@ func TestMySQL_Query(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []database.testSQLiteItem
+		want    []testSQLiteItem
 		wantErr bool
 	}{
 		{
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "select * from test_rows where id <= ?;",
+				query: "select * from test where id <= ?;",
 				args: []interface{}{
 					2,
 				},
 			},
-			want: []database.testSQLiteItem{
+			want: []testSQLiteItem{
 				{
 					1,
 					&name1,
@@ -131,10 +120,10 @@ func TestMySQL_Query(t1 *testing.T) {
 				return
 			}
 
-			items := make([]database.testSQLiteItem, 0, 5)
+			items := make([]testSQLiteItem, 0, 5)
 
 			for got.Next() {
-				var item database.testSQLiteItem
+				var item testSQLiteItem
 
 				err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 				if err != nil {
@@ -153,14 +142,9 @@ func TestMySQL_Query(t1 *testing.T) {
 	}
 }
 
-func TestMySQL_QueryRow(t1 *testing.T) {
-	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
-		t1.Skip()
-		return
-	}
-
-	db := initMySQLTest("test_row")
-	defer closeMySQLTest(db)
+func TestSqlite3_QueryRow(t1 *testing.T) {
+	db := initSQLite3Test("test_row")
+	defer closeSQLite3Test(db)
 
 	name1 := "test"
 
@@ -172,17 +156,17 @@ func TestMySQL_QueryRow(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    database.testSQLiteItem
+		want    testSQLiteItem
 		wantErr bool
 	}{
 		{
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "select * from test_row where id = 1;",
+				query: "select * from test where id = 1;",
 				args:  []interface{}{},
 			},
-			want: database.testSQLiteItem{
+			want: testSQLiteItem{
 				1,
 				&name1,
 				1,
@@ -201,7 +185,7 @@ func TestMySQL_QueryRow(t1 *testing.T) {
 				return
 			}
 
-			var item database.testSQLiteItem
+			var item testSQLiteItem
 
 			err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 			if err != nil {
@@ -218,7 +202,7 @@ func TestMySQL_QueryRow(t1 *testing.T) {
 	}
 }
 
-func TestMySQL_String(t1 *testing.T) {
+func TestSqlite3_String(t1 *testing.T) {
 	type fields struct {
 		Name string
 	}
@@ -237,7 +221,7 @@ func TestMySQL_String(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &MySQL{
+			t := &Sqlite3{
 				Name: tt.fields.Name,
 			}
 			if got := t.String(); got != tt.want {
@@ -247,38 +231,44 @@ func TestMySQL_String(t1 *testing.T) {
 	}
 }
 
-func initMySQLTest(name string) *MySQL {
-	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
+type testSQLiteItem struct {
+	Id        int64
+	Name      *string
+	Balance   float64
+	CreatedAt time.Time
+}
 
-	db := NewMySQL(name, MySQLConfig{
-		URI: "test:test@(" + host + ":3306)/test?parseTime=true",
+func initSQLite3Test(name string) *Sqlite3 {
+	db := NewSqlite3(name)
+
+	err := db.Init(map[string]interface{}{
+		"database": name + ".db",
 	})
 
-	err := db.Init(nil)
-
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = db.client.Exec("create table if not exists " + name + " (id integer primary key, name varchar(255), balance float not null, created_at datetime)")
+	_, err = db.client.Exec("create table test (id integer primary key, name varchar(255), balance float not null, created_at datetime)")
 
 	if err != nil {
-		closeMySQLTest(db)
+		os.Remove(db.Name + ".db")
 		panic(err)
 	}
 
-	_, err = db.client.Exec(`insert into ` + name + ` (id, name, balance, created_at) values 
-						 (1, 'test', 1.0, now()), (2, 'test2', 0.0, now()), (3, null, 50.0, now());`)
+	_, err = db.client.Exec(`insert into test (id, name, balance, created_at) values 
+						 (1, 'test', 1.0, datetime()), (2, 'test2', 0.0, datetime()), (3, null, 50.0, datetime());`)
 
 	if err != nil {
-		closeMySQLTest(db)
+		os.Remove(db.Name + ".db")
 		panic(err)
 	}
 
 	return db
 }
 
-func closeMySQLTest(db *MySQL) {
-	db.Exec(context.Background(), "drop table if exists "+db.Name+";")
+func closeSQLite3Test(db *Sqlite3) {
 	db.Stop()
+
+	os.Remove(db.Name + ".db")
 }

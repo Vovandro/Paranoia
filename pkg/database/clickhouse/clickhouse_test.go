@@ -1,4 +1,4 @@
-package sqlite
+package clickhouse
 
 import (
 	"context"
@@ -8,9 +8,21 @@ import (
 	"time"
 )
 
-func TestSqlite3_Exec(t1 *testing.T) {
-	db := initSQLite3Test("test_exec")
-	defer closeSQLite3Test(db)
+type testSQLItem struct {
+	Id        int64
+	Name      *string
+	Balance   float64
+	CreatedAt time.Time
+}
+
+func TestClickhouse_Exec(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	db := initClickhouseTest("test_exec")
+	defer closeClickhouseTest(db)
 
 	type args struct {
 		ctx   context.Context
@@ -28,8 +40,8 @@ func TestSqlite3_Exec(t1 *testing.T) {
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "insert into test values (?, ?, ?, datetime());",
-				check: "select exists(select id from test where id = 10);",
+				query: "insert into test.test_exec values (?, ?, ?, now());",
+				check: "select id from test.test_exec where id = 10;",
 				args: []interface{}{
 					10,
 					"test",
@@ -49,9 +61,12 @@ func TestSqlite3_Exec(t1 *testing.T) {
 				return
 			}
 
-			var exist bool
+			var exist *int64
 
 			got, err := db.QueryRow(context.Background(), tt.args.check)
+			if (err != nil) != tt.wantErr {
+				t1.Errorf("QueryRow() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
 			err = got.Scan(&exist)
 			if err != nil {
@@ -59,16 +74,21 @@ func TestSqlite3_Exec(t1 *testing.T) {
 				return
 			}
 
-			if tt.want != exist {
+			if tt.want != (exist != nil) {
 				t1.Errorf("QueryRow() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestSqlite3_Query(t1 *testing.T) {
-	db := initSQLite3Test("test_rows")
-	defer closeSQLite3Test(db)
+func TestClickhouse_Query(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	db := initClickhouseTest("test_rows")
+	defer closeClickhouseTest(db)
 
 	name1 := "test"
 	name2 := "test2"
@@ -81,19 +101,19 @@ func TestSqlite3_Query(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []testSQLiteItem
+		want    []testSQLItem
 		wantErr bool
 	}{
 		{
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "select * from test where id <= ?;",
+				query: "select * from test.test_rows where id <= ?;",
 				args: []interface{}{
 					2,
 				},
 			},
-			want: []testSQLiteItem{
+			want: []testSQLItem{
 				{
 					1,
 					&name1,
@@ -120,10 +140,10 @@ func TestSqlite3_Query(t1 *testing.T) {
 				return
 			}
 
-			items := make([]testSQLiteItem, 0, 5)
+			items := make([]testSQLItem, 0, 5)
 
 			for got.Next() {
-				var item testSQLiteItem
+				var item testSQLItem
 
 				err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 				if err != nil {
@@ -142,9 +162,14 @@ func TestSqlite3_Query(t1 *testing.T) {
 	}
 }
 
-func TestSqlite3_QueryRow(t1 *testing.T) {
-	db := initSQLite3Test("test_row")
-	defer closeSQLite3Test(db)
+func TestClickhouse_QueryRow(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	db := initClickhouseTest("test_row")
+	defer closeClickhouseTest(db)
 
 	name1 := "test"
 
@@ -156,17 +181,17 @@ func TestSqlite3_QueryRow(t1 *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    testSQLiteItem
+		want    testSQLItem
 		wantErr bool
 	}{
 		{
 			name: "base test query",
 			args: args{
 				ctx:   context.Background(),
-				query: "select * from test where id = 1;",
+				query: "select * from test.test_row where id = 1;",
 				args:  []interface{}{},
 			},
-			want: testSQLiteItem{
+			want: testSQLItem{
 				1,
 				&name1,
 				1,
@@ -185,7 +210,7 @@ func TestSqlite3_QueryRow(t1 *testing.T) {
 				return
 			}
 
-			var item testSQLiteItem
+			var item testSQLItem
 
 			err = got.Scan(&item.Id, &item.Name, &item.Balance, &item.CreatedAt)
 			if err != nil {
@@ -202,7 +227,7 @@ func TestSqlite3_QueryRow(t1 *testing.T) {
 	}
 }
 
-func TestSqlite3_String(t1 *testing.T) {
+func TestClickhouse_String(t1 *testing.T) {
 	type fields struct {
 		Name string
 	}
@@ -221,7 +246,7 @@ func TestSqlite3_String(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &Sqlite3{
+			t := &ClickHouse{
 				Name: tt.fields.Name,
 			}
 			if got := t.String(); got != tt.want {
@@ -231,44 +256,47 @@ func TestSqlite3_String(t1 *testing.T) {
 	}
 }
 
-type testSQLiteItem struct {
-	Id        int64
-	Name      *string
-	Balance   float64
-	CreatedAt time.Time
-}
+func initClickhouseTest(name string) *ClickHouse {
+	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-func initSQLite3Test(name string) *Sqlite3 {
-	db := NewSqlite3(name, Sqlite3Config{
-		Database: name + ".db",
+	db := NewClickHouse(name)
+
+	err := db.Init(map[string]interface{}{
+		"database": "test",
+		"username": "test",
+		"password": "test",
+		"hosts":    host + ":8124",
 	})
 
-	err := db.Init(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.client.Exec(context.Background(), `create table test.`+name+`
+(
+    id         Int64,
+    name       Nullable(varchar(255)),
+    balance    Nullable(Float64),
+    created_at timestamp
+)
+    engine = Memory;`)
 
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = db.client.Exec("create table test (id integer primary key, name varchar(255), balance float not null, created_at datetime)")
+	err = db.client.Exec(context.Background(), `insert into test.`+name+` (id, name, balance, created_at) values 
+						 (1, 'test', 1.0, now()), (2, 'test2', 0.0, now()), (3, null, 50.0, now());`)
 
 	if err != nil {
-		os.Remove(db.Name + ".db")
-		panic(err)
-	}
-
-	_, err = db.client.Exec(`insert into test (id, name, balance, created_at) values 
-						 (1, 'test', 1.0, datetime()), (2, 'test2', 0.0, datetime()), (3, null, 50.0, datetime());`)
-
-	if err != nil {
-		os.Remove(db.Name + ".db")
+		closeClickhouseTest(db)
 		panic(err)
 	}
 
 	return db
 }
 
-func closeSQLite3Test(db *Sqlite3) {
+func closeClickhouseTest(db *ClickHouse) {
+	db.Exec(context.Background(), "drop table if exists test."+db.Name+";")
 	db.Stop()
-
-	os.Remove(db.Name + ".db")
 }

@@ -2,14 +2,13 @@ package database
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type Mock struct {
 	Name string
 }
 
-func (t *Mock) Init(_ interfaces.IEngine) error {
+func (t *Mock) Init(_ map[string]interface{}) error {
 	return nil
 }
 
@@ -21,11 +20,11 @@ func (t *Mock) String() string {
 	return t.Name
 }
 
-func (t *Mock) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+func (t *Mock) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
 	return nil, nil
 }
 
-func (t *Mock) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+func (t *Mock) QueryRow(ctx context.Context, query string, args ...interface{}) (SQLRow, error) {
 	return nil, nil
 }
 

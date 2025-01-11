@@ -2,9 +2,10 @@ package clickhouse
 
 import (
 	"context"
+	"errors"
 	click "github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"strings"
@@ -13,31 +14,39 @@ import (
 
 type ClickHouse struct {
 	Name   string
-	Config ClickHouseConfig
-	app    interfaces.IEngine
+	Config Config
 	client driver.Conn
 
 	counter     metric.Int64Counter
 	timeCounter metric.Int64Histogram
 }
 
-type ClickHouseConfig struct {
+type Config struct {
 	Database string `yaml:"database"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	Hosts    string `yaml:"hosts"`
 }
 
-func NewClickHouse(name string, cfg ClickHouseConfig) *ClickHouse {
+func NewClickHouse(name string) *ClickHouse {
 	return &ClickHouse{
-		Name:   name,
-		Config: cfg,
+		Name: name,
 	}
 }
 
-func (t *ClickHouse) Init(app interfaces.IEngine) error {
-	t.app = app
-	var err error
+func (t *ClickHouse) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.Config.Hosts == "" {
+		return errors.New("hosts is required")
+	}
+
+	if t.Config.Database == "" {
+		return errors.New("database is required")
+	}
 
 	t.client, err = click.Open(&click.Options{
 		Addr: strings.Split(t.Config.Hosts, ","),
@@ -66,7 +75,7 @@ func (t *ClickHouse) String() string {
 	return t.Name
 }
 
-func (t *ClickHouse) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+func (t *ClickHouse) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -81,7 +90,7 @@ func (t *ClickHouse) Query(ctx context.Context, query string, args ...interface{
 	return find, nil
 }
 
-func (t *ClickHouse) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+func (t *ClickHouse) QueryRow(ctx context.Context, query string, args ...interface{}) (SQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())

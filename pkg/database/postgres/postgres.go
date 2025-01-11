@@ -2,9 +2,10 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"time"
@@ -12,28 +13,32 @@ import (
 
 type Postgres struct {
 	Name   string
-	Config PostgresConfig
-	app    interfaces.IEngine
+	Config Config
 	client *pgx.Conn
 
 	counter     metric.Int64Counter
 	timeCounter metric.Int64Histogram
 }
 
-type PostgresConfig struct {
+type Config struct {
 	URI string `yaml:"uri"`
 }
 
-func NewPostgres(name string, cfg PostgresConfig) *Postgres {
+func NewPostgres(name string) *Postgres {
 	return &Postgres{
-		Name:   name,
-		Config: cfg,
+		Name: name,
 	}
 }
 
-func (t *Postgres) Init(app interfaces.IEngine) error {
-	t.app = app
-	var err error
+func (t *Postgres) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.Config.URI == "" {
+		return errors.New("URI is required")
+	}
 
 	t.client, err = pgx.Connect(context.TODO(), t.Config.URI)
 
@@ -55,7 +60,7 @@ func (t *Postgres) String() string {
 	return t.Name
 }
 
-func (t *Postgres) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+func (t *Postgres) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -70,7 +75,7 @@ func (t *Postgres) Query(ctx context.Context, query string, args ...interface{})
 	return &PGSQLRows{find}, err
 }
 
-func (t *Postgres) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+func (t *Postgres) QueryRow(ctx context.Context, query string, args ...interface{}) (SQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())

@@ -3,9 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"time"
@@ -13,31 +13,31 @@ import (
 
 type Sqlite3 struct {
 	Name   string
-	Config Sqlite3Config
-	app    interfaces.IEngine
+	Config Config
 	client *sql.DB
 
 	counter     metric.Int64Counter
 	timeCounter metric.Int64Histogram
 }
 
-type Sqlite3Config struct {
+type Config struct {
 	Database string `yaml:"database"`
 }
 
-func NewSqlite3(name string, cfg Sqlite3Config) *Sqlite3 {
+func NewSqlite3(name string) *Sqlite3 {
 	return &Sqlite3{
-		Name:   name,
-		Config: cfg,
+		Name: name,
 	}
 }
 
-func (t *Sqlite3) Init(app interfaces.IEngine) error {
-	t.app = app
-	var err error
+func (t *Sqlite3) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
 
 	if t.Config.Database == "" {
-		return fmt.Errorf("database file name is required")
+		return errors.New("database file name is required")
 	}
 
 	t.client, err = sql.Open("sqlite3", t.Config.Database)
@@ -60,7 +60,7 @@ func (t *Sqlite3) String() string {
 	return t.Name
 }
 
-func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -75,7 +75,7 @@ func (t *Sqlite3) Query(ctx context.Context, query string, args ...interface{}) 
 	return find, nil
 }
 
-func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+func (t *Sqlite3) QueryRow(ctx context.Context, query string, args ...interface{}) (SQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())

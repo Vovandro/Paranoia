@@ -3,9 +3,9 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	_ "github.com/go-sql-driver/mysql"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"time"
@@ -13,31 +13,31 @@ import (
 
 type MySQL struct {
 	Name   string
-	Config MySQLConfig
-	app    interfaces.IEngine
+	Config Config
 	client *sql.DB
 
 	counter     metric.Int64Counter
 	timeCounter metric.Int64Histogram
 }
 
-type MySQLConfig struct {
+type Config struct {
 	URI string `yaml:"uri"`
 }
 
-func NewMySQL(name string, cfg MySQLConfig) *MySQL {
+func NewMySQL(name string) *MySQL {
 	return &MySQL{
-		Name:   name,
-		Config: cfg,
+		Name: name,
 	}
 }
 
-func (t *MySQL) Init(app interfaces.IEngine) error {
-	t.app = app
-	var err error
+func (t *MySQL) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.Config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
 
 	if t.Config.URI == "" {
-		return fmt.Errorf("URI is required")
+		return errors.New("URI is required")
 	}
 
 	t.client, err = sql.Open("mysql", t.Config.URI)
@@ -60,7 +60,7 @@ func (t *MySQL) String() string {
 	return t.Name
 }
 
-func (t *MySQL) Query(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRows, error) {
+func (t *MySQL) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
@@ -75,7 +75,7 @@ func (t *MySQL) Query(ctx context.Context, query string, args ...interface{}) (i
 	return find, nil
 }
 
-func (t *MySQL) QueryRow(ctx context.Context, query string, args ...interface{}) (interfaces.SQLRow, error) {
+func (t *MySQL) QueryRow(ctx context.Context, query string, args ...interface{}) (SQLRow, error) {
 	defer func(s time.Time) {
 		t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 	}(time.Now())
