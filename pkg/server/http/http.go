@@ -1,10 +1,8 @@
-package server
+package http
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
-	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
@@ -13,20 +11,19 @@ import (
 )
 
 type Http struct {
-	Name   string
-	Config HttpConfig
+	name   string
+	config Config
 
-	app    interfaces.IEngine
 	router *Router
 	server *http.Server
-	md     func(interfaces.RouteFunc) interfaces.RouteFunc
+	md     func(RouteFunc) RouteFunc
 
 	counter      metric.Int64Counter
 	counterError metric.Int64Counter
 	timeCounter  metric.Int64Histogram
 }
 
-type HttpConfig struct {
+type Config struct {
 	Port string `yaml:"port"`
 
 	CookieDomain   string `yaml:"cookie_domain"`
@@ -37,44 +34,60 @@ type HttpConfig struct {
 	BaseMiddleware []string `yaml:"base_middleware"`
 }
 
-func NewHttp(name string, cfg HttpConfig) *Http {
+func NewHttp(name string) *Http {
 	return &Http{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *Http) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *Http) Init(cfg map[string]interface{}) error {
+	middlewares := make(map[string]IMiddleware)
 
-	t.router = NewRouter(app)
-
-	if t.Config.BaseMiddleware == nil {
-		t.Config.BaseMiddleware = []string{"timing"}
+	if m, ok := cfg["middlewares"]; ok {
+		middlewares = m.(map[string]IMiddleware)
+		delete(cfg, "middlewares")
 	}
 
-	if len(t.Config.BaseMiddleware) > 0 {
-		t.md = middleware.HandlerFromStrings(app, t.Config.BaseMiddleware)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.Port == "" {
+		t.config.Port = "80"
+	}
+
+	t.router = NewRouter(middlewares)
+
+	if t.config.BaseMiddleware == nil {
+		t.config.BaseMiddleware = []string{}
+	}
+
+	if len(t.config.BaseMiddleware) > 0 {
+		t.md, err = t.router.HandlerMiddleware(t.config.BaseMiddleware)
+		if err != nil {
+			return err
+		}
 	}
 
 	if t.md == nil {
-		t.md = func(routeFunc interfaces.RouteFunc) interfaces.RouteFunc {
+		t.md = func(routeFunc RouteFunc) RouteFunc {
 			return routeFunc
 		}
 	}
 
 	t.server = &http.Server{
-		Addr:                         ":" + t.Config.Port,
-		Handler:                      otelhttp.NewHandler(t, t.Name),
+		Addr:                         ":" + t.config.Port,
+		Handler:                      otelhttp.NewHandler(t, t.name),
 		DisableGeneralOptionsHandler: false,
 		ReadTimeout:                  5 * time.Second,
 		WriteTimeout:                 10 * time.Second,
 		IdleTimeout:                  5 * time.Second,
 	}
 
-	t.counter, _ = otel.Meter("").Int64Counter("server_http." + t.Name + ".count")
-	t.counterError, _ = otel.Meter("").Int64Counter("server_http." + t.Name + ".count_error")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("server_http." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("server_http." + t.name + ".count")
+	t.counterError, _ = otel.Meter("").Int64Counter("server_http." + t.name + ".count_error")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("server_http." + t.name + ".time")
 
 	return nil
 
@@ -89,10 +102,9 @@ func (t *Http) Start() error {
 
 	select {
 	case err := <-listenErr:
-		t.app.GetLogger().Error(context.Background(), err)
 		return err
 
-	case <-time.After(time.Second):
+	case <-time.After(time.Second * 5):
 		// pass
 	}
 
@@ -102,18 +114,17 @@ func (t *Http) Start() error {
 func (t *Http) Stop() error {
 	err := t.server.Shutdown(context.TODO())
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	} else {
-		t.app.GetLogger().Info(context.Background(), "http server gracefully stopped.")
-		time.Sleep(time.Second)
-	}
+	time.Sleep(time.Second)
 
 	return err
 }
 
-func (t *Http) String() string {
-	return t.Name
+func (t *Http) Name() string {
+	return t.name
+}
+
+func (t *Http) Type() string {
+	return "server"
 }
 
 func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -122,8 +133,8 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	ctx := srvUtils.HttpCtxPool.Get().(*srvUtils.HttpCtx)
-	defer srvUtils.HttpCtxPool.Put(ctx)
+	ctx := HttpCtxPool.Get().(*HttpCtx)
+	defer HttpCtxPool.Put(ctx)
 	ctx.Fill(req)
 
 	route, props := t.router.Find(req.Method, req.URL.Path)
@@ -148,7 +159,7 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		cookie := ctx.GetResponse().Cookie().(*srvUtils.HttpCookie).ToHttp(t.Config.CookieDomain, t.Config.CookieSameSite, t.Config.CookieHttpOnly, t.Config.CookieSecure)
+		cookie := ctx.GetResponse().Cookie().(*HttpCookie).ToHttp(t.config.CookieDomain, t.config.CookieSameSite, t.config.CookieHttpOnly, t.config.CookieSecure)
 
 		for i := 0; i < len(cookie); i++ {
 			w.Header().Add("Set-Cookie", cookie[i])
@@ -173,6 +184,6 @@ func (t *Http) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (t *Http) PushRoute(method string, path string, handler interfaces.RouteFunc, middlewares []string) {
+func (t *Http) PushRoute(method string, path string, handler RouteFunc, middlewares []string) {
 	t.router.PushRoute(method, path, handler, middlewares)
 }

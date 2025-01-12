@@ -1,11 +1,10 @@
-package server
+package rabbitmq
 
 import (
 	"context"
+	"errors"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
-	"gitlab.com/devpro_studio/Paranoia/server/middleware"
-	"gitlab.com/devpro_studio/Paranoia/server/srvUtils"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
@@ -14,24 +13,23 @@ import (
 )
 
 type Rabbitmq struct {
-	Name string
+	name string
 
-	Config RabbitmqConfig
+	config Config
 
-	app    interfaces.IEngine
 	router *Router
 	conn   *amqp.Connection
 	ch     *amqp.Channel
 	done   chan interface{}
 	w      sync.WaitGroup
-	md     func(interfaces.RouteFunc) interfaces.RouteFunc
+	md     func(RouteFunc) RouteFunc
 
 	counter      metric.Int64Counter
 	counterError metric.Int64Counter
 	timeCounter  metric.Int64Histogram
 }
 
-type RabbitmqConfig struct {
+type Config struct {
 	URI               string   `yaml:"uri"`
 	Queue             string   `yaml:"queue"`
 	ConsumerName      string   `yaml:"consumer_name"`
@@ -39,35 +37,59 @@ type RabbitmqConfig struct {
 	BaseMiddleware    []string `yaml:"base_middleware"`
 }
 
-func NewRabbitmq(name string, cfg RabbitmqConfig) *Rabbitmq {
+func NewRabbitmq(name string) *Rabbitmq {
 	return &Rabbitmq{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *Rabbitmq) Init(app interfaces.IEngine) error {
-	var err error
-	t.app = app
-	t.done = make(chan interface{})
+func (t *Rabbitmq) Init(cfg map[string]interface{}) error {
+	middlewares := make(map[string]IMiddleware)
 
-	t.router = NewRouter(app)
-
-	if t.Config.BaseMiddleware == nil {
-		t.Config.BaseMiddleware = []string{"timing"}
+	if m, ok := cfg["middlewares"]; ok {
+		middlewares = m.(map[string]IMiddleware)
+		delete(cfg, "middlewares")
 	}
 
-	if len(t.Config.BaseMiddleware) > 0 {
-		t.md = middleware.HandlerFromStrings(app, t.Config.BaseMiddleware)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.URI == "" {
+		return errors.New("uri is required")
+	}
+
+	if t.config.ConsumerName == "" {
+		return errors.New("consumer_name is required")
+	}
+
+	if t.config.Queue == "" {
+		return errors.New("queue is required")
+	}
+
+	t.done = make(chan interface{})
+
+	t.router = NewRouter(middlewares)
+
+	if t.config.BaseMiddleware == nil {
+		t.config.BaseMiddleware = []string{"timing"}
+	}
+
+	if len(t.config.BaseMiddleware) > 0 {
+		t.md, err = t.router.HandlerMiddleware(t.config.BaseMiddleware)
+		if err != nil {
+			return err
+		}
 	}
 
 	if t.md == nil {
-		t.md = func(routeFunc interfaces.RouteFunc) interfaces.RouteFunc {
+		t.md = func(routeFunc RouteFunc) RouteFunc {
 			return routeFunc
 		}
 	}
 
-	t.conn, err = amqp.Dial(t.Config.URI)
+	t.conn, err = amqp.Dial(t.config.URI)
 
 	if err != nil {
 		return err
@@ -80,7 +102,7 @@ func (t *Rabbitmq) Init(app interfaces.IEngine) error {
 	}
 
 	_, err = t.ch.QueueDeclare(
-		t.Config.Queue, // name
+		t.config.Queue, // name
 		true,           // durable
 		false,          // delete when unused
 		false,          // exclusive
@@ -92,21 +114,21 @@ func (t *Rabbitmq) Init(app interfaces.IEngine) error {
 		return err
 	}
 
-	t.counter, _ = otel.Meter("").Int64Counter("server_kafka." + t.Name + ".count")
-	t.counterError, _ = otel.Meter("").Int64Counter("server_kafka." + t.Name + ".count_error")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("server_kafka." + t.Name + ".time")
+	t.counter, _ = otel.Meter("").Int64Counter("server_kafka." + t.name + ".count")
+	t.counterError, _ = otel.Meter("").Int64Counter("server_kafka." + t.name + ".count_error")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("server_kafka." + t.name + ".time")
 
 	return nil
 }
 
 func (t *Rabbitmq) Start() error {
 	go func() {
-		limited := make(chan interface{}, t.Config.LimitMessageCount)
+		limited := make(chan interface{}, t.config.LimitMessageCount)
 		defer close(limited)
 
 		msgs, err := t.ch.Consume(
-			t.Config.Queue,        // очередь
-			t.Config.ConsumerName, // consumer
+			t.config.Queue,        // очередь
+			t.config.ConsumerName, // consumer
 			false,                 // auto-ack
 			false,                 // exclusive
 			false,                 // no-local
@@ -115,7 +137,6 @@ func (t *Rabbitmq) Start() error {
 		)
 
 		if err != nil {
-			t.app.GetLogger().Error(context.Background(), err)
 			return
 		}
 
@@ -152,25 +173,26 @@ func (t *Rabbitmq) Stop() error {
 	t.w.Wait()
 
 	if err := t.ch.Close(); err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
+		return err
 	}
 
-	if err := t.conn.Close(); err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	} else {
-		t.app.GetLogger().Info(context.Background(), "RabbitMQ consumer gracefully stopped.")
-		time.Sleep(time.Second)
-	}
+	err := t.conn.Close()
+
+	time.Sleep(time.Second)
 
 	return nil
 }
 
-func (t *Rabbitmq) String() string {
-	return t.Name
+func (t *Rabbitmq) Name() string {
+	return t.name
 }
 
-func (t *Rabbitmq) PushRoute(method string, path string, handler interfaces.RouteFunc, middlewares []string) {
-	t.router.PushRoute(method, path, handler, middlewares)
+func (t *Rabbitmq) Type() string {
+	return "server"
+}
+
+func (t *Rabbitmq) PushRoute(path string, handler RouteFunc, middlewares []string) {
+	t.router.PushRoute(path, handler, middlewares)
 }
 
 func (t *Rabbitmq) Handle(msg amqp.Delivery) {
@@ -179,8 +201,8 @@ func (t *Rabbitmq) Handle(msg amqp.Delivery) {
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	ctx := srvUtils.RabbitmqCtxPool.Get().(*srvUtils.RabbitmqCtx)
-	defer srvUtils.RabbitmqCtxPool.Put(ctx)
+	ctx := RabbitmqCtxPool.Get().(*RabbitmqCtx)
+	defer RabbitmqCtxPool.Put(ctx)
 	ctx.Fill(&msg)
 
 	h := make(map[string]string, len(msg.Headers))
@@ -188,10 +210,10 @@ func (t *Rabbitmq) Handle(msg amqp.Delivery) {
 		h[k] = v.(string)
 	}
 	consumerCtx := otel.GetTextMapPropagator().Extract(context.Background(), propagation.MapCarrier(h))
-	consumerCtx, span := otel.Tracer("").Start(consumerCtx, t.Config.Queue)
+	consumerCtx, span := otel.Tracer("").Start(consumerCtx, t.config.Queue)
 	defer span.End()
 
-	route, _ := t.router.Find("RABBITMQ", t.Config.Queue)
+	route, _ := t.router.Find(t.config.Queue)
 
 	if route == nil {
 		ctx.GetResponse().SetStatus(404)

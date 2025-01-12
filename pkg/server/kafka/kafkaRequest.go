@@ -1,23 +1,22 @@
-package srvUtils
+package kafka
 
 import (
 	"bytes"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"io"
 )
 
 type kafkaRequest struct {
 	msg     *kafka.Message
-	cookies interfaces.ICookie
-	headers interfaces.IHeader
+	cookies ICookie
+	headers IHeader
 }
 
 func (t *kafkaRequest) Fill(msg *kafka.Message) {
 	t.msg = msg
 
 	if t.cookies == nil {
-		t.cookies = &HttpCookie{}
+		t.cookies = &KafkaCookie{}
 	}
 
 	if t.headers == nil {
@@ -35,11 +34,11 @@ func (t *kafkaRequest) GetBodySize() int64 {
 	return int64(len(t.msg.Value))
 }
 
-func (t *kafkaRequest) GetCookie() interfaces.ICookie {
+func (t *kafkaRequest) GetCookie() ICookie {
 	return t.cookies
 }
 
-func (t *kafkaRequest) GetHeader() interfaces.IHeader {
+func (t *kafkaRequest) GetHeader() IHeader {
 	return t.headers
 }
 
@@ -51,7 +50,7 @@ func (t *kafkaRequest) GetURI() string {
 	return *t.msg.TopicPartition.Topic
 }
 
-func (t *kafkaRequest) GetQuery() interfaces.IQuery {
+func (t *kafkaRequest) GetQuery() IQuery {
 	return nil
 }
 

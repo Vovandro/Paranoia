@@ -1,15 +1,14 @@
-package srvUtils
+package http
 
 import (
 	"fmt"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"net/http"
 	"sync"
 )
 
 type HttpCtx struct {
-	request      interfaces.IRequest
-	response     interfaces.IResponse
+	request      IRequest
+	response     IResponse
 	values       map[string]interface{}
 	done         chan struct{}
 	routerValues map[string]string
@@ -33,11 +32,11 @@ func (t *HttpCtx) Fill(request *http.Request) {
 	t.routerValues = nil
 }
 
-func (t *HttpCtx) GetRequest() interfaces.IRequest {
+func (t *HttpCtx) GetRequest() IRequest {
 	return t.request
 }
 
-func (t *HttpCtx) GetResponse() interfaces.IResponse {
+func (t *HttpCtx) GetResponse() IResponse {
 	return t.response
 }
 

@@ -1,15 +1,14 @@
-package srvUtils
+package rabbitmq
 
 import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"sync"
 )
 
 type RabbitmqCtx struct {
-	request  interfaces.IRequest
-	response interfaces.IResponse
+	request  IRequest
+	response IResponse
 	values   map[string]interface{}
 	done     chan struct{}
 }
@@ -18,7 +17,7 @@ var RabbitmqCtxPool = sync.Pool{
 	New: func() interface{} {
 		return &RabbitmqCtx{
 			request:  &rabbitmqRequest{},
-			response: &HttpResponse{},
+			response: &RabbitmqResponse{},
 			values:   make(map[string]interface{}, 10),
 		}
 	},
@@ -30,11 +29,11 @@ func (t *RabbitmqCtx) Fill(msg *amqp.Delivery) {
 	t.values = make(map[string]interface{}, 10)
 }
 
-func (t *RabbitmqCtx) GetRequest() interfaces.IRequest {
+func (t *RabbitmqCtx) GetRequest() IRequest {
 	return t.request
 }
 
-func (t *RabbitmqCtx) GetResponse() interfaces.IResponse {
+func (t *RabbitmqCtx) GetResponse() IResponse {
 	return t.response
 }
 

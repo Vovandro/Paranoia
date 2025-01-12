@@ -1,15 +1,14 @@
-package srvUtils
+package http
 
 import (
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"io"
 	"net/http"
 )
 
 type HttpRequest struct {
 	request *http.Request
-	cookies interfaces.ICookie
-	headers interfaces.IHeader
+	cookies ICookie
+	headers IHeader
 }
 
 func (t *HttpRequest) Fill(request *http.Request) {
@@ -36,11 +35,11 @@ func (t *HttpRequest) GetBodySize() int64 {
 	return t.request.ContentLength
 }
 
-func (t *HttpRequest) GetCookie() interfaces.ICookie {
+func (t *HttpRequest) GetCookie() ICookie {
 	return t.cookies
 }
 
-func (t *HttpRequest) GetHeader() interfaces.IHeader {
+func (t *HttpRequest) GetHeader() IHeader {
 	return t.headers
 }
 
@@ -52,7 +51,7 @@ func (t *HttpRequest) GetURI() string {
 	return t.request.RequestURI
 }
 
-func (t *HttpRequest) GetQuery() interfaces.IQuery {
+func (t *HttpRequest) GetQuery() IQuery {
 	if t.request.Form != nil {
 		return t.request.Form
 	}

@@ -1,11 +1,10 @@
-package server
+package grpc
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/client/grpc-client"
-	"gitlab.com/devpro_studio/Paranoia/framework"
-	"gitlab.com/devpro_studio/Paranoia/logger"
-	"gitlab.com/devpro_studio/Paranoia/server/example"
+	"gitlab.com/devpro_studio/Paranoia/pkg/server/grpc/example"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"testing"
 )
 
@@ -23,10 +22,10 @@ func (t *server) Do(c context.Context, r *example.Request) (*example.Response, e
 
 func TestGrpc_RegisterService(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {
-		app := framework.New("test", nil, &logger.Mock{})
-
-		s := NewGrpc("test", GrpcConfig{Port: "8091"})
-		s.Init(app)
+		s := NewGrpc("test")
+		s.Init(map[string]interface{}{
+			"port": "8091",
+		})
 
 		se := server{}
 
@@ -35,11 +34,12 @@ func TestGrpc_RegisterService(t1 *testing.T) {
 		s.Start()
 		defer s.Stop()
 
-		c := grpc_client.NewGrpcClient("test", grpc_client.GrpcClientConfig{Url: "localhost:8091"})
-		c.Init(app)
-		defer c.Stop()
+		client, err := grpc.NewClient(
+			"localhost:8091",
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
 
-		cs := example.NewExampleClient(c.GetClient())
+		cs := example.NewExampleClient(client)
 
 		resp, err := cs.Do(context.Background(), &example.Request{Message: "t1"})
 		if err != nil {

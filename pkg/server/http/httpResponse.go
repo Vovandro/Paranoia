@@ -1,12 +1,10 @@
-package srvUtils
-
-import "gitlab.com/devpro_studio/Paranoia/interfaces"
+package http
 
 type HttpResponse struct {
 	Body       []byte
 	StatusCode int
-	headers    interfaces.IHeader
-	cookie     interfaces.ICookie
+	headers    IHeader
+	cookie     ICookie
 }
 
 func (t *HttpResponse) Clear() {
@@ -34,10 +32,10 @@ func (t *HttpResponse) GetStatus() int {
 	return t.StatusCode
 }
 
-func (t *HttpResponse) Header() interfaces.IHeader {
+func (t *HttpResponse) Header() IHeader {
 	return t.headers
 }
 
-func (t *HttpResponse) Cookie() interfaces.ICookie {
+func (t *HttpResponse) Cookie() ICookie {
 	return t.cookie
 }

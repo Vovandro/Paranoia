@@ -1,15 +1,14 @@
-package srvUtils
+package kafka
 
 import (
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 	"sync"
 )
 
 type KafkaCtx struct {
-	request  interfaces.IRequest
-	response interfaces.IResponse
+	request  IRequest
+	response IResponse
 	values   map[string]interface{}
 	done     chan struct{}
 }
@@ -18,7 +17,7 @@ var KafkaCtxPool = sync.Pool{
 	New: func() interface{} {
 		return &KafkaCtx{
 			request:  &kafkaRequest{},
-			response: &HttpResponse{},
+			response: &KafkaResponse{},
 			values:   make(map[string]interface{}, 10),
 		}
 	},
@@ -30,11 +29,11 @@ func (t *KafkaCtx) Fill(msg *kafka.Message) {
 	t.values = make(map[string]interface{}, 10)
 }
 
-func (t *KafkaCtx) GetRequest() interfaces.IRequest {
+func (t *KafkaCtx) GetRequest() IRequest {
 	return t.request
 }
 
-func (t *KafkaCtx) GetResponse() interfaces.IResponse {
+func (t *KafkaCtx) GetResponse() IResponse {
 	return t.response
 }
 

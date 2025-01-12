@@ -1,8 +1,7 @@
-package server
+package grpc
 
 import (
-	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"net"
@@ -10,26 +9,35 @@ import (
 )
 
 type Grpc struct {
-	Name   string
-	Config GrpcConfig
+	name   string
+	config Config
 
-	app    interfaces.IEngine
 	server *grpc.Server
 }
 
-type GrpcConfig struct {
+type Config struct {
 	Port string `yaml:"port"`
 }
 
-func NewGrpc(name string, cfg GrpcConfig) *Grpc {
+func NewGrpc(name string) *Grpc {
 	return &Grpc{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *Grpc) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *Grpc) Init(cfg map[string]interface{}) error {
+	if _, ok := cfg["middlewares"]; ok {
+		delete(cfg, "middlewares")
+	}
+
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.Port == "" {
+		t.config.Port = "9090"
+	}
 
 	t.server = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(),
@@ -45,7 +53,7 @@ func (t *Grpc) Start() error {
 	listenErr := make(chan error, 1)
 
 	go func() {
-		l, err := net.Listen("tcp", ":"+t.Config.Port)
+		l, err := net.Listen("tcp", ":"+t.config.Port)
 		if err != nil {
 			listenErr <- err
 			return
@@ -56,7 +64,6 @@ func (t *Grpc) Start() error {
 
 	select {
 	case err := <-listenErr:
-		t.app.GetLogger().Error(context.Background(), err)
 		return err
 
 	case <-time.After(time.Second):
@@ -69,14 +76,17 @@ func (t *Grpc) Start() error {
 func (t *Grpc) Stop() error {
 	t.server.GracefulStop()
 
-	t.app.GetLogger().Info(context.Background(), "grpc server gracefully stopped.")
 	time.Sleep(time.Second)
 
 	return nil
 }
 
-func (t *Grpc) String() string {
-	return t.Name
+func (t *Grpc) Name() string {
+	return t.name
+}
+
+func (t *Grpc) Type() string {
+	return "server"
 }
 
 func (t *Grpc) RegisterService(desc *grpc.ServiceDesc, impl any) {

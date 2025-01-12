@@ -1,11 +1,11 @@
-package srvUtils
+package rabbitmq
 
 import (
 	"net/http"
 	"time"
 )
 
-type HttpCookie struct {
+type RabbitmqCookie struct {
 	data map[string]cookieItem
 }
 
@@ -31,7 +31,7 @@ func (t cookieItem) String(domain string, sameSite string, httpOnly bool, secure
 	return s
 }
 
-func (t *HttpCookie) Set(key string, value string, path string, expires time.Duration) {
+func (t *RabbitmqCookie) Set(key string, value string, path string, expires time.Duration) {
 	t.data[key] = cookieItem{
 		Name:    key,
 		Value:   value,
@@ -40,7 +40,7 @@ func (t *HttpCookie) Set(key string, value string, path string, expires time.Dur
 	}
 }
 
-func (t *HttpCookie) Get(key string) string {
+func (t *RabbitmqCookie) Get(key string) string {
 	if v, ok := t.data[key]; ok {
 		return v.Value
 	}
@@ -48,7 +48,7 @@ func (t *HttpCookie) Get(key string) string {
 	return ""
 }
 
-func (t *HttpCookie) ToHttp(domain string, sameSite string, httpOnly bool, secure bool) []string {
+func (t *RabbitmqCookie) ToHttp(domain string, sameSite string, httpOnly bool, secure bool) []string {
 	res := make([]string, 0, len(t.data))
 
 	for _, v := range t.data {
@@ -58,7 +58,7 @@ func (t *HttpCookie) ToHttp(domain string, sameSite string, httpOnly bool, secur
 	return res
 }
 
-func (t *HttpCookie) FromHttp(cookie []*http.Cookie) {
+func (t *RabbitmqCookie) FromHttp(cookie []*http.Cookie) {
 	t.data = make(map[string]cookieItem, len(cookie))
 	for _, v := range cookie {
 		t.data[v.Name] = cookieItem{
@@ -70,7 +70,7 @@ func (t *HttpCookie) FromHttp(cookie []*http.Cookie) {
 	}
 }
 
-func (t *HttpCookie) GetAsMap() map[string]string {
+func (t *RabbitmqCookie) GetAsMap() map[string]string {
 	res := make(map[string]string, len(t.data))
 
 	for k, v := range t.data {
