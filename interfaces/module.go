@@ -1,7 +1,8 @@
 package interfaces
 
 type IModules interface {
-	Init(app IEngine) error
+	Init(app IEngine, cfg map[string]interface{}) error
 	Stop() error
-	String() string
+	Name() string
+	Type() string
 }

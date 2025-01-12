@@ -1,32 +1,38 @@
-package storage
+package file
 
 import (
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"errors"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"io"
 	"os"
 	"path"
 )
 
 type File struct {
-	Name string
-	app  interfaces.IEngine
+	name string
 
-	config FileConfig
+	config Config
 }
 
-type FileConfig struct {
+type Config struct {
 	Folder string `yaml:"folder"`
 }
 
-func NewFile(name string, cfg FileConfig) interfaces.IStorage {
+func NewFile(name string) *File {
 	return &File{
-		Name:   name,
-		config: cfg,
+		name: name,
 	}
 }
 
-func (t *File) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *File) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.Folder == "" {
+		return errors.New("folder is required")
+	}
 
 	os.MkdirAll(t.config.Folder, 0755)
 
@@ -37,8 +43,12 @@ func (t *File) Stop() error {
 	return nil
 }
 
-func (t *File) String() string {
-	return t.Name
+func (t *File) Name() string {
+	return t.name
+}
+
+func (t *File) Type() string {
+	return "storage"
 }
 
 func (t *File) Has(name string) bool {

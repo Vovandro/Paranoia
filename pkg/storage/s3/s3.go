@@ -1,21 +1,21 @@
-package storage
+package s3
 
 import (
 	"context"
+	"errors"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"io"
 )
 
 type S3 struct {
-	Name   string
-	app    interfaces.IEngine
-	config S3Config
+	name   string
+	config Config
 	client *minio.Client
 }
 
-type S3Config struct {
+type Config struct {
 	URL         string `yaml:"url"`
 	AccessKey   string `yaml:"access_key"`
 	SecretKey   string `yaml:"secret_key"`
@@ -25,13 +25,33 @@ type S3Config struct {
 	Bucket      string `yaml:"bucket"`
 }
 
-func NewS3(name string, cfg S3Config) interfaces.IStorage {
-	return &S3{Name: name, config: cfg}
+func NewS3(name string) *S3 {
+	return &S3{
+		name: name,
+	}
 }
 
-func (t *S3) Init(app interfaces.IEngine) error {
-	t.app = app
-	var err error
+func (t *S3) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.URL == "" {
+		return errors.New("url is required")
+	}
+
+	if t.config.AccessKey == "" {
+		return errors.New("access_key is required")
+	}
+
+	if t.config.SecretKey == "" {
+		return errors.New("secret_key is required")
+	}
+
+	if t.config.Bucket == "" {
+		return errors.New("bucket is required")
+	}
 
 	t.client, err = minio.New(t.config.URL, &minio.Options{
 		Creds:  credentials.NewStaticV4(t.config.AccessKey, t.config.SecretKey, ""),
@@ -67,8 +87,12 @@ func (t *S3) Stop() error {
 	return nil
 }
 
-func (t *S3) String() string {
-	return t.Name
+func (t *S3) Name() string {
+	return t.name
+}
+
+func (t *S3) Type() string {
+	return "storage"
 }
 
 func (t *S3) Has(name string) bool {

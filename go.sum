@@ -428,6 +428,8 @@ github.com/yuin/gopher-lua v1.1.1 h1:kYKnWBjvbNP4XLT3+bPEwAXJx262OhaHDWDVOPjL46M
 github.com/yuin/gopher-lua v1.1.1/go.mod h1:GBR0iDaNXjAgGg9zfCvksxSRnQx76gclCIb7kdAd1Pw=
 github.com/yusufpapurcu/wmi v1.2.3 h1:E1ctvB7uKFMOJw3fdOW32DwGE9I7t++CRUEMKvFoFiw=
 github.com/yusufpapurcu/wmi v1.2.3/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQmPyzfmi0=
+gitlab.com/devpro_studio/go_utils v1.1.1 h1:43AHYtvD3fbGwHsJD9ueaSz10r6RE2mCZuICa/fegjc=
+gitlab.com/devpro_studio/go_utils v1.1.1/go.mod h1:w5u/t5VoEsj6T+nwGocm3tHE+CE1n1ZRy2VS9qJXoGg=
 go.etcd.io/etcd/api/v3 v3.5.17 h1:cQB8eb8bxwuxOilBpMJAEo8fAONyrdXTHUNcMd8yT1w=
 go.etcd.io/etcd/api/v3 v3.5.17/go.mod h1:d1hvkRuXkts6PmaYk2Vrgqbv7H4ADfAKhyJqHNLJCB4=
 go.etcd.io/etcd/client/pkg/v3 v3.5.17 h1:XxnDXAWq2pnxqx76ljWwiQ9jylbpC4rvkAeRVOUKKVw=

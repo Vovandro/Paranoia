@@ -8,17 +8,17 @@ import (
 )
 
 type TimingMiddleware struct {
-	Name   string
+	name   string
 	logger interfaces.ILogger
 }
 
 func NewTimingMiddleware(name string) interfaces.IMiddleware {
 	return &TimingMiddleware{
-		Name: name,
+		name: name,
 	}
 }
 
-func (t *TimingMiddleware) Init(app interfaces.IEngine) error {
+func (t *TimingMiddleware) Init(app interfaces.IEngine, _ map[string]interface{}) error {
 	t.logger = app.GetLogger()
 	return nil
 }
@@ -27,8 +27,12 @@ func (t *TimingMiddleware) Stop() error {
 	return nil
 }
 
-func (t *TimingMiddleware) String() string {
-	return t.Name
+func (t *TimingMiddleware) Name() string {
+	return t.name
+}
+
+func (t *TimingMiddleware) Type() string {
+	return "middleware"
 }
 
 func (t *TimingMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {

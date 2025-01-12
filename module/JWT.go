@@ -4,17 +4,19 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"os"
 	"time"
 )
 
 // JWT openssl genrsa -out private.key 2048
 type JWT struct {
-	Cfg        JWTConfig
-	Name       string
+	config     JWTConfig
+	name       string
 	privateKey *rsa.PrivateKey
 }
 
@@ -23,15 +25,23 @@ type JWTConfig struct {
 	Expire     time.Duration `yaml:"expire"`
 }
 
-func NewJWT(name string, cfg JWTConfig) interfaces.IModules {
+func NewJWT(name string) interfaces.IModules {
 	return &JWT{
-		Name: name,
-		Cfg:  cfg,
+		name: name,
 	}
 }
 
-func (t *JWT) Init(_ interfaces.IEngine) error {
-	privKeyData, err := os.ReadFile(t.Cfg.PrivateKey)
+func (t *JWT) Init(_ interfaces.IEngine, cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
+
+	if t.config.PrivateKey == "" {
+		return errors.New("missing private key")
+	}
+
+	privKeyData, err := os.ReadFile(t.config.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("could not read private key: %w", err)
 	}
@@ -53,13 +63,17 @@ func (t *JWT) Stop() error {
 	return nil
 }
 
-func (t *JWT) String() string {
-	return t.Name
+func (t *JWT) Name() string {
+	return t.name
+}
+
+func (t *JWT) Type() string {
+	return "module"
 }
 
 func (t *JWT) GenerateToken(data jwt.MapClaims) (string, error) {
 	if _, ok := data["exp"]; !ok {
-		data["exp"] = time.Now().Add(t.Cfg.Expire).Unix()
+		data["exp"] = time.Now().Add(t.config.Expire).Unix()
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, data)

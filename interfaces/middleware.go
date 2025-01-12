@@ -1,8 +1,9 @@
 package interfaces
 
 type IMiddleware interface {
-	Init(app IEngine) error
+	Init(app IEngine, cfg map[string]interface{}) error
 	Stop() error
-	String() string
+	Name() string
+	Type() string
 	Invoke(next RouteFunc) RouteFunc
 }

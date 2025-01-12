@@ -7,17 +7,17 @@ import (
 )
 
 type RestoreMiddleware struct {
-	Name   string
+	name   string
 	logger interfaces.ILogger
 }
 
 func NewRestoreMiddleware(name string) interfaces.IMiddleware {
 	return &RestoreMiddleware{
-		Name: name,
+		name: name,
 	}
 }
 
-func (t *RestoreMiddleware) Init(app interfaces.IEngine) error {
+func (t *RestoreMiddleware) Init(app interfaces.IEngine, _ map[string]interface{}) error {
 	t.logger = app.GetLogger()
 	return nil
 }
@@ -26,8 +26,12 @@ func (t *RestoreMiddleware) Stop() error {
 	return nil
 }
 
-func (t *RestoreMiddleware) String() string {
-	return t.Name
+func (t *RestoreMiddleware) Name() string {
+	return t.name
+}
+
+func (t *RestoreMiddleware) Type() string {
+	return "middleware"
 }
 
 func (t *RestoreMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {

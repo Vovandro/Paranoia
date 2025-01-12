@@ -1,6 +1,6 @@
-module gitlab.com/devpro_studio/Paranoia/framework
+module gitlab.com/devpro_studio/Paranoia
 
-go 1.23.0
+go 1.23.4
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.30.0
@@ -87,6 +87,7 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
+	gitlab.com/devpro_studio/go_utils v1.1.1 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.17 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.17 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

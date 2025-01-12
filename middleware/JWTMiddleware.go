@@ -15,8 +15,8 @@ import (
 
 // JWTMiddleware openssl rsa -in private.key -pubout -out public.key
 type JWTMiddleware struct {
-	Name   string
-	Config JWTMiddlewareConfig
+	name   string
+	config JWTMiddlewareConfig
 
 	publicKey *rsa.PublicKey
 }
@@ -26,15 +26,15 @@ type JWTMiddlewareConfig struct {
 	CtxKey    string `yaml:"ctx_key"`
 }
 
-func NewJWTMiddleware(name string, cfg JWTMiddlewareConfig) interfaces.IMiddleware {
+func NewJWTMiddleware(name string) interfaces.IMiddleware {
 	return &JWTMiddleware{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *JWTMiddleware) Init(app interfaces.IEngine) error {
-	pubKeyData, err := os.ReadFile(t.Config.PublicKey)
+func (t *JWTMiddleware) Init(app interfaces.IEngine, cfg map[string]interface{}) error {
+
+	pubKeyData, err := os.ReadFile(t.config.PublicKey)
 	if err != nil {
 		return fmt.Errorf("could not read public key: %w", err)
 	}
@@ -62,8 +62,12 @@ func (t *JWTMiddleware) Stop() error {
 	return nil
 }
 
-func (t *JWTMiddleware) String() string {
-	return t.Name
+func (t *JWTMiddleware) Name() string {
+	return t.name
+}
+
+func (t *JWTMiddleware) Type() string {
+	return "middleware"
 }
 
 func (t *JWTMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {
@@ -98,7 +102,7 @@ func (t *JWTMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {
 			return
 		}
 
-		cNew := context.WithValue(c, t.Config.CtxKey, claims)
+		cNew := context.WithValue(c, t.config.CtxKey, claims)
 		next(cNew, ctx)
 	}
 }
