@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/cache/etcd
+module gitlab.com/devpro_studio/Paranoia/pkg/cache/etcd
 
 go 1.23.0
 

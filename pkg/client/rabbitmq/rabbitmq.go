@@ -1,10 +1,11 @@
-package client
+package rabbitmq
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
@@ -12,9 +13,8 @@ import (
 )
 
 type RabbitmqClient struct {
-	Name   string
-	Config RabbitmqClientConfig
-	app    interfaces.IEngine
+	name   string
+	config Config
 	conn   *amqp.Connection
 	ch     *amqp.Channel
 
@@ -23,24 +23,28 @@ type RabbitmqClient struct {
 	retryCounter metric.Int64Histogram
 }
 
-type RabbitmqClientConfig struct {
+type Config struct {
 	URI        string `yaml:"uri"`
 	RetryCount int    `yaml:"retry_count"`
 }
 
-func NewRabbitmqClient(name string, cfg RabbitmqClientConfig) *RabbitmqClient {
+func NewRabbitmqClient(name string) *RabbitmqClient {
 	return &RabbitmqClient{
-		Name:   name,
-		Config: cfg,
+		name: name,
 	}
 }
 
-func (t *RabbitmqClient) Init(app interfaces.IEngine) error {
-	var err error
+func (t *RabbitmqClient) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+	if err != nil {
+		return err
+	}
 
-	t.app = app
+	if t.config.URI == "" {
+		return errors.New("uri is required")
+	}
 
-	t.conn, err = amqp.Dial(t.Config.URI)
+	t.conn, err = amqp.Dial(t.config.URI)
 
 	if err != nil {
 		return err
@@ -52,9 +56,9 @@ func (t *RabbitmqClient) Init(app interfaces.IEngine) error {
 		return err
 	}
 
-	t.counter, _ = otel.Meter("").Int64Counter("client_rabbitmq." + t.Name + ".count")
-	t.timeCounter, _ = otel.Meter("").Int64Histogram("client_rabbitmq." + t.Name + ".time")
-	t.retryCounter, _ = otel.Meter("").Int64Histogram("client_rabbitmq." + t.Name + ".retry")
+	t.counter, _ = otel.Meter("").Int64Counter("client_rabbitmq." + t.name + ".count")
+	t.timeCounter, _ = otel.Meter("").Int64Histogram("client_rabbitmq." + t.name + ".time")
+	t.retryCounter, _ = otel.Meter("").Int64Histogram("client_rabbitmq." + t.name + ".retry")
 
 	return nil
 }
@@ -66,13 +70,13 @@ func (t *RabbitmqClient) Stop() error {
 }
 
 func (t *RabbitmqClient) String() string {
-	return t.Name
+	return t.name
 }
 
-func (t *RabbitmqClient) Fetch(ctx context.Context, _ string, topic string, data []byte, headers map[string][]string) chan interfaces.IClientResponse {
-	resp := make(chan interfaces.IClientResponse)
+func (t *RabbitmqClient) Fetch(ctx context.Context, topic string, data []byte, headers map[string][]string) chan IClientResponse {
+	resp := make(chan IClientResponse)
 
-	go func(resp chan interfaces.IClientResponse, ctx context.Context, topic string, data []byte, headers map[string][]string) {
+	go func(resp chan IClientResponse, ctx context.Context, topic string, data []byte, headers map[string][]string) {
 		defer func(s time.Time) {
 			t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
 		}(time.Now())
@@ -94,7 +98,7 @@ func (t *RabbitmqClient) Fetch(ctx context.Context, _ string, topic string, data
 			header[k] = v
 		}
 
-		for i := 0; i <= t.Config.RetryCount; i++ {
+		for i := 0; i <= t.config.RetryCount; i++ {
 			err := t.ch.PublishWithContext(
 				ctx,
 				"",
@@ -111,7 +115,7 @@ func (t *RabbitmqClient) Fetch(ctx context.Context, _ string, topic string, data
 				res.Err = err
 				res.RetryCount = i + 1
 
-				if i == t.Config.RetryCount {
+				if i == t.config.RetryCount {
 					res.Err = fmt.Errorf("request rabbitmq to topic %s", topic)
 					break
 				}

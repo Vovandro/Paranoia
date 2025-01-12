@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/database/clickhouse
+module gitlab.com/devpro_studio/Paranoia/pkg/database/clickhouse
 
 go 1.23.0
 

@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/cache/redis
+module gitlab.com/devpro_studio/Paranoia/pkg/cache/redis
 
 go 1.23.0
 

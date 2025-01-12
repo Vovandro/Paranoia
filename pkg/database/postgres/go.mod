@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/database/postgres
+module gitlab.com/devpro_studio/Paranoia/pkg/database/postgres
 
 go 1.23.0
 

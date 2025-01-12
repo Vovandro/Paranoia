@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/database/mongodb
+module gitlab.com/devpro_studio/Paranoia/pkg/database/mongodb
 
 go 1.23.0
 

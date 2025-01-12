@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/cache/memcached
+module gitlab.com/devpro_studio/Paranoia/pkg/cache/memcached
 
 go 1.23.0
 

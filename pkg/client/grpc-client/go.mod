@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/client/grpc-client
+module gitlab.com/devpro_studio/Paranoia/pkg/client/grpc-client
 
 go 1.23.0
 

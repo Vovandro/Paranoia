@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/database/as
+module gitlab.com/devpro_studio/Paranoia/pkg/database/as
 
 go 1.23.0
 

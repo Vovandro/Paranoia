@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/database/sqlite
+module gitlab.com/devpro_studio/Paranoia/pkg/database/sqlite
 
 go 1.23.0
 

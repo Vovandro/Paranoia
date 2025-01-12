@@ -3,13 +3,12 @@ package logger
 import (
 	"context"
 	"fmt"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
 )
 
 type Mock struct {
 }
 
-func (t *Mock) Init(cfg interfaces.IConfig) error {
+func (t *Mock) Init(cfg map[string]interface{}) error {
 	return nil
 }
 
@@ -21,7 +20,7 @@ func (t *Mock) Stop() error {
 	return nil
 }
 
-func (t *Mock) SetLevel(level interfaces.LogLevel)               {}
+func (t *Mock) SetLevel(level LogLevel)                          {}
 func (t *Mock) Debug(ctx context.Context, args ...interface{})   {}
 func (t *Mock) Info(ctx context.Context, args ...interface{})    {}
 func (t *Mock) Warn(ctx context.Context, args ...interface{})    {}

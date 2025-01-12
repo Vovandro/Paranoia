@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/database/mysql
+module gitlab.com/devpro_studio/Paranoia/pkg/database/mysql
 
 go 1.23.0
 
