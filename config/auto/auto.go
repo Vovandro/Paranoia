@@ -154,6 +154,15 @@ func (t *Auto) loadConfig() error {
 
 					t.app.PushClient(kafka_client.NewKafkaClient(name.(string), cfg))
 
+				case "rabbitmq":
+					cfg := client.RabbitmqClientConfig{}
+					err = mod.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushClient(client.NewRabbitmqClient(name.(string), cfg))
+
 				case "grpc":
 					cfg := grpc_client.GrpcClientConfig{}
 					err = mod.Scan(&cfg)
@@ -252,6 +261,15 @@ func (t *Auto) loadConfig() error {
 					}
 
 					t.app.PushServer(server.NewKafka(name.(string), cfg))
+
+				case "rabbitmq":
+					cfg := server.RabbitmqConfig{}
+					err = mod.Scan(&cfg)
+					if err != nil {
+						return err
+					}
+
+					t.app.PushServer(server.NewRabbitmq(name.(string), cfg))
 
 				case "grpc":
 					cfg := server.GrpcConfig{}
