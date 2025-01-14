@@ -19,6 +19,7 @@ const (
 	ModuleRepository TypeModule = "repository"
 	ModuleService    TypeModule = "service"
 	ModuleMiddleware TypeModule = "middleware"
+	ModuleModule     TypeModule = "module"
 	ModuleCustom     TypeModule = "custom"
 )
 

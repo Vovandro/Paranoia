@@ -17,3 +17,7 @@ func (t *Mock) Stop() error {
 func (t *Mock) String() string {
 	return t.Name
 }
+
+func (t *Mock) Type() string {
+	return string(interfaces.ModuleService)
+}
