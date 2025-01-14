@@ -1,9 +1,18 @@
-package client
+package rabbitmq_client
 
 import (
 	"fmt"
 	"io"
 )
+
+type IClientResponse interface {
+	GetBody() ([]byte, error)
+	GetLazyBody() io.Reader
+	GetHeader() map[string][]string
+	Error() error
+	GetRetries() int
+	GetCode() int
+}
 
 type Response struct {
 	Body       io.Reader

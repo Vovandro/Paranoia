@@ -3,27 +3,33 @@ package telemetry
 import (
 	"context"
 	sentryotel "github.com/getsentry/sentry-go/otel"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 type TraceSentry struct {
-	cfg      TraceSentryConfig
+	name     string
+	config   TraceSentryConfig
 	provider *trace.TracerProvider
-	app      interfaces.IEngine
 }
 
 type TraceSentryConfig struct {
-	Name string `yaml:"name"`
+	ServiceName string `yaml:"service_name"`
 }
 
-func NewTraceSentry(cfg TraceSentryConfig) *TraceSentry {
-	return &TraceSentry{cfg: cfg}
+func NewTraceSentry(name string) *TraceSentry {
+	return &TraceSentry{
+		name: name,
+	}
 }
 
-func (t *TraceSentry) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *TraceSentry) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return err
+	}
 
 	otel.SetTextMapPropagator(sentryotel.NewSentryPropagator())
 
@@ -41,11 +47,9 @@ func (t *TraceSentry) Start() error {
 }
 
 func (t *TraceSentry) Stop() error {
-	err := t.provider.Shutdown(context.Background())
+	return t.provider.Shutdown(context.Background())
+}
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	}
-
-	return err
+func (t *TraceSentry) Name() string {
+	return t.name
 }

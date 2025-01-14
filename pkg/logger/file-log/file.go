@@ -220,3 +220,7 @@ func (t *File) Panic(ctx context.Context, err error) {
 func (t *File) Parent() ILogger {
 	return t.parent
 }
+
+func (t *File) SetParent(parent ILogger) {
+	t.parent = parent
+}

@@ -2,7 +2,7 @@ package telemetry
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/sdk/metric"
@@ -12,26 +12,32 @@ import (
 )
 
 type MetricStd struct {
-	cfg      MetricStdConfig
+	name     string
+	config   MetricStdConfig
 	exporter metric.Exporter
-	app      interfaces.IEngine
 }
 
 type MetricStdConfig struct {
-	Name     string        `yaml:"name"`
-	Interval time.Duration `yaml:"interval"`
+	ServiceName string        `yaml:"service_name"`
+	Interval    time.Duration `yaml:"interval"`
 }
 
-func NewMetricStd(cfg MetricStdConfig) *MetricStd {
-	return &MetricStd{cfg: cfg}
+func NewMetricStd(name string) *MetricStd {
+	return &MetricStd{
+		name: name,
+	}
 }
 
-func (t *MetricStd) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *MetricStd) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return err
+	}
 
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(t.cfg.Name),
+			semconv.ServiceName(t.config.ServiceName),
 		))
 
 	if err != nil {
@@ -46,7 +52,7 @@ func (t *MetricStd) Init(app interfaces.IEngine) error {
 
 	provider := metric.NewMeterProvider(
 		metric.WithResource(res),
-		metric.WithReader(metric.NewPeriodicReader(t.exporter, metric.WithInterval(t.cfg.Interval))),
+		metric.WithReader(metric.NewPeriodicReader(t.exporter, metric.WithInterval(t.config.Interval))),
 	)
 
 	otel.SetMeterProvider(provider)
@@ -60,11 +66,9 @@ func (t *MetricStd) Start() error {
 }
 
 func (t *MetricStd) Stop() error {
-	err := t.exporter.Shutdown(context.TODO())
+	return t.exporter.Shutdown(context.TODO())
+}
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	}
-
-	return err
+func (t *MetricStd) Name() string {
+	return t.name
 }

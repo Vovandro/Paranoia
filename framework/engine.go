@@ -3,11 +3,8 @@ package framework
 import (
 	"context"
 	"fmt"
-	"gitlab.com/devpro_studio/Paranoia"
-	"time"
-
+	"gitlab.com/devpro_studio/Paranoia/config/yaml"
 	"gitlab.com/devpro_studio/Paranoia/interfaces"
-	"gitlab.com/devpro_studio/Paranoia/server/middleware"
 )
 
 type Engine struct {
@@ -20,54 +17,28 @@ type Engine struct {
 	metricExporter interfaces.IMetrics
 	trace          interfaces.ITrace
 
-	task Paranoia.task
+	task task
 
-	cache       map[string]interfaces.IPkg
-	database    map[string]interfaces.IDatabase
-	noSql       map[string]interfaces.INoSql
-	controllers map[string]interfaces.IController
-	modules     map[string]interfaces.IModules
-	repository  map[string]interfaces.IRepository
-	service     map[string]interfaces.IService
-	servers     map[string]interfaces.IServer
-	clients     map[string]interfaces.IClient
-	storage     map[string]interfaces.IStorage
+	pkg         map[string]map[string]interfaces.IPkg
+	modules     map[string]map[string]interfaces.IModules
 	middlewares map[string]interfaces.IMiddleware
 }
 
-func New(name string, config interfaces.IConfig, logger interfaces.ILogger) *Engine {
+func New(name string, configName string) *Engine {
 	t := &Engine{}
 
 	t.starting = false
 	t.name = name
-	t.config = config
-	t.logger = logger
+	t.config = yaml.NewYaml(yaml.AutoConfig{FName: configName})
 
-	t.cache = make(map[string]interfaces.IPkg)
-	t.database = make(map[string]interfaces.IDatabase)
-	t.noSql = make(map[string]interfaces.INoSql)
-	t.controllers = make(map[string]interfaces.IController)
-	t.modules = make(map[string]interfaces.IModules)
-	t.repository = make(map[string]interfaces.IRepository)
-	t.service = make(map[string]interfaces.IService)
-	t.servers = make(map[string]interfaces.IServer)
-	t.storage = make(map[string]interfaces.IStorage)
-	t.clients = make(map[string]interfaces.IClient)
+	t.pkg = make(map[string]map[string]interfaces.IPkg, 10)
+	t.modules = make(map[string]map[string]interfaces.IModules, 10)
 	t.middlewares = make(map[string]interfaces.IMiddleware)
 
 	t.task.Init(t)
 
 	if t.config != nil {
 		err := t.config.Init(t)
-
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-	}
-
-	if t.logger != nil {
-		err := t.logger.Init(t.config)
 
 		if err != nil {
 			fmt.Println(err)
@@ -92,14 +63,6 @@ func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 	}
 
 	t.metricExporter = c
-
-	if t.metricExporter != nil {
-		err := t.metricExporter.Init(t)
-
-		if err != nil {
-			t.logger.Error(context.Background(), err)
-		}
-	}
 }
 
 func (t *Engine) SetTrace(c interfaces.ITrace) {
@@ -108,122 +71,117 @@ func (t *Engine) SetTrace(c interfaces.ITrace) {
 	}
 
 	t.trace = c
+}
 
-	if t.trace != nil {
-		err := t.trace.Init(t)
+func (t *Engine) PushPkg(c interfaces.IPkg) interfaces.IEngine {
+	if c == nil {
+		panic("nil package")
+		return nil
+	}
 
-		if err != nil {
-			fmt.Println(err)
+	name := c.Name()
+	typePkg := c.Type()
+
+	if typePkg == string(interfaces.PkgLogger) {
+		convertedLogger, ok := c.(interfaces.ILogger)
+
+		if !ok {
+			panic("cannot cast logger")
+		}
+
+		l := t.logger
+
+		if l == nil {
+			t.logger = convertedLogger
+			return t
+		}
+
+		for {
+			if l.Parent() == nil {
+				break
+			}
+
+			l = l.Parent()
+		}
+
+		l.SetParent(convertedLogger)
+	} else {
+		if p, ok := t.pkg[typePkg]; ok {
+			if _, ok := p[name]; ok {
+				panic("duplicate package: " + typePkg + " - " + name)
+			}
+
+			p[name] = c
+		} else {
+			t.pkg[typePkg] = make(map[string]interfaces.IPkg)
+			t.pkg[typePkg][name] = c
 		}
 	}
+
+	return t
 }
 
-func (t *Engine) PushCache(c interfaces.IPkg) interfaces.IEngine {
-	if _, ok := t.cache[c.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("cache %s already exists", c.String()))
+func (t *Engine) GetPkg(typePkg string, key string) interfaces.IPkg {
+	if p, ok := t.pkg[typePkg]; ok {
+		if pkg, ok := p[key]; ok {
+			return pkg
+		}
+	}
+
+	return nil
+}
+
+func (t *Engine) PushModule(c interfaces.IModules) interfaces.IEngine {
+	if c == nil {
+		panic("nil package")
+		return nil
+	}
+
+	name := c.Name()
+	typeModule := c.Type()
+
+	if typeModule == string(interfaces.ModuleMiddleware) {
+		convertedMiddleware, ok := c.(interfaces.IMiddleware)
+
+		if !ok {
+			panic("cannot cast middleware")
+		}
+
+		if _, ok := t.middlewares[name]; ok {
+			panic("duplicate middleware: " + name)
+		}
+
+		t.middlewares[name] = convertedMiddleware
 	} else {
-		t.cache[c.String()] = c
+		if p, ok := t.modules[typeModule]; ok {
+			if _, ok := p[name]; ok {
+				panic("duplicate modules: " + typeModule + " - " + name)
+			}
+
+			p[name] = c
+		} else {
+			t.modules[typeModule] = make(map[string]interfaces.IModules)
+			t.modules[typeModule][name] = c
+		}
 	}
 
 	return t
 }
 
-func (t *Engine) GetCache(key string) interfaces.IPkg {
-	return t.cache[key]
-}
-
-func (t *Engine) PushDatabase(b interfaces.IDatabase) interfaces.IEngine {
-	if _, ok := t.database[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("database %s already exists", b.String()))
+func (t *Engine) GetModule(typeModule string, key string) interfaces.IModules {
+	if typeModule == string(interfaces.ModuleMiddleware) {
+		if m, ok := t.middlewares[key]; ok {
+			return m
+		}
 	} else {
-		t.database[b.String()] = b
+		if p, ok := t.modules[typeModule]; ok {
+			if m, ok := p[key]; ok {
+				return m
+			}
+		}
 	}
 
-	return t
-}
-
-func (t *Engine) GetDatabase(key string) interfaces.IDatabase {
-	return t.database[key]
-}
-
-func (t *Engine) PushNoSql(b interfaces.INoSql) interfaces.IEngine {
-	if _, ok := t.noSql[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("nosql %s already exists", b.String()))
-	} else {
-		t.noSql[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetNoSql(key string) interfaces.INoSql {
-	return t.noSql[key]
-}
-
-func (t *Engine) PushController(b interfaces.IController) interfaces.IEngine {
-	if _, ok := t.controllers[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("controller %s already exists", b.String()))
-	} else {
-		t.controllers[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetController(key string) interfaces.IController {
-	return t.controllers[key]
-}
-
-func (t *Engine) PushModule(b interfaces.IModules) interfaces.IEngine {
-	if _, ok := t.modules[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("module %s already exists", b.String()))
-	} else {
-		t.modules[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetModule(key string) interfaces.IModules {
-	return t.modules[key]
-}
-
-func (t *Engine) PushRepository(b interfaces.IRepository) interfaces.IEngine {
-	if _, ok := t.repository[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("repository %s already exists", b.String()))
-	} else {
-		t.repository[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetRepository(key string) interfaces.IRepository {
-	return t.repository[key]
-}
-
-func (t *Engine) PushService(b interfaces.IService) interfaces.IEngine {
-	if _, ok := t.service[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("service %s already exists", b.String()))
-	} else {
-		t.service[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetService(key string) interfaces.IService {
-	return t.service[key]
-}
-
-func (t *Engine) PushServer(b interfaces.IServer) interfaces.IEngine {
-	if _, ok := t.servers[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("server %s already exists", b.String()))
-	} else {
-		t.servers[b.String()] = b
-	}
-
-	return t
+	return nil
 }
 
 func (t *Engine) GetTask(key string) interfaces.ITask {
@@ -244,57 +202,13 @@ func (t *Engine) RunTask(key string, args map[string]interface{}) error {
 	return t.task.RunTask(key, args)
 }
 
-func (t *Engine) GetServer(key string) interfaces.IServer {
-	return t.servers[key]
-}
-
-func (t *Engine) PushClient(b interfaces.IClient) interfaces.IEngine {
-	if _, ok := t.clients[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("client %s already exists", b.String()))
-	} else {
-		t.clients[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetClient(key string) interfaces.IClient {
-	return t.clients[key]
-}
-
-func (t *Engine) PushStorage(b interfaces.IStorage) interfaces.IEngine {
-	if _, ok := t.storage[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("storage %s already exists", b.String()))
-	} else {
-		t.storage[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetStorage(key string) interfaces.IStorage {
-	return t.storage[key]
-}
-
-func (t *Engine) PushMiddleware(b interfaces.IMiddleware) interfaces.IEngine {
-	if _, ok := t.middlewares[b.String()]; ok {
-		t.logger.Fatal(context.Background(), fmt.Errorf("middleware %s already exists", b.String()))
-	} else {
-		t.middlewares[b.String()] = b
-	}
-
-	return t
-}
-
-func (t *Engine) GetMiddleware(key string) interfaces.IMiddleware {
-	return t.middlewares[key]
-}
-
 func (t *Engine) Init() error {
 	var err error = nil
 
-	for _, cache := range t.cache {
-		err = cache.Init(t)
+	l := t.logger
+
+	for ; l != nil; l = l.Parent() {
+		err = l.Init(t.config.GetConfigItem(l.Type(), l.Name()))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
@@ -302,8 +216,8 @@ func (t *Engine) Init() error {
 		}
 	}
 
-	for _, db := range t.database {
-		err = db.Init(t)
+	if t.metricExporter != nil {
+		err = t.metricExporter.Init(t.config.GetConfigItem("metrics", t.metricExporter.Name()))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
@@ -311,8 +225,8 @@ func (t *Engine) Init() error {
 		}
 	}
 
-	for _, db := range t.noSql {
-		err = db.Init(t)
+	if t.trace != nil {
+		err = t.trace.Init(t.config.GetConfigItem("trace", t.trace.Name()))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
@@ -320,8 +234,19 @@ func (t *Engine) Init() error {
 		}
 	}
 
-	for _, st := range t.storage {
-		err = st.Init(t)
+	for typePkg, pkg := range t.pkg {
+		for name, c := range pkg {
+			err = c.Init(t.config.GetConfigItem(typePkg, name))
+
+			if err != nil {
+				t.logger.Fatal(context.Background(), err)
+				return err
+			}
+		}
+	}
+
+	for name, c := range t.middlewares {
+		err = c.Init(t, t.config.GetConfigItem(string(interfaces.ModuleMiddleware), name))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
@@ -329,89 +254,26 @@ func (t *Engine) Init() error {
 		}
 	}
 
-	for _, client := range t.clients {
-		err = client.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	if _, ok := t.middlewares["timing"]; !ok {
-		t.PushMiddleware(middleware.NewTimingMiddleware("timing"))
-	}
-
-	if _, ok := t.middlewares["restore"]; !ok {
-		t.PushMiddleware(middleware.NewRestoreMiddleware("restore"))
-	}
-
-	if _, ok := t.middlewares["timeout"]; !ok {
-		t.PushMiddleware(middleware.NewTimeoutMiddleware("timeout", middleware.TimeoutMiddlewareConfig{Timeout: time.Second * 60}))
-	}
-
-	for _, item := range t.middlewares {
-		err = item.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, server := range t.servers {
-		err = server.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, repository := range t.repository {
-		err = repository.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, service := range t.service {
-		err = service.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, module := range t.modules {
-		err = module.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, controller := range t.controllers {
-		err = controller.Init(t)
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
+	for typeModule, modules := range t.modules {
+		for name, c := range modules {
+			err = c.Init(t, t.config.GetConfigItem(typeModule, name))
+			if err != nil {
+				t.logger.Fatal(context.Background(), err)
+				return err
+			}
 		}
 	}
 
 	t.task.Start()
 
-	for _, server := range t.servers {
-		err = server.Start()
+	if servers, ok := t.pkg["servers"]; ok {
+		for _, server := range servers {
+			err = server.(interfaces.IServer).Start()
 
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
+			if err != nil {
+				t.logger.Fatal(context.Background(), err)
+				return err
+			}
 		}
 	}
 
@@ -441,100 +303,43 @@ func (t *Engine) Stop() error {
 
 	t.starting = false
 
-	for _, server := range t.servers {
-		err = server.Stop()
+	if servers, ok := t.pkg["servers"]; ok {
+		for _, server := range servers {
+			err = server.Stop()
 
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
+			if err != nil {
+				t.logger.Fatal(context.Background(), err)
+				return err
+			}
 		}
 	}
 
 	t.task.Stop()
 
+	for _, modules := range t.modules {
+		for _, m := range modules {
+			err = m.Stop()
+
+			if err != nil {
+				t.logger.Fatal(context.Background(), err)
+				return err
+			}
+		}
+	}
+
+	for _, pkg := range t.pkg {
+		for _, p := range pkg {
+			err = p.Stop()
+
+			if err != nil {
+				t.logger.Fatal(context.Background(), err)
+				return err
+			}
+		}
+	}
+
 	for _, item := range t.middlewares {
 		err = item.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, controller := range t.controllers {
-		err = controller.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, module := range t.modules {
-		err = module.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, service := range t.service {
-		err = service.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, repository := range t.repository {
-		err = repository.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, client := range t.clients {
-		err = client.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, st := range t.storage {
-		err = st.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, db := range t.noSql {
-		err = db.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, db := range t.database {
-		err = db.Stop()
-
-		if err != nil {
-			t.logger.Fatal(context.Background(), err)
-			return err
-		}
-	}
-
-	for _, cache := range t.cache {
-		err = cache.Stop()
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)

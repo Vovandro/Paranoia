@@ -2,7 +2,7 @@ package telemetry
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -10,22 +10,28 @@ import (
 )
 
 type TraceOtlpGrpc struct {
-	cfg      TraceOtlpGrpcConfig
+	name     string
+	config   TraceOtlpGrpcConfig
 	exporter trace.SpanExporter
 	provider *trace.TracerProvider
-	app      interfaces.IEngine
 }
 
 type TraceOtlpGrpcConfig struct {
-	Name string `yaml:"name"`
+	ServiceName string `yaml:"service_name"`
 }
 
-func NewTraceOtlpGrpc(cfg TraceOtlpGrpcConfig) *TraceOtlpGrpc {
-	return &TraceOtlpGrpc{cfg: cfg}
+func NewTraceOtlpGrpc(name string) *TraceOtlpGrpc {
+	return &TraceOtlpGrpc{
+		name: name,
+	}
 }
 
-func (t *TraceOtlpGrpc) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *TraceOtlpGrpc) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return err
+	}
 
 	prop := propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
@@ -33,7 +39,6 @@ func (t *TraceOtlpGrpc) Init(app interfaces.IEngine) error {
 	)
 	otel.SetTextMapPropagator(prop)
 
-	var err error
 	t.exporter, err = otlptracegrpc.New(context.Background())
 
 	if err != nil {
@@ -57,14 +62,12 @@ func (t *TraceOtlpGrpc) Stop() error {
 	err := t.provider.Shutdown(context.Background())
 
 	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
+		return err
 	}
 
-	err = t.exporter.Shutdown(context.TODO())
+	return t.exporter.Shutdown(context.TODO())
+}
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	}
-
-	return err
+func (t *TraceOtlpGrpc) Name() string {
+	return t.name
 }

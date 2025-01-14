@@ -3,7 +3,7 @@ package telemetry
 import (
 	"context"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	api "go.opentelemetry.io/otel/metric"
@@ -15,28 +15,34 @@ import (
 )
 
 type MetricPrometheus struct {
-	app      interfaces.IEngine
-	cfg      MetricsPrometheusConfig
+	name     string
+	config   MetricsPrometheusConfig
 	server   *http.Server
 	exporter metric.Reader
 	meter    api.Meter
 }
 
 type MetricsPrometheusConfig struct {
-	Name string `yaml:"name"`
-	Port string `yaml:"port"`
+	ServiceName string `yaml:"service_name"`
+	Port        string `yaml:"port"`
 }
 
-func NewPrometheusMetrics(cfg MetricsPrometheusConfig) *MetricPrometheus {
-	return &MetricPrometheus{cfg: cfg}
+func NewPrometheusMetrics(name string) *MetricPrometheus {
+	return &MetricPrometheus{
+		name: name,
+	}
 }
 
-func (t *MetricPrometheus) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *MetricPrometheus) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return err
+	}
 
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(t.cfg.Name),
+			semconv.ServiceName(t.config.ServiceName),
 		))
 
 	if err != nil {
@@ -44,7 +50,7 @@ func (t *MetricPrometheus) Init(app interfaces.IEngine) error {
 	}
 
 	t.server = &http.Server{
-		Addr:                         ":" + t.cfg.Port,
+		Addr:                         ":" + t.config.Port,
 		Handler:                      promhttp.Handler(),
 		DisableGeneralOptionsHandler: false,
 		ReadTimeout:                  5 * time.Second,
@@ -73,7 +79,6 @@ func (t *MetricPrometheus) Start() error {
 
 	select {
 	case err := <-listenErr:
-		t.app.GetLogger().Error(context.Background(), err)
 		return err
 
 	case <-time.After(time.Second):
@@ -87,15 +92,12 @@ func (t *MetricPrometheus) Stop() error {
 	err := t.server.Shutdown(context.TODO())
 
 	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
 		return err
 	}
 
-	err = t.exporter.Shutdown(context.TODO())
+	return t.exporter.Shutdown(context.TODO())
+}
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	}
-
-	return err
+func (t *MetricPrometheus) Name() string {
+	return t.name
 }

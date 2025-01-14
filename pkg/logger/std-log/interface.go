@@ -19,6 +19,8 @@ const (
 type ILogger interface {
 	Init(map[string]interface{}) error
 	Stop() error
+	Name() string
+	Type() string
 	SetLevel(level LogLevel)
 	Debug(ctx context.Context, args ...interface{})
 	Info(ctx context.Context, args ...interface{})
@@ -28,6 +30,7 @@ type ILogger interface {
 	Fatal(ctx context.Context, err error)
 	Panic(ctx context.Context, err error)
 	Parent() ILogger
+	SetParent(ILogger)
 }
 
 func (t *LogLevel) String() string {

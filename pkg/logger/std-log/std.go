@@ -172,3 +172,7 @@ func (t *Std) Panic(ctx context.Context, err error) {
 func (t *Std) Parent() ILogger {
 	return t.parent
 }
+
+func (t *Std) SetParent(parent ILogger) {
+	t.parent = parent
+}

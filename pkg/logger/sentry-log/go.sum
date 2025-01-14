@@ -18,6 +18,8 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 gitlab.com/devpro_studio/go_utils v1.1.0 h1:IaJzeT7RhM/pwStUO5YrvsWC8DeJrGe6VHfn6+in6Qo=
 gitlab.com/devpro_studio/go_utils v1.1.0/go.mod h1:5Vt1uv2UN5V+Bj4v7xgpakI3P1EHL1+KtMpC9CZa52g=
+gitlab.com/devpro_studio/go_utils v1.1.1 h1:43AHYtvD3fbGwHsJD9ueaSz10r6RE2mCZuICa/fegjc=
+gitlab.com/devpro_studio/go_utils v1.1.1/go.mod h1:w5u/t5VoEsj6T+nwGocm3tHE+CE1n1ZRy2VS9qJXoGg=
 golang.org/x/sys v0.27.0 h1:wBqf8DvsY9Y/2P8gAfPDEYNuS30J4lPHJxXSb/nJZ+s=
 golang.org/x/sys v0.27.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/sys v0.29.0 h1:TPYlXGxvx1MGTn2GiZDhnjPA9wZzZeGKHHmKhHYvgaU=

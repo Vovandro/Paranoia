@@ -28,6 +28,8 @@ github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78/go.mod h1:aL8wCCfTfS
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.com/devpro_studio/go_utils v1.0.0 h1:noq/5I9JUBbsKOe1uPVDdxWIfr0ahxzP1l/XKW1XBJo=
 gitlab.com/devpro_studio/go_utils v1.0.0/go.mod h1:5Vt1uv2UN5V+Bj4v7xgpakI3P1EHL1+KtMpC9CZa52g=
+gitlab.com/devpro_studio/go_utils v1.1.1 h1:43AHYtvD3fbGwHsJD9ueaSz10r6RE2mCZuICa/fegjc=
+gitlab.com/devpro_studio/go_utils v1.1.1/go.mod h1:w5u/t5VoEsj6T+nwGocm3tHE+CE1n1ZRy2VS9qJXoGg=
 go.mongodb.org/mongo-driver v1.17.2 h1:gvZyk8352qSfzyZ2UMWcpDpMSGEr1eqE4T793SqyhzM=
 go.mongodb.org/mongo-driver v1.17.2/go.mod h1:Hy04i7O2kC4RS06ZrhPRqj/u4DTYkFDAAccj+rVKqgQ=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=

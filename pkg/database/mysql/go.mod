@@ -1,10 +1,10 @@
 module gitlab.com/devpro_studio/Paranoia/pkg/database/mysql
 
-go 1.23.0
+go 1.23.4
 
 require (
 	github.com/go-sql-driver/mysql v1.8.1
-	gitlab.com/devpro_studio/go_utils v1.0.0
+	gitlab.com/devpro_studio/go_utils v1.1.1
 	go.opentelemetry.io/otel v1.33.0
 	go.opentelemetry.io/otel/metric v1.33.0
 )

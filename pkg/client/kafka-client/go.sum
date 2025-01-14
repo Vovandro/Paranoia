@@ -293,6 +293,8 @@ github.com/yusufpapurcu/wmi v1.2.3 h1:E1ctvB7uKFMOJw3fdOW32DwGE9I7t++CRUEMKvFoFi
 github.com/yusufpapurcu/wmi v1.2.3/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQmPyzfmi0=
 gitlab.com/devpro_studio/go_utils v1.0.0 h1:noq/5I9JUBbsKOe1uPVDdxWIfr0ahxzP1l/XKW1XBJo=
 gitlab.com/devpro_studio/go_utils v1.0.0/go.mod h1:5Vt1uv2UN5V+Bj4v7xgpakI3P1EHL1+KtMpC9CZa52g=
+gitlab.com/devpro_studio/go_utils v1.1.1 h1:43AHYtvD3fbGwHsJD9ueaSz10r6RE2mCZuICa/fegjc=
+gitlab.com/devpro_studio/go_utils v1.1.1/go.mod h1:w5u/t5VoEsj6T+nwGocm3tHE+CE1n1ZRy2VS9qJXoGg=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
 go.opentelemetry.io/auto/sdk v1.1.0/go.mod h1:3wSPjt5PWp2RhlCcmmOial7AvC4DQqZb7a7wCow3W8A=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.57.0 h1:qtFISDHKolvIxzSs0gIaiPUPR0Cucb0F2coHC7ZLdps=

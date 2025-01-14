@@ -1,5 +1,27 @@
 package interfaces
 
+type TypePkg string
+
+const (
+	PkgCache      TypePkg = "cache"
+	PkgDatabase   TypePkg = "database"
+	PkgClient     TypePkg = "client"
+	PkgServer     TypePkg = "server"
+	PkgStorage    TypePkg = "storage"
+	PkgMiddleware TypePkg = "middleware"
+	PkgLogger     TypePkg = "logger"
+)
+
+type TypeModule string
+
+const (
+	ModuleController TypeModule = "controller"
+	ModuleRepository TypeModule = "repository"
+	ModuleService    TypeModule = "service"
+	ModuleMiddleware TypeModule = "middleware"
+	ModuleCustom     TypeModule = "custom"
+)
+
 type IEngine interface {
 	Init() error
 	Stop() error
@@ -7,30 +29,15 @@ type IEngine interface {
 	GetConfig() IConfig
 	SetMetrics(c IMetrics)
 	SetTrace(c ITrace)
-	PushCache(c IPkg) IEngine
-	GetCache(key string) IPkg
-	PushDatabase(c IDatabase) IEngine
-	GetDatabase(key string) IDatabase
-	PushNoSql(c INoSql) IEngine
-	GetNoSql(key string) INoSql
-	PushController(c IController) IEngine
-	GetController(key string) IController
+
+	PushPkg(c IPkg) IEngine
+	GetPkg(typePkg string, key string) IPkg
+
 	PushModule(c IModules) IEngine
-	GetModule(key string) IModules
-	PushRepository(c IRepository) IEngine
-	GetRepository(key string) IRepository
-	PushService(c IService) IEngine
-	GetService(key string) IService
+	GetModule(typePkg string, key string) IModules
+
 	PushTask(c ITask) IEngine
 	GetTask(key string) ITask
 	RemoveTask(key string)
 	RunTask(key string, args map[string]interface{}) error
-	PushServer(c IServer) IEngine
-	GetServer(key string) IServer
-	PushClient(c IClient) IEngine
-	GetClient(key string) IClient
-	PushStorage(c IStorage) IEngine
-	GetStorage(key string) IStorage
-	PushMiddleware(c IMiddleware) IEngine
-	GetMiddleware(key string) IMiddleware
 }

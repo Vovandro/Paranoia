@@ -1,11 +1,11 @@
 module gitlab.com/devpro_studio/Paranoia/pkg/client/kafka-client
 
-go 1.23.0
+go 1.23.4
 
 require (
 	github.com/confluentinc/confluent-kafka-go/v2 v2.8.0
 	github.com/jurabek/otelkafka v0.0.0-20240825100514-b0047c336bd0
-	gitlab.com/devpro_studio/go_utils v1.0.0
+	gitlab.com/devpro_studio/go_utils v1.1.1
 	go.opentelemetry.io/otel v1.33.0
 	go.opentelemetry.io/otel/metric v1.33.0
 )

@@ -69,6 +69,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 gitlab.com/devpro_studio/go_utils v1.0.0 h1:noq/5I9JUBbsKOe1uPVDdxWIfr0ahxzP1l/XKW1XBJo=
 gitlab.com/devpro_studio/go_utils v1.0.0/go.mod h1:5Vt1uv2UN5V+Bj4v7xgpakI3P1EHL1+KtMpC9CZa52g=
+gitlab.com/devpro_studio/go_utils v1.1.1 h1:43AHYtvD3fbGwHsJD9ueaSz10r6RE2mCZuICa/fegjc=
+gitlab.com/devpro_studio/go_utils v1.1.1/go.mod h1:w5u/t5VoEsj6T+nwGocm3tHE+CE1n1ZRy2VS9qJXoGg=
 go.mongodb.org/mongo-driver v1.11.4/go.mod h1:PTSz5yu21bkT/wXpkS7WR5f0ddqw5quethTUn9WM+2g=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
 go.opentelemetry.io/auto/sdk v1.1.0/go.mod h1:3wSPjt5PWp2RhlCcmmOial7AvC4DQqZb7a7wCow3W8A=

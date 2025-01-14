@@ -17,8 +17,10 @@ const (
 )
 
 type ILogger interface {
-	Init(cfg IConfig) error
+	Init(map[string]interface{}) error
 	Stop() error
+	Name() string
+	Type() string
 	SetLevel(level LogLevel)
 	Debug(ctx context.Context, args ...interface{})
 	Info(ctx context.Context, args ...interface{})
@@ -27,10 +29,12 @@ type ILogger interface {
 	Error(ctx context.Context, err error)
 	Fatal(ctx context.Context, err error)
 	Panic(ctx context.Context, err error)
+	Parent() ILogger
+	SetParent(ILogger)
 }
 
-func (t LogLevel) String() string {
-	switch t {
+func (t *LogLevel) String() string {
+	switch *t {
 	case DEBUG:
 		return "DEBUG"
 	case INFO:
@@ -39,6 +43,8 @@ func (t LogLevel) String() string {
 		return "MESSAGE"
 	case WARNING:
 		return "WARNING"
+	case ERROR:
+		return "ERROR"
 	case CRITICAL:
 		return "CRITICAL"
 
@@ -47,20 +53,22 @@ func (t LogLevel) String() string {
 	}
 }
 
-func GetLogLevel(str string) LogLevel {
+func (t *LogLevel) Parse(str string) {
 	switch strings.ToUpper(str) {
 	case "DEBUG":
-		return DEBUG
+		*t = DEBUG
 	case "INFO":
-		return INFO
+		*t = INFO
 	case "MESSAGE":
-		return MESSAGE
+		*t = MESSAGE
 	case "WARNING":
-		return WARNING
+		*t = WARNING
+	case "ERROR":
+		*t = ERROR
 	case "CRITICAL":
-		return CRITICAL
+		*t = CRITICAL
 
 	default:
-		return DEBUG
+		*t = DEBUG
 	}
 }

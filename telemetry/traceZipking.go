@@ -2,7 +2,7 @@ package telemetry
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/zipkin"
 	"go.opentelemetry.io/otel/propagation"
@@ -11,23 +11,29 @@ import (
 )
 
 type TraceZipking struct {
-	cfg      TraceZipkingConfig
+	name     string
+	config   TraceZipkingConfig
 	exporter trace.SpanExporter
 	provider *trace.TracerProvider
-	app      interfaces.IEngine
 }
 
 type TraceZipkingConfig struct {
-	Name string `yaml:"name"`
-	Url  string `yaml:"url"`
+	ServiceName string `yaml:"service_name"`
+	Url         string `yaml:"url"`
 }
 
-func NewTraceZipking(cfg TraceZipkingConfig) *TraceZipking {
-	return &TraceZipking{cfg: cfg}
+func NewTraceZipking(name string) *TraceZipking {
+	return &TraceZipking{
+		name: name,
+	}
 }
 
-func (t *TraceZipking) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *TraceZipking) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return err
+	}
 
 	prop := propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
@@ -35,8 +41,7 @@ func (t *TraceZipking) Init(app interfaces.IEngine) error {
 	)
 	otel.SetTextMapPropagator(prop)
 
-	var err error
-	t.exporter, err = zipkin.New(t.cfg.Url)
+	t.exporter, err = zipkin.New(t.config.Url)
 
 	if err != nil {
 		return err
@@ -59,14 +64,12 @@ func (t *TraceZipking) Stop() error {
 	err := t.provider.Shutdown(context.Background())
 
 	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
+		return err
 	}
 
-	err = t.exporter.Shutdown(context.TODO())
+	return t.exporter.Shutdown(context.TODO())
+}
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	}
-
-	return err
+func (t *TraceZipking) Name() string {
+	return t.name
 }

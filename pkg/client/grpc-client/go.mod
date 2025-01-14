@@ -1,11 +1,11 @@
 module gitlab.com/devpro_studio/Paranoia/pkg/client/grpc-client
 
-go 1.23.0
+go 1.23.4
 
 require (
-	gitlab.com/devpro_studio/go_utils v1.0.0
+	gitlab.com/devpro_studio/go_utils v1.1.1
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.58.0
-	google.golang.org/grpc v1.69.2
+	google.golang.org/grpc v1.69.4
 )
 
 require (

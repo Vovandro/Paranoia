@@ -1,7 +1,8 @@
 package interfaces
 
 type IMetrics interface {
-	Init(app IEngine) error
+	Init(cfg map[string]interface{}) error
 	Start() error
 	Stop() error
+	Name() string
 }

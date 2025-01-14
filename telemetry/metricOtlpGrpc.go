@@ -2,7 +2,7 @@ package telemetry
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/sdk/metric"
@@ -12,26 +12,32 @@ import (
 )
 
 type MetricOtlpGrpc struct {
-	cfg      MetricOtlpGrpcConfig
+	config   MetricOtlpGrpcConfig
 	exporter metric.Exporter
-	app      interfaces.IEngine
+	name     string
 }
 
 type MetricOtlpGrpcConfig struct {
-	Name     string        `yaml:"name"`
-	Interval time.Duration `yaml:"interval"`
+	ServiceName string        `yaml:"service_name"`
+	Interval    time.Duration `yaml:"interval"`
 }
 
-func NewMetricOtlpGrpc(cfg MetricOtlpGrpcConfig) *MetricOtlpGrpc {
-	return &MetricOtlpGrpc{cfg: cfg}
+func NewMetricOtlpGrpc(name string) *MetricOtlpGrpc {
+	return &MetricOtlpGrpc{
+		name: name,
+	}
 }
 
-func (t *MetricOtlpGrpc) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *MetricOtlpGrpc) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return err
+	}
 
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(t.cfg.Name),
+			semconv.ServiceName(t.config.ServiceName),
 		))
 
 	if err != nil {
@@ -46,7 +52,7 @@ func (t *MetricOtlpGrpc) Init(app interfaces.IEngine) error {
 
 	provider := metric.NewMeterProvider(
 		metric.WithResource(res),
-		metric.WithReader(metric.NewPeriodicReader(t.exporter, metric.WithInterval(t.cfg.Interval))),
+		metric.WithReader(metric.NewPeriodicReader(t.exporter, metric.WithInterval(t.config.Interval))),
 	)
 
 	otel.SetMeterProvider(provider)
@@ -60,11 +66,9 @@ func (t *MetricOtlpGrpc) Start() error {
 }
 
 func (t *MetricOtlpGrpc) Stop() error {
-	err := t.exporter.Shutdown(context.TODO())
+	return t.exporter.Shutdown(context.TODO())
+}
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	}
-
-	return err
+func (t *MetricOtlpGrpc) Name() string {
+	return t.name
 }

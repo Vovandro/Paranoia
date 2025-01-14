@@ -1,10 +1,10 @@
 module gitlab.com/devpro_studio/Paranoia/pkg/logger/sentry-log
 
-go 1.23.0
+go 1.23.4
 
 require (
 	github.com/getsentry/sentry-go v0.31.1
-	gitlab.com/devpro_studio/go_utils v1.1.0
+	gitlab.com/devpro_studio/go_utils v1.1.1
 )
 
 require (

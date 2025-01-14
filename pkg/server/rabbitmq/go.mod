@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/rabbitmq/amqp091-go v1.10.0
-	gitlab.com/devpro_studio/go_utils v1.1.0
+	gitlab.com/devpro_studio/go_utils v1.1.1
 	go.opentelemetry.io/otel v1.33.0
 	go.opentelemetry.io/otel/metric v1.33.0
 )

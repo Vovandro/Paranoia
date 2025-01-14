@@ -2,7 +2,7 @@ package telemetry
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
@@ -11,23 +11,29 @@ import (
 )
 
 type TraceStd struct {
-	cfg      TraceStdConfig
+	name     string
+	config   TraceStdConfig
 	exporter trace.SpanExporter
 	provider *trace.TracerProvider
-	app      interfaces.IEngine
 }
 
 type TraceStdConfig struct {
-	Name     string        `yaml:"name"`
-	Interval time.Duration `yaml:"interval"`
+	ServiceName string        `yaml:"service_name"`
+	Interval    time.Duration `yaml:"interval"`
 }
 
-func NewTraceStd(cfg TraceStdConfig) *TraceStd {
-	return &TraceStd{cfg: cfg}
+func NewTraceStd(name string) *TraceStd {
+	return &TraceStd{
+		name: name,
+	}
 }
 
-func (t *TraceStd) Init(app interfaces.IEngine) error {
-	t.app = app
+func (t *TraceStd) Init(cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return err
+	}
 
 	prop := propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
@@ -35,7 +41,6 @@ func (t *TraceStd) Init(app interfaces.IEngine) error {
 	)
 	otel.SetTextMapPropagator(prop)
 
-	var err error
 	t.exporter, err = stdouttrace.New(stdouttrace.WithPrettyPrint())
 
 	if err != nil {
@@ -43,7 +48,7 @@ func (t *TraceStd) Init(app interfaces.IEngine) error {
 	}
 
 	t.provider = trace.NewTracerProvider(
-		trace.WithBatcher(t.exporter, trace.WithBatchTimeout(t.cfg.Interval)),
+		trace.WithBatcher(t.exporter, trace.WithBatchTimeout(t.config.Interval)),
 	)
 
 	otel.SetTracerProvider(t.provider)
@@ -59,14 +64,12 @@ func (t *TraceStd) Stop() error {
 	err := t.provider.Shutdown(context.Background())
 
 	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
+		return err
 	}
 
-	err = t.exporter.Shutdown(context.TODO())
+	return t.exporter.Shutdown(context.TODO())
+}
 
-	if err != nil {
-		t.app.GetLogger().Error(context.Background(), err)
-	}
-
-	return err
+func (t *TraceStd) Name() string {
+	return t.name
 }
