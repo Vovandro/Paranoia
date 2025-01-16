@@ -96,6 +96,10 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			body, _ := got.GetBody()
 			bodyWant, _ := tt.want.GetBody()
 
+			if got.GetCode() != tt.want.GetCode() {
+				t1.Errorf("Fetch() = %d, want %d", got.GetCode(), tt.want.GetCode())
+			}
+
 			if !bytes.Equal(body, bodyWant) {
 				t1.Errorf("Fetch() = %s, want %s", body, bodyWant)
 			}
