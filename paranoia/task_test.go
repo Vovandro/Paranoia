@@ -1,8 +1,8 @@
-package framework
+package paranoia
 
 import (
 	"context"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -10,13 +10,13 @@ import (
 
 type testTask struct {
 	count atomic.Int32
-	cfg   []interfaces.ITaskRunConfiguration
+	cfg   []interfaces2.ITaskRunConfiguration
 }
 
-func (t *testTask) Init(app interfaces.IEngine) error                       { return nil }
+func (t *testTask) Init(app interfaces2.IEngine) error                      { return nil }
 func (t *testTask) Stop() error                                             { return nil }
 func (t *testTask) String() string                                          { return "test" }
-func (t *testTask) Start() []interfaces.ITaskRunConfiguration               { return t.cfg }
+func (t *testTask) Start() []interfaces2.ITaskRunConfiguration              { return t.cfg }
 func (t *testTask) Invoke(ctx context.Context, data map[string]interface{}) { t.count.Add(1) }
 
 func Test_task_run(t1 *testing.T) {
@@ -25,8 +25,8 @@ func Test_task_run(t1 *testing.T) {
 		defer close(reset)
 
 		tsk := &testTask{
-			cfg: []interfaces.ITaskRunConfiguration{
-				&interfaces.TaskRunAfter{
+			cfg: []interfaces2.ITaskRunConfiguration{
+				&interfaces2.TaskRunAfter{
 					Restart: reset,
 					After:   time.Millisecond * 100,
 				},
@@ -71,7 +71,7 @@ func Test_task_run(t1 *testing.T) {
 func Test_task_ManualRun(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {
 		tsk := &testTask{
-			cfg: []interfaces.ITaskRunConfiguration{},
+			cfg: []interfaces2.ITaskRunConfiguration{},
 		}
 
 		t := task{}

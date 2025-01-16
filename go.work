@@ -1,0 +1,28 @@
+go 1.23.4
+
+use (
+	.
+	./pkg/cache/memory
+	./pkg/cache/etcd
+	./pkg/cache/memcached
+	./pkg/cache/redis
+	./pkg/client/grpc-client
+	./pkg/client/http-client
+	./pkg/client/kafka-client
+	./pkg/client/rabbitmq-client
+	./pkg/database/as
+	./pkg/database/clickhouse
+	./pkg/database/mongodb
+	./pkg/database/mysql
+	./pkg/database/postgres
+	./pkg/database/sqlite
+	./pkg/logger/file-log
+	./pkg/logger/sentry-log
+	./pkg/logger/std-log
+	./pkg/server/grpc
+	./pkg/server/http
+	./pkg/server/kafka
+	./pkg/server/rabbitmq
+	./pkg/storage/file
+	./pkg/storage/s3
+)

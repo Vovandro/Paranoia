@@ -1,7 +1,7 @@
 package yaml
 
 import (
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"gopkg.in/yaml.v3"
 	"os"

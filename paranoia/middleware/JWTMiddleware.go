@@ -7,7 +7,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"net/http"
 	"os"
 	"strings"
@@ -26,13 +26,13 @@ type JWTMiddlewareConfig struct {
 	CtxKey    string `yaml:"ctx_key"`
 }
 
-func NewJWTMiddleware(name string) interfaces.IMiddleware {
+func NewJWTMiddleware(name string) interfaces2.IMiddleware {
 	return &JWTMiddleware{
 		name: name,
 	}
 }
 
-func (t *JWTMiddleware) Init(app interfaces.IEngine, cfg map[string]interface{}) error {
+func (t *JWTMiddleware) Init(app interfaces2.IEngine, cfg map[string]interface{}) error {
 
 	pubKeyData, err := os.ReadFile(t.config.PublicKey)
 	if err != nil {
@@ -70,8 +70,8 @@ func (t *JWTMiddleware) Type() string {
 	return "middleware"
 }
 
-func (t *JWTMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {
-	return func(c context.Context, ctx interfaces.ICtx) {
+func (t *JWTMiddleware) Invoke(next interfaces2.RouteFunc) interfaces2.RouteFunc {
+	return func(c context.Context, ctx interfaces2.ICtx) {
 		authHeader := ctx.GetRequest().GetHeader().Get("Authorization")
 		if authHeader == "" {
 			ctx.GetResponse().SetStatus(http.StatusUnauthorized)

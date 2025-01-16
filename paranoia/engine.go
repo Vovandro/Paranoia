@@ -1,10 +1,10 @@
-package framework
+package paranoia
 
 import (
 	"context"
 	"fmt"
-	"gitlab.com/devpro_studio/Paranoia/config/yaml"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/paranoia/config/yaml"
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 )
 
 type Engine struct {
@@ -12,16 +12,16 @@ type Engine struct {
 
 	starting bool
 
-	config         interfaces.IConfig
-	logger         interfaces.ILogger
-	metricExporter interfaces.IMetrics
-	trace          interfaces.ITrace
+	config         interfaces2.IConfig
+	logger         interfaces2.ILogger
+	metricExporter interfaces2.IMetrics
+	trace          interfaces2.ITrace
 
 	task task
 
-	pkg         map[string]map[string]interfaces.IPkg
-	modules     map[string]map[string]interfaces.IModules
-	middlewares map[string]interfaces.IMiddleware
+	pkg         map[string]map[string]interfaces2.IPkg
+	modules     map[string]map[string]interfaces2.IModules
+	middlewares map[string]interfaces2.IMiddleware
 }
 
 func New(name string, configName string) *Engine {
@@ -31,9 +31,9 @@ func New(name string, configName string) *Engine {
 	t.name = name
 	t.config = yaml.NewYaml(yaml.AutoConfig{FName: configName})
 
-	t.pkg = make(map[string]map[string]interfaces.IPkg, 10)
-	t.modules = make(map[string]map[string]interfaces.IModules, 10)
-	t.middlewares = make(map[string]interfaces.IMiddleware)
+	t.pkg = make(map[string]map[string]interfaces2.IPkg, 10)
+	t.modules = make(map[string]map[string]interfaces2.IModules, 10)
+	t.middlewares = make(map[string]interfaces2.IMiddleware)
 
 	t.task.Init(t)
 
@@ -49,15 +49,15 @@ func New(name string, configName string) *Engine {
 	return t
 }
 
-func (t *Engine) GetLogger() interfaces.ILogger {
+func (t *Engine) GetLogger() interfaces2.ILogger {
 	return t.logger
 }
 
-func (t *Engine) GetConfig() interfaces.IConfig {
+func (t *Engine) GetConfig() interfaces2.IConfig {
 	return t.config
 }
 
-func (t *Engine) SetMetrics(c interfaces.IMetrics) {
+func (t *Engine) SetMetrics(c interfaces2.IMetrics) {
 	if t.metricExporter != nil {
 		_ = t.metricExporter.Stop()
 	}
@@ -65,7 +65,7 @@ func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 	t.metricExporter = c
 }
 
-func (t *Engine) SetTrace(c interfaces.ITrace) {
+func (t *Engine) SetTrace(c interfaces2.ITrace) {
 	if t.trace != nil {
 		_ = t.trace.Stop()
 	}
@@ -73,7 +73,7 @@ func (t *Engine) SetTrace(c interfaces.ITrace) {
 	t.trace = c
 }
 
-func (t *Engine) PushPkg(c interfaces.IPkg) interfaces.IEngine {
+func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
 	if c == nil {
 		panic("nil package")
 		return nil
@@ -82,8 +82,8 @@ func (t *Engine) PushPkg(c interfaces.IPkg) interfaces.IEngine {
 	name := c.Name()
 	typePkg := c.Type()
 
-	if typePkg == string(interfaces.PkgLogger) {
-		convertedLogger, ok := c.(interfaces.ILogger)
+	if typePkg == string(interfaces2.PkgLogger) {
+		convertedLogger, ok := c.(interfaces2.ILogger)
 
 		if !ok {
 			panic("cannot cast logger")
@@ -113,7 +113,7 @@ func (t *Engine) PushPkg(c interfaces.IPkg) interfaces.IEngine {
 
 			p[name] = c
 		} else {
-			t.pkg[typePkg] = make(map[string]interfaces.IPkg)
+			t.pkg[typePkg] = make(map[string]interfaces2.IPkg)
 			t.pkg[typePkg][name] = c
 		}
 	}
@@ -121,7 +121,7 @@ func (t *Engine) PushPkg(c interfaces.IPkg) interfaces.IEngine {
 	return t
 }
 
-func (t *Engine) GetPkg(typePkg string, key string) interfaces.IPkg {
+func (t *Engine) GetPkg(typePkg string, key string) interfaces2.IPkg {
 	if p, ok := t.pkg[typePkg]; ok {
 		if pkg, ok := p[key]; ok {
 			return pkg
@@ -131,7 +131,7 @@ func (t *Engine) GetPkg(typePkg string, key string) interfaces.IPkg {
 	return nil
 }
 
-func (t *Engine) PushModule(c interfaces.IModules) interfaces.IEngine {
+func (t *Engine) PushModule(c interfaces2.IModules) interfaces2.IEngine {
 	if c == nil {
 		panic("nil package")
 		return nil
@@ -140,8 +140,8 @@ func (t *Engine) PushModule(c interfaces.IModules) interfaces.IEngine {
 	name := c.Name()
 	typeModule := c.Type()
 
-	if typeModule == string(interfaces.ModuleMiddleware) {
-		convertedMiddleware, ok := c.(interfaces.IMiddleware)
+	if typeModule == string(interfaces2.ModuleMiddleware) {
+		convertedMiddleware, ok := c.(interfaces2.IMiddleware)
 
 		if !ok {
 			panic("cannot cast middleware")
@@ -160,7 +160,7 @@ func (t *Engine) PushModule(c interfaces.IModules) interfaces.IEngine {
 
 			p[name] = c
 		} else {
-			t.modules[typeModule] = make(map[string]interfaces.IModules)
+			t.modules[typeModule] = make(map[string]interfaces2.IModules)
 			t.modules[typeModule][name] = c
 		}
 	}
@@ -168,8 +168,8 @@ func (t *Engine) PushModule(c interfaces.IModules) interfaces.IEngine {
 	return t
 }
 
-func (t *Engine) GetModule(typeModule string, key string) interfaces.IModules {
-	if typeModule == string(interfaces.ModuleMiddleware) {
+func (t *Engine) GetModule(typeModule string, key string) interfaces2.IModules {
+	if typeModule == string(interfaces2.ModuleMiddleware) {
 		if m, ok := t.middlewares[key]; ok {
 			return m
 		}
@@ -184,11 +184,11 @@ func (t *Engine) GetModule(typeModule string, key string) interfaces.IModules {
 	return nil
 }
 
-func (t *Engine) GetTask(key string) interfaces.ITask {
+func (t *Engine) GetTask(key string) interfaces2.ITask {
 	return t.task.GetTask(key)
 }
 
-func (t *Engine) PushTask(b interfaces.ITask) interfaces.IEngine {
+func (t *Engine) PushTask(b interfaces2.ITask) interfaces2.IEngine {
 	t.task.PushTask(b, t.starting)
 
 	return t
@@ -246,7 +246,7 @@ func (t *Engine) Init() error {
 	}
 
 	for name, c := range t.middlewares {
-		err = c.Init(t, t.config.GetConfigItem(string(interfaces.ModuleMiddleware), name))
+		err = c.Init(t, t.config.GetConfigItem(string(interfaces2.ModuleMiddleware), name))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
@@ -268,7 +268,7 @@ func (t *Engine) Init() error {
 
 	if servers, ok := t.pkg["servers"]; ok {
 		for _, server := range servers {
-			err = server.(interfaces.IServer).Start()
+			err = server.(interfaces2.IServer).Start()
 
 			if err != nil {
 				t.logger.Fatal(context.Background(), err)

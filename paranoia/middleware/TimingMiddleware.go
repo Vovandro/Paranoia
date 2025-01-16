@@ -3,22 +3,22 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"time"
 )
 
 type TimingMiddleware struct {
 	name   string
-	logger interfaces.ILogger
+	logger interfaces2.ILogger
 }
 
-func NewTimingMiddleware(name string) interfaces.IMiddleware {
+func NewTimingMiddleware(name string) interfaces2.IMiddleware {
 	return &TimingMiddleware{
 		name: name,
 	}
 }
 
-func (t *TimingMiddleware) Init(app interfaces.IEngine, _ map[string]interface{}) error {
+func (t *TimingMiddleware) Init(app interfaces2.IEngine, _ map[string]interface{}) error {
 	t.logger = app.GetLogger()
 	return nil
 }
@@ -35,8 +35,8 @@ func (t *TimingMiddleware) Type() string {
 	return "middleware"
 }
 
-func (t *TimingMiddleware) Invoke(next interfaces.RouteFunc) interfaces.RouteFunc {
-	return func(c context.Context, ctx interfaces.ICtx) {
+func (t *TimingMiddleware) Invoke(next interfaces2.RouteFunc) interfaces2.RouteFunc {
+	return func(c context.Context, ctx interfaces2.ICtx) {
 		tm := time.Now()
 
 		next(c, ctx)

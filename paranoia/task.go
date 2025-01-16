@@ -1,9 +1,9 @@
-package framework
+package paranoia
 
 import (
 	"context"
 	"fmt"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"go.opentelemetry.io/otel"
 	"sync"
 	"sync/atomic"
@@ -11,38 +11,38 @@ import (
 )
 
 type taskRun struct {
-	cfg    interfaces.ITaskRunConfiguration
+	cfg    interfaces2.ITaskRunConfiguration
 	c      *time.Timer
 	enable atomic.Bool
 }
 
 type task struct {
-	tasks     map[string]interfaces.ITask
+	tasks     map[string]interfaces2.ITask
 	runCfg    map[string][]taskRun
 	taskMutex sync.RWMutex
-	app       interfaces.IEngine
+	app       interfaces2.IEngine
 
 	done chan interface{}
 	end  sync.WaitGroup
 }
 
-func (t *task) Init(app interfaces.IEngine) {
+func (t *task) Init(app interfaces2.IEngine) {
 	t.app = app
-	t.tasks = make(map[string]interfaces.ITask, 20)
+	t.tasks = make(map[string]interfaces2.ITask, 20)
 	t.runCfg = make(map[string][]taskRun, 20)
 	t.taskMutex = sync.RWMutex{}
 
 	t.done = make(chan interface{})
 }
 
-func (t *task) GetTask(key string) interfaces.ITask {
+func (t *task) GetTask(key string) interfaces2.ITask {
 	t.taskMutex.RLock()
 	defer t.taskMutex.RUnlock()
 
 	return t.tasks[key]
 }
 
-func (t *task) PushTask(b interfaces.ITask, run bool) {
+func (t *task) PushTask(b interfaces2.ITask, run bool) {
 	t.taskMutex.Lock()
 	defer t.taskMutex.Unlock()
 
@@ -60,7 +60,7 @@ func (t *task) PushTask(b interfaces.ITask, run bool) {
 		t.runCfg[b.String()] = make([]taskRun, len(cfgs))
 
 		for i, cfg := range cfgs {
-			if c, ok := cfg.(*interfaces.TaskRunAfter); ok {
+			if c, ok := cfg.(*interfaces2.TaskRunAfter); ok {
 				t.runCfg[b.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(c.After),
@@ -68,7 +68,7 @@ func (t *task) PushTask(b interfaces.ITask, run bool) {
 				}
 
 				t.runCfg[b.String()][i].enable.Store(true)
-			} else if c, ok := cfg.(*interfaces.TaskRunTime); ok {
+			} else if c, ok := cfg.(*interfaces2.TaskRunTime); ok {
 				t.runCfg[b.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(time.Until(c.To)),
@@ -101,7 +101,7 @@ func (t *task) Start() {
 		t.runCfg[item.String()] = make([]taskRun, len(cfgs))
 
 		for i, cfg := range cfgs {
-			if c, ok := cfg.(*interfaces.TaskRunAfter); ok {
+			if c, ok := cfg.(*interfaces2.TaskRunAfter); ok {
 				t.runCfg[item.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(c.After),
@@ -109,7 +109,7 @@ func (t *task) Start() {
 				}
 
 				t.runCfg[item.String()][i].enable.Store(true)
-			} else if c, ok := cfg.(*interfaces.TaskRunTime); ok {
+			} else if c, ok := cfg.(*interfaces2.TaskRunTime); ok {
 				t.runCfg[item.String()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(time.Until(c.To)),
@@ -153,7 +153,7 @@ func (t *task) run() {
 						if tsk, ok := t.tasks[key]; ok {
 							configs[i].enable.Store(false)
 							t.end.Add(1)
-							go func(tsk interfaces.ITask) {
+							go func(tsk interfaces2.ITask) {
 								defer t.end.Done()
 								tr := otel.Tracer("task")
 								ctx, span := tr.Start(context.Background(), tsk.String())
@@ -172,7 +172,7 @@ func (t *task) run() {
 					}
 				}
 
-				if c, ok := configs[i].cfg.(*interfaces.TaskRunAfter); ok {
+				if c, ok := configs[i].cfg.(*interfaces2.TaskRunAfter); ok {
 					select {
 					case r := <-c.Restart:
 						configs[i].c.Reset(r)
@@ -181,7 +181,7 @@ func (t *task) run() {
 					default:
 						break
 					}
-				} else if c, ok := configs[i].cfg.(*interfaces.TaskRunTime); ok {
+				} else if c, ok := configs[i].cfg.(*interfaces2.TaskRunTime); ok {
 					select {
 					case r := <-c.Restart:
 						configs[i].c.Reset(time.Until(r))
@@ -213,7 +213,7 @@ func (t *task) RunTask(key string, args map[string]interface{}) error {
 	if item, ok := t.tasks[key]; ok {
 		t.end.Add(1)
 
-		go func(tsk interfaces.ITask, args map[string]interface{}) {
+		go func(tsk interfaces2.ITask, args map[string]interface{}) {
 			defer t.end.Done()
 			tr := otel.Tracer("task")
 			ctx, span := tr.Start(context.Background(), tsk.String())

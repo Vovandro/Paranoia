@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"gitlab.com/devpro_studio/Paranoia/interfaces"
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"os"
 	"time"
@@ -25,13 +25,13 @@ type JWTConfig struct {
 	Expire     time.Duration `yaml:"expire"`
 }
 
-func NewJWT(name string) interfaces.IModules {
+func NewJWT(name string) interfaces2.IModules {
 	return &JWT{
 		name: name,
 	}
 }
 
-func (t *JWT) Init(_ interfaces.IEngine, cfg map[string]interface{}) error {
+func (t *JWT) Init(_ interfaces2.IEngine, cfg map[string]interface{}) error {
 	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err

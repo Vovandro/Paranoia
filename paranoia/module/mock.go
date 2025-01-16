@@ -1,6 +1,8 @@
-package service
+package module
 
-import "gitlab.com/devpro_studio/Paranoia/interfaces"
+import (
+	"gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
+)
 
 type Mock struct {
 	Name string
@@ -19,5 +21,5 @@ func (t *Mock) String() string {
 }
 
 func (t *Mock) Type() string {
-	return string(interfaces.ModuleService)
+	return string(interfaces.ModuleModule)
 }

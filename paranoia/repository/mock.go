@@ -1,6 +1,8 @@
 package repository
 
-import "gitlab.com/devpro_studio/Paranoia/interfaces"
+import (
+	"gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
+)
 
 type Mock struct {
 	Name string

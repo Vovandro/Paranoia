@@ -1,6 +1,8 @@
-package module
+package controller
 
-import "gitlab.com/devpro_studio/Paranoia/interfaces"
+import (
+	"gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
+)
 
 type Mock struct {
 	Name string
@@ -19,5 +21,5 @@ func (t *Mock) String() string {
 }
 
 func (t *Mock) Type() string {
-	return string(interfaces.ModuleModule)
+	return string(interfaces.ModuleController)
 }
