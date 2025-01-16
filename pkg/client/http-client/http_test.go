@@ -29,10 +29,10 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			RetryCount: 5,
 			args: args{
 				"GET",
-				"http://127.0.0.1:8008/",
+				"http://127.0.0.1:9008/",
 				nil,
 				nil,
-				"127.0.0.1:8008",
+				"127.0.0.1:9008",
 			},
 			want: &Response{
 				bytes.NewBuffer([]byte("{}")),
@@ -47,12 +47,12 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			RetryCount: 5,
 			args: args{
 				"POST",
-				"http://127.0.0.1:8009/test",
+				"http://127.0.0.1:9009/test",
 				[]byte("{\"id\":1}"),
 				map[string][]string{
 					"Content-Type": {"application/json"},
 				},
-				"127.0.0.1:8009",
+				"127.0.0.1:9009",
 			},
 			want: &Response{
 				bytes.NewBuffer([]byte("{\"id\":1}")),
@@ -94,9 +94,8 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 
 			go func() {
 				err := server.ListenAndServe()
-				if err != nil {
+				if err != nil && !errors.Is(err, http.ErrServerClosed) {
 					t1.Errorf("ListenAndServe() error = %v", err)
-					return
 				}
 			}()
 
