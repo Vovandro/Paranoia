@@ -180,7 +180,7 @@ func (t *Rabbitmq) Stop() error {
 
 	time.Sleep(time.Second)
 
-	return nil
+	return err
 }
 
 func (t *Rabbitmq) Name() string {

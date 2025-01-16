@@ -103,7 +103,7 @@ func (t *Kafka) Init(cfg map[string]interface{}) error {
 		cfgKafka.SetKey("sasl.password", t.config.Password)
 	}
 
-	t.consumer, err = otelkafka.NewConsumer(&cfg)
+	t.consumer, err = otelkafka.NewConsumer(&cfgKafka)
 
 	if err != nil {
 		return err
