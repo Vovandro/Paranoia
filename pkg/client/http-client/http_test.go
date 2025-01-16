@@ -3,6 +3,7 @@ package http_client
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"testing"
@@ -10,10 +11,11 @@ import (
 
 func TestHTTPClient_Fetch(t1 *testing.T) {
 	type args struct {
-		method  string
-		host    string
-		data    []byte
-		headers map[string][]string
+		method     string
+		host       string
+		data       []byte
+		headers    map[string][]string
+		serverPort string
 	}
 	tests := []struct {
 		name       string
@@ -29,6 +31,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				"http://127.0.0.1:8008/",
 				nil,
 				nil,
+				":8008",
 			},
 			want: &Response{
 				bytes.NewBuffer([]byte("{}")),
@@ -43,11 +46,12 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			RetryCount: 5,
 			args: args{
 				"POST",
-				"http://127.0.0.1:8008/test",
+				"http://127.0.0.1:8009/test",
 				[]byte("{\"id\":1}"),
 				map[string][]string{
 					"Content-Type": {"application/json"},
 				},
+				":8009",
 			},
 			want: &Response{
 				bytes.NewBuffer([]byte("{\"id\":1}")),
@@ -66,7 +70,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				"retry_count": tt.RetryCount,
 			})
 
-			server := &http.Server{Addr: ":8008"}
+			server := &http.Server{Addr: tt.args.serverPort}
 
 			server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				switch r.RequestURI {
@@ -95,6 +99,10 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 
 			body, _ := got.GetBody()
 			bodyWant, _ := tt.want.GetBody()
+
+			if !errors.Is(got.Error(), tt.want.Error()) {
+				t1.Errorf("Fetch() = %s, want %s", got.Error(), tt.want.Error())
+			}
 
 			if got.GetCode() != tt.want.GetCode() {
 				t1.Errorf("Fetch() = %d, want %d", got.GetCode(), tt.want.GetCode())
