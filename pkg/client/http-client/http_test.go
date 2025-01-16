@@ -31,7 +31,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				"http://127.0.0.1:8008/",
 				nil,
 				nil,
-				":8008",
+				"127.0.0.1:8008",
 			},
 			want: &Response{
 				bytes.NewBuffer([]byte("{}")),
@@ -51,7 +51,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 				map[string][]string{
 					"Content-Type": {"application/json"},
 				},
-				":8009",
+				"127.0.0.1:8009",
 			},
 			want: &Response{
 				bytes.NewBuffer([]byte("{\"id\":1}")),
@@ -92,7 +92,11 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 			})
 
 			go func() {
-				server.ListenAndServe()
+				err := server.ListenAndServe()
+				if err != nil {
+					t1.Errorf("ListenAndServe() error = %v", err)
+					return
+				}
 			}()
 
 			got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers)
