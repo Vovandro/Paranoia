@@ -1,9 +1,5 @@
 #!/bin/bash
 
-DIR=$(pwd)
-
-cd ../
-
 pkg=$(grep './' go.work | awk '{print $1}')
 
 ROOT=$(pwd)
