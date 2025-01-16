@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestHTTPClient_Fetch(t1 *testing.T) {
@@ -98,6 +99,8 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 					return
 				}
 			}()
+
+			time.Sleep(time.Second)
 
 			got := <-t.Fetch(context.Background(), tt.args.method, tt.args.host, tt.args.data, tt.args.headers)
 
