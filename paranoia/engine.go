@@ -82,7 +82,7 @@ func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
 	name := c.Name()
 	typePkg := c.Type()
 
-	if typePkg == string(interfaces2.PkgLogger) {
+	if typePkg == interfaces2.PkgLogger {
 		convertedLogger, ok := c.(interfaces2.ILogger)
 
 		if !ok {
@@ -140,7 +140,7 @@ func (t *Engine) PushModule(c interfaces2.IModules) interfaces2.IEngine {
 	name := c.Name()
 	typeModule := c.Type()
 
-	if typeModule == string(interfaces2.ModuleMiddleware) {
+	if typeModule == interfaces2.ModuleMiddleware {
 		convertedMiddleware, ok := c.(interfaces2.IMiddleware)
 
 		if !ok {
@@ -169,7 +169,7 @@ func (t *Engine) PushModule(c interfaces2.IModules) interfaces2.IEngine {
 }
 
 func (t *Engine) GetModule(typeModule string, key string) interfaces2.IModules {
-	if typeModule == string(interfaces2.ModuleMiddleware) {
+	if typeModule == interfaces2.ModuleMiddleware {
 		if m, ok := t.middlewares[key]; ok {
 			return m
 		}
@@ -246,7 +246,7 @@ func (t *Engine) Init() error {
 	}
 
 	for name, c := range t.middlewares {
-		err = c.Init(t, t.config.GetConfigItem(string(interfaces2.ModuleMiddleware), name))
+		err = c.Init(t, t.config.GetConfigItem(interfaces2.ModuleMiddleware, name))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)

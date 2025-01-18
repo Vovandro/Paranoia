@@ -21,5 +21,5 @@ func (t *Mock) Name() string {
 }
 
 func (t *Mock) Type() string {
-	return string(interfaces.ModuleRepository)
+	return interfaces.ModuleRepository
 }

@@ -1,26 +1,22 @@
 package interfaces
 
-type TypePkg string
-
 const (
-	PkgCache      TypePkg = "cache"
-	PkgDatabase   TypePkg = "database"
-	PkgClient     TypePkg = "client"
-	PkgServer     TypePkg = "server"
-	PkgStorage    TypePkg = "storage"
-	PkgMiddleware TypePkg = "middleware"
-	PkgLogger     TypePkg = "logger"
+	PkgCache      = "cache"
+	PkgDatabase   = "database"
+	PkgClient     = "client"
+	PkgServer     = "server"
+	PkgStorage    = "storage"
+	PkgMiddleware = "middleware"
+	PkgLogger     = "logger"
 )
 
-type TypeModule string
-
 const (
-	ModuleController TypeModule = "controller"
-	ModuleRepository TypeModule = "repository"
-	ModuleService    TypeModule = "service"
-	ModuleMiddleware TypeModule = "middleware"
-	ModuleModule     TypeModule = "module"
-	ModuleCustom     TypeModule = "custom"
+	ModuleController = "controller"
+	ModuleRepository = "repository"
+	ModuleService    = "service"
+	ModuleMiddleware = "middleware"
+	ModuleModule     = "module"
+	ModuleCustom     = "custom"
 )
 
 type IEngine interface {
