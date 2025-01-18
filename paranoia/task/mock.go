@@ -6,7 +6,7 @@ import (
 )
 
 type Mock struct {
-	Name string
+	NamePkg string
 }
 
 func (t *Mock) Init(_ interfaces2.IEngine) error {
@@ -17,8 +17,8 @@ func (t *Mock) Stop() error {
 	return nil
 }
 
-func (t *Mock) String() string {
-	return t.Name
+func (t *Mock) Name() string {
+	return t.NamePkg
 }
 
 func (t *Mock) Start() []interfaces2.ITaskRunConfiguration {
