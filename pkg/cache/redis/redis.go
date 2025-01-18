@@ -25,11 +25,11 @@ type Redis struct {
 
 type Config struct {
 	Hosts      string        `yaml:"hosts"`
-	UseCluster bool          `yaml:"use_cluster,omitempty"`
-	DBNum      int           `yaml:"db_num,omitempty"`
+	UseCluster bool          `yaml:"use_cluster"`
+	DBNum      int           `yaml:"db_num"`
 	Timeout    time.Duration `yaml:"timeout"`
-	Username   string        `yaml:"username,omitempty"`
-	Password   string        `yaml:"password,omitempty"`
+	Username   string        `yaml:"username"`
+	Password   string        `yaml:"password"`
 }
 
 func NewRedis(name string) *Redis {

@@ -28,8 +28,8 @@ type Etcd struct {
 
 type Config struct {
 	Hosts    string `yaml:"hosts"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 func NewEtcd(name string) *Etcd {

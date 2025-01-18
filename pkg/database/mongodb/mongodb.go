@@ -25,11 +25,11 @@ type MongoDB struct {
 
 type Config struct {
 	Database string        `yaml:"database"`
-	User     string        `yaml:"user,omitempty"`
-	Password string        `yaml:"password,omitempty"`
-	Hosts    string        `yaml:"hosts,omitempty"`
-	Mode     readpref.Mode `yaml:"mode,omitempty"`
-	URI      string        `yaml:"uri,omitempty"`
+	User     string        `yaml:"user"`
+	Password string        `yaml:"password"`
+	Hosts    string        `yaml:"hosts"`
+	Mode     readpref.Mode `yaml:"mode"`
+	URI      string        `yaml:"uri"`
 }
 
 func NewMongoDB(name string) *MongoDB {

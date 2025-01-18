@@ -23,8 +23,8 @@ type Aerospike struct {
 }
 
 type Config struct {
-	User     string `yaml:"user,omitempty"`
-	Password string `yaml:"password,omitempty"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
 	Hosts    string `yaml:"hosts"`
 }
 
