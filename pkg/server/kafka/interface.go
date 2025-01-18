@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+// IKafka defines the interface for Kafka server operations
+type IKafka interface {
+	// PushRoute adds a new route to the Kafka server
+	PushRoute(path string, handler RouteFunc, middlewares []string)
+}
+
 type IHeader interface {
 	Add(key, value string)
 	Set(key string, value string)

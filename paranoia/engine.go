@@ -101,7 +101,7 @@ func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
 				break
 			}
 
-			l = l.Parent()
+			l = l.Parent().(interfaces2.ILogger)
 		}
 
 		l.SetParent(convertedLogger)
@@ -207,12 +207,16 @@ func (t *Engine) Init() error {
 
 	l := t.logger
 
-	for ; l != nil; l = l.Parent() {
+	for ; l != nil; l = l.Parent().(interfaces2.ILogger) {
 		err = l.Init(t.config.GetConfigItem(l.Type(), l.Name()))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
 			return err
+		}
+
+		if l.Parent() == nil {
+			break
 		}
 	}
 

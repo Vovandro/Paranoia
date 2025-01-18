@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/minio/minio-go/v7 v7.0.83
-	gitlab.com/devpro_studio/go_utils v1.1.1
+	gitlab.com/devpro_studio/go_utils v1.1.2
 )
 
 require (

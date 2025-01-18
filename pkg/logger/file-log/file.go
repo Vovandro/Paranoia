@@ -217,10 +217,10 @@ func (t *File) Panic(ctx context.Context, err error) {
 	}
 }
 
-func (t *File) Parent() ILogger {
+func (t *File) Parent() interface{} {
 	return t.parent
 }
 
-func (t *File) SetParent(parent ILogger) {
-	t.parent = parent
+func (t *File) SetParent(parent interface{}) {
+	t.parent = parent.(ILogger)
 }

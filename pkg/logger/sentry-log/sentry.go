@@ -201,10 +201,10 @@ func (t *Sentry) getHub(ctx context.Context, level sentry.Level) *sentry.Hub {
 	return hub
 }
 
-func (t *Sentry) Parent() ILogger {
+func (t *Sentry) Parent() interface{} {
 	return t.parent
 }
 
-func (t *Sentry) SetParent(parent ILogger) {
-	t.parent = parent
+func (t *Sentry) SetParent(parent interface{}) {
+	t.parent = parent.(ILogger)
 }

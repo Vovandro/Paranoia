@@ -29,8 +29,8 @@ type ILogger interface {
 	Error(ctx context.Context, err error)
 	Fatal(ctx context.Context, err error)
 	Panic(ctx context.Context, err error)
-	Parent() ILogger
-	SetParent(ILogger)
+	Parent() interface{}
+	SetParent(interface{})
 }
 
 func (t *LogLevel) String() string {
