@@ -6,9 +6,9 @@ stages:
 test:
   stage: test
   script:
-    - go mod download
+    - ./scripts/go.mod.sh
     - go install gotest.tools/gotestsum@latest
-    - gotestsum --junitfile report.xml --format testname
+    - gotestsum --junitfile report.xml --format testname --raw-command ./scripts/go.test.sh -json
   artifacts:
     when: always
     reports:
@@ -23,9 +23,9 @@ test_full:
     PARANOIA_INTEGRATED_TESTS: Y
     PARANOIA_INTEGRATED_SERVER: $PARANOIA_INTEGRATED_SERVER
   script:
-    - go mod download
+    - ./scripts/go.mod.sh
     - go install gotest.tools/gotestsum@latest
-    - gotestsum --junitfile report.xml --format testname
+    - gotestsum --junitfile report.xml --format testname --raw-command ./scripts/go.test.sh -json
   artifacts:
     when: always
     reports:
@@ -42,8 +42,8 @@ coverage:
     PARANOIA_INTEGRATED_TESTS: Y
     PARANOIA_INTEGRATED_SERVER: $PARANOIA_INTEGRATED_SERVER
   script:
-    - go install
-    - go test $(go list ./... | grep -v vendor) -race -coverprofile=coverage.out
+    - ./scripts/go.mod.sh
+    - ./scripts/go.coverage.sh
     - go get github.com/boumenot/gocover-cobertura
     - go run github.com/boumenot/gocover-cobertura < coverage.out > coverage.xml
     - go tool cover -func=coverage.out
