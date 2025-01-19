@@ -8,7 +8,7 @@ type Mock struct {
 	NamePkg string
 }
 
-func (t *Mock) Init(_ interfaces.IEngine) error {
+func (t *Mock) Init(_ interfaces.IEngine, _ map[string]interface{}) error {
 	return nil
 }
 

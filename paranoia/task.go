@@ -46,36 +46,36 @@ func (t *task) PushTask(b interfaces2.ITask, run bool) {
 	t.taskMutex.Lock()
 	defer t.taskMutex.Unlock()
 
-	if item, ok := t.tasks[b.String()]; ok {
+	if item, ok := t.tasks[b.Name()]; ok {
 		_ = item.Stop()
 	}
 
-	t.tasks[b.String()] = b
+	t.tasks[b.Name()] = b
 
 	_ = b.Init(t.app)
 
 	if run {
 		cfgs := b.Start()
 
-		t.runCfg[b.String()] = make([]taskRun, len(cfgs))
+		t.runCfg[b.Name()] = make([]taskRun, len(cfgs))
 
 		for i, cfg := range cfgs {
 			if c, ok := cfg.(*interfaces2.TaskRunAfter); ok {
-				t.runCfg[b.String()][i] = taskRun{
+				t.runCfg[b.Name()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(c.After),
 					enable: atomic.Bool{},
 				}
 
-				t.runCfg[b.String()][i].enable.Store(true)
+				t.runCfg[b.Name()][i].enable.Store(true)
 			} else if c, ok := cfg.(*interfaces2.TaskRunTime); ok {
-				t.runCfg[b.String()][i] = taskRun{
+				t.runCfg[b.Name()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(time.Until(c.To)),
 					enable: atomic.Bool{},
 				}
 
-				t.runCfg[b.String()][i].enable.Store(true)
+				t.runCfg[b.Name()][i].enable.Store(true)
 			}
 		}
 	}
@@ -98,25 +98,25 @@ func (t *task) Start() {
 	for _, item := range t.tasks {
 		cfgs := item.Start()
 
-		t.runCfg[item.String()] = make([]taskRun, len(cfgs))
+		t.runCfg[item.Name()] = make([]taskRun, len(cfgs))
 
 		for i, cfg := range cfgs {
 			if c, ok := cfg.(*interfaces2.TaskRunAfter); ok {
-				t.runCfg[item.String()][i] = taskRun{
+				t.runCfg[item.Name()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(c.After),
 					enable: atomic.Bool{},
 				}
 
-				t.runCfg[item.String()][i].enable.Store(true)
+				t.runCfg[item.Name()][i].enable.Store(true)
 			} else if c, ok := cfg.(*interfaces2.TaskRunTime); ok {
-				t.runCfg[item.String()][i] = taskRun{
+				t.runCfg[item.Name()][i] = taskRun{
 					cfg:    c,
 					c:      time.NewTimer(time.Until(c.To)),
 					enable: atomic.Bool{},
 				}
 
-				t.runCfg[item.String()][i].enable.Store(true)
+				t.runCfg[item.Name()][i].enable.Store(true)
 			}
 		}
 	}
@@ -132,13 +132,13 @@ func (t *task) Stop() {
 	defer t.taskMutex.Unlock()
 
 	for _, item := range t.tasks {
-		if _, ok := t.runCfg[item.String()]; ok {
-			delete(t.runCfg, item.String())
+		if _, ok := t.runCfg[item.Name()]; ok {
+			delete(t.runCfg, item.Name())
 		}
 
 		_ = item.Stop()
 
-		delete(t.tasks, item.String())
+		delete(t.tasks, item.Name())
 	}
 }
 
@@ -156,7 +156,7 @@ func (t *task) run() {
 							go func(tsk interfaces2.ITask) {
 								defer t.end.Done()
 								tr := otel.Tracer("task")
-								ctx, span := tr.Start(context.Background(), tsk.String())
+								ctx, span := tr.Start(context.Background(), tsk.Name())
 								defer span.End()
 
 								tsk.Invoke(ctx, nil)
@@ -216,7 +216,7 @@ func (t *task) RunTask(key string, args map[string]interface{}) error {
 		go func(tsk interfaces2.ITask, args map[string]interface{}) {
 			defer t.end.Done()
 			tr := otel.Tracer("task")
-			ctx, span := tr.Start(context.Background(), tsk.String())
+			ctx, span := tr.Start(context.Background(), tsk.Name())
 			defer span.End()
 
 			tsk.Invoke(ctx, args)

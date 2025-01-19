@@ -11,7 +11,7 @@ type ITaskRunConfiguration interface {
 type ITask interface {
 	Init(app IEngine) error
 	Stop() error
-	String() string
+	Name() string
 	Start() []ITaskRunConfiguration
 	Invoke(ctx context.Context, data map[string]interface{})
 }

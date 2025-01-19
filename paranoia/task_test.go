@@ -15,7 +15,7 @@ type testTask struct {
 
 func (t *testTask) Init(app interfaces2.IEngine) error                      { return nil }
 func (t *testTask) Stop() error                                             { return nil }
-func (t *testTask) String() string                                          { return "test" }
+func (t *testTask) Name() string                                            { return "test" }
 func (t *testTask) Start() []interfaces2.ITaskRunConfiguration              { return t.cfg }
 func (t *testTask) Invoke(ctx context.Context, data map[string]interface{}) { t.count.Add(1) }
 
