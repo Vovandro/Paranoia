@@ -29,7 +29,7 @@ type Config struct {
 	RetryCount int    `yaml:"retry_count"`
 }
 
-func NewKafkaClient(name string) *KafkaClient {
+func New(name string) *KafkaClient {
 	return &KafkaClient{
 		name: name,
 	}

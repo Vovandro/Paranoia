@@ -24,10 +24,9 @@ type Config struct {
 	Enable          bool     `yaml:"enable"`
 }
 
-func NewSentry(name string, parent ILogger) *Sentry {
+func New(name string) *Sentry {
 	return &Sentry{
-		name:   name,
-		parent: parent,
+		name: name,
 	}
 }
 

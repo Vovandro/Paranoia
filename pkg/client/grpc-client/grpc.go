@@ -18,7 +18,7 @@ type Config struct {
 	Url string `yaml:"url"`
 }
 
-func NewGrpcClient(name string) *GrpcClient {
+func New(name string) *GrpcClient {
 	return &GrpcClient{
 		name: name,
 	}

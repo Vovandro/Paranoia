@@ -38,7 +38,7 @@ type Config struct {
 	BaseMiddleware    []string `yaml:"base_middleware"`
 }
 
-func NewKafka(name string) *Kafka {
+func New(name string) *Kafka {
 	return &Kafka{
 		name: name,
 	}

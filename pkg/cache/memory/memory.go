@@ -40,7 +40,7 @@ type cacheItem struct {
 	timeout time.Time
 }
 
-func NewMemory(name string) *Memory {
+func New(name string) *Memory {
 	return &Memory{
 		name: name,
 	}

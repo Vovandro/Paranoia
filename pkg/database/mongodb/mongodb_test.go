@@ -294,7 +294,7 @@ type itemMongo struct {
 func initMongoTest(name string) *MongoDB {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := NewMongoDB(name)
+	db := New(name)
 
 	err := db.Init(map[string]interface{}{
 		"database": "tests",

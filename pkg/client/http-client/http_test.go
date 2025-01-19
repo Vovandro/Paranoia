@@ -65,7 +65,7 @@ func TestHTTPClient_Fetch(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := NewHTTPClient("test")
+			t := New("test")
 
 			t.Init(map[string]interface{}{
 				"retry_count": tt.RetryCount,

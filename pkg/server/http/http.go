@@ -34,7 +34,7 @@ type Config struct {
 	BaseMiddleware []string `yaml:"base_middleware"`
 }
 
-func NewHttp(name string) *Http {
+func New(name string) *Http {
 	return &Http{
 		name: name,
 	}

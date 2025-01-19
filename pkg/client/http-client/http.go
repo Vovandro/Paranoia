@@ -26,7 +26,7 @@ type Config struct {
 	RetryCount int `yaml:"retry_count"`
 }
 
-func NewHTTPClient(name string) *HTTPClient {
+func New(name string) *HTTPClient {
 	return &HTTPClient{
 		name: name,
 	}

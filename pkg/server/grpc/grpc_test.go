@@ -22,7 +22,7 @@ func (t *server) Do(c context.Context, r *example.Request) (*example.Response, e
 
 func TestGrpc_RegisterService(t1 *testing.T) {
 	t1.Run("base test", func(t1 *testing.T) {
-		s := NewGrpc("test")
+		s := New("test")
 		s.Init(map[string]interface{}{
 			"port": "8091",
 		})

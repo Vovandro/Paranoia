@@ -28,7 +28,7 @@ type Config struct {
 	Hosts    string `yaml:"hosts"`
 }
 
-func NewAerospike(name string) *Aerospike {
+func New(name string) *Aerospike {
 	return &Aerospike{
 		name: name,
 	}

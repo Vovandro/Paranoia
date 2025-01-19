@@ -29,7 +29,7 @@ type Config struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
-func NewMemcached(name string) *Memcached {
+func New(name string) *Memcached {
 	return &Memcached{
 		name: name,
 	}

@@ -28,7 +28,7 @@ type Config struct {
 	Hosts    string `yaml:"hosts"`
 }
 
-func NewClickHouse(name string) *ClickHouse {
+func New(name string) *ClickHouse {
 	return &ClickHouse{
 		name: name,
 	}

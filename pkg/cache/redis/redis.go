@@ -32,7 +32,7 @@ type Config struct {
 	Password   string        `yaml:"password"`
 }
 
-func NewRedis(name string) *Redis {
+func New(name string) *Redis {
 	return &Redis{
 		name: name,
 	}

@@ -24,7 +24,7 @@ type Config struct {
 	URI string `yaml:"uri"`
 }
 
-func NewPostgres(name string) *Postgres {
+func New(name string) *Postgres {
 	return &Postgres{
 		name: name,
 	}

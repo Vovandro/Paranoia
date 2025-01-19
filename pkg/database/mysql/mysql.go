@@ -24,7 +24,7 @@ type Config struct {
 	URI string `yaml:"uri"`
 }
 
-func NewMySQL(name string) *MySQL {
+func New(name string) *MySQL {
 	return &MySQL{
 		name: name,
 	}

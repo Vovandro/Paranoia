@@ -29,7 +29,7 @@ func New(name string, configName string) *Engine {
 
 	t.starting = false
 	t.name = name
-	t.config = yaml.NewYaml(yaml.AutoConfig{FName: configName})
+	t.config = yaml.New(yaml.AutoConfig{FName: configName})
 
 	t.pkg = make(map[string]map[string]interfaces2.IPkg, 10)
 	t.modules = make(map[string]map[string]interfaces2.IModules, 10)

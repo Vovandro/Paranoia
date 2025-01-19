@@ -24,10 +24,9 @@ type Config struct {
 	Enable bool     `yaml:"enable"`
 }
 
-func NewFile(name string, parent ILogger) *File {
+func New(name string) *File {
 	return &File{
-		name:   name,
-		parent: parent,
+		name: name,
 	}
 }
 

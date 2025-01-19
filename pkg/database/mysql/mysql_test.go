@@ -256,7 +256,7 @@ func TestMySQL_String(t1 *testing.T) {
 func initMySQLTest(name string) *MySQL {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := NewMySQL(name)
+	db := New(name)
 
 	err := db.Init(map[string]interface{}{
 		"uri": "test:test@(" + host + ":3306)/test?parseTime=true",

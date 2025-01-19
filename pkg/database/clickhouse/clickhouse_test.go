@@ -259,7 +259,7 @@ func TestClickhouse_String(t1 *testing.T) {
 func initClickhouseTest(name string) *ClickHouse {
 	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
 
-	db := NewClickHouse(name)
+	db := New(name)
 
 	err := db.Init(map[string]interface{}{
 		"database": "test",

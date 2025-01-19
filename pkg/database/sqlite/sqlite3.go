@@ -24,7 +24,7 @@ type Config struct {
 	Database string `yaml:"database"`
 }
 
-func NewSqlite3(name string) *Sqlite3 {
+func New(name string) *Sqlite3 {
 	return &Sqlite3{
 		name: name,
 	}

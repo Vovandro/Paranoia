@@ -18,7 +18,7 @@ type Config struct {
 	Folder string `yaml:"folder"`
 }
 
-func NewFile(name string) *File {
+func New(name string) *File {
 	return &File{
 		name: name,
 	}

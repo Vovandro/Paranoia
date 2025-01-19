@@ -29,10 +29,9 @@ type Config struct {
 	Enable bool     `yaml:"enable"`
 }
 
-func NewStd(name string, parent ILogger) *Std {
+func New(name string) *Std {
 	return &Std{
-		name:   name,
-		parent: parent,
+		name: name,
 	}
 }
 

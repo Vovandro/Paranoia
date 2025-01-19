@@ -239,7 +239,7 @@ type testSQLiteItem struct {
 }
 
 func initSQLite3Test(name string) *Sqlite3 {
-	db := NewSqlite3(name)
+	db := New(name)
 
 	err := db.Init(map[string]interface{}{
 		"database": name + ".db",

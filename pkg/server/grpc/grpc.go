@@ -19,7 +19,7 @@ type Config struct {
 	Port string `yaml:"port"`
 }
 
-func NewGrpc(name string) *Grpc {
+func New(name string) *Grpc {
 	return &Grpc{
 		name: name,
 	}

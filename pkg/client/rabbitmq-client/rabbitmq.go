@@ -28,7 +28,7 @@ type Config struct {
 	RetryCount int    `yaml:"retry_count"`
 }
 
-func NewRabbitmqClient(name string) *RabbitmqClient {
+func New(name string) *RabbitmqClient {
 	return &RabbitmqClient{
 		name: name,
 	}

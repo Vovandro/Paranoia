@@ -37,7 +37,7 @@ type Config struct {
 	BaseMiddleware    []string `yaml:"base_middleware"`
 }
 
-func NewRabbitmq(name string) *Rabbitmq {
+func New(name string) *Rabbitmq {
 	return &Rabbitmq{
 		name: name,
 	}

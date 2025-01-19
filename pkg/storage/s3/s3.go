@@ -25,7 +25,7 @@ type Config struct {
 	Bucket      string `yaml:"bucket"`
 }
 
-func NewS3(name string) *S3 {
+func New(name string) *S3 {
 	return &S3{
 		name: name,
 	}

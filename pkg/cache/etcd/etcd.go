@@ -32,7 +32,7 @@ type Config struct {
 	Password string `yaml:"password"`
 }
 
-func NewEtcd(name string) *Etcd {
+func New(name string) *Etcd {
 	return &Etcd{
 		name: name,
 	}

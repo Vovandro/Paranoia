@@ -32,7 +32,7 @@ type Config struct {
 	URI      string        `yaml:"uri"`
 }
 
-func NewMongoDB(name string) *MongoDB {
+func New(name string) *MongoDB {
 	return &MongoDB{
 		name: name,
 	}
