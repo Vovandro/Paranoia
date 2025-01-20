@@ -87,8 +87,12 @@ func (t *MongoDB) Stop() error {
 	return nil
 }
 
-func (t *MongoDB) String() string {
+func (t *MongoDB) Name() string {
 	return t.name
+}
+
+func (t *MongoDB) Type() string {
+	return "database"
 }
 
 func (t *MongoDB) Exists(ctx context.Context, collection string, query interface{}) bool {

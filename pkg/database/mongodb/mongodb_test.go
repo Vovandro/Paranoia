@@ -254,7 +254,7 @@ func TestMongoDB_String(t1 *testing.T) {
 		t := &MongoDB{
 			name: "test",
 		}
-		if got := t.String(); got != "test" {
+		if got := t.Name(); got != "test" {
 			t1.Errorf("name() = %v, want %v", got, "test")
 		}
 	})
