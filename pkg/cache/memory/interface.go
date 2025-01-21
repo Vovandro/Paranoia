@@ -24,13 +24,13 @@ type IMemory interface {
 	SetMap(ctx context.Context, key string, args any, timeout time.Duration) error
 
 	// Get retrieves the raw value stored under the given key.
-	Get(ctx context.Context, key string) ([]byte, error)
+	Get(ctx context.Context, key string) (any, error)
 
 	// GetIn retrieves a value for a specific nested key within a map stored in the cache.
 	GetIn(ctx context.Context, key string, key2 string) (any, error)
 
 	// GetMap retrieves a map stored under the given key by decoding its JSON value.
-	GetMap(ctx context.Context, key string) (map[string]any, error)
+	GetMap(ctx context.Context, key string) (any, error)
 
 	// Increment increments the numeric value stored at the given key by the specified amount and applies a timeout.
 	Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error)
