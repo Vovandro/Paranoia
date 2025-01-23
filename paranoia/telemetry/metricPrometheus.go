@@ -16,18 +16,18 @@ import (
 
 type MetricPrometheus struct {
 	name     string
-	config   MetricsPrometheusConfig
+	config   MetricPrometheusConfig
 	server   *http.Server
 	exporter metric.Reader
 	meter    api.Meter
 }
 
-type MetricsPrometheusConfig struct {
+type MetricPrometheusConfig struct {
 	ServiceName string `yaml:"service_name"`
 	Port        string `yaml:"port"`
 }
 
-func NewPrometheusMetrics(name string) *MetricPrometheus {
+func NewMetricPrometheus(name string) *MetricPrometheus {
 	return &MetricPrometheus{
 		name: name,
 	}
