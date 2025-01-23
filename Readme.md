@@ -237,6 +237,8 @@ The framework includes metric counters, to access them you need to initialize me
 app.SetMetrics(telemetry.NewMetricStd("app"))
 ```
 
+Or use name in config is "std" for auto config from framework and no use SetMetrics
+
 ## Prometheus
 
 Get metrics in prometheus format via http.
@@ -251,6 +253,8 @@ Get metrics in prometheus format via http.
 ```go
 app.SetMetrics(telemetry.NewPrometheusMetrics("app"))
 ```
+
+Or use name in config is "prometheus" for auto config from framework and no use SetMetrics
 
 In this case, the metrics will be available at http://127.0.0.1:8090
 
@@ -274,6 +278,8 @@ Or
 ```go
 app.SetMetrics(telemetry.NewMetricOtlpGrpc("app"))
 ```
+
+Or use name in config is "oltp_grpc"\"oltp_http" for auto config from framework and no use SetMetrics
 
 ## Base metrics
 
@@ -329,6 +335,8 @@ The framework includes request and program execution traces. To access them, you
 app.SetTrace(telemetry.NewTraceStd("app"))
 ```
 
+Or use name in config is "std" for auto config from framework and no use SetTrace
+
 ## Zipkin
 
 ```yaml
@@ -342,6 +350,8 @@ app.SetTrace(telemetry.NewTraceStd("app"))
 app.SetTrace(telemetry.NewTraceZipkin("app"))
 ```
 
+Or use name in config is "zipkin" for auto config from framework and no use SetTrace
+
 ## Sentry
 
 ```yaml
@@ -353,6 +363,8 @@ app.SetTrace(telemetry.NewTraceZipkin("app"))
 ```go
 app.SetTrace(telemetry.NewTraceSentry("app"))
 ```
+
+Or use name in config is "sentry" for auto config from framework and no use SetTrace
 
 * To use Sentry tracing, you need to use Sentry logging *
 
@@ -377,6 +389,9 @@ or
 ```go
 app.SetTrace(telemetry.NewTraceOtlpGrpc("app"))
 ```
+
+Or use name in config is "oltp_grpc"\"oltp_http" for auto config from framework and no use SetTrace
+
 </details>
 
 <details>
