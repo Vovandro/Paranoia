@@ -412,6 +412,7 @@ go get gitlab.com/devpro_studio/Paranoia/pkg/cache/etcd
   hosts: "localhost:2379"
   username: 
   password:
+  key_prefix:
 ```
 
 ```go
@@ -446,6 +447,7 @@ go get gitlab.com/devpro_studio/Paranoia/pkg/cache/memcached
   name: primary
   hosts: "localhost:11211"
   timeout: 3s
+  key_prefix:
 ```
 
 ```go
@@ -523,6 +525,7 @@ go get gitlab.com/devpro_studio/Paranoia/pkg/cache/redis
   timeout: 3s
   username: 
   password:
+  key_prefix:
 ```
 
 ```go

@@ -27,9 +27,10 @@ type Etcd struct {
 }
 
 type Config struct {
-	Hosts    string `yaml:"hosts"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+	Hosts     string `yaml:"hosts"`
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+	KeyPrefix string `yaml:"key_prefix"`
 }
 
 func New(name string) *Etcd {
@@ -83,7 +84,7 @@ func (t *Etcd) Has(ctx context.Context, key string) bool {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
-	res, err := t.client.Get(ctx, key)
+	res, err := t.client.Get(ctx, t.config.KeyPrefix+key)
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 
 	if err != nil {
@@ -102,7 +103,7 @@ func (t *Etcd) Set(ctx context.Context, key string, args string, timeout time.Du
 	t.counterWrite.Add(ctx, 1)
 	lease, _ := t.client.Grant(ctx, int64(timeout.Seconds()))
 
-	_, err := t.client.Put(ctx, key, args, clientv3.WithLease(lease.ID))
+	_, err := t.client.Put(ctx, t.config.KeyPrefix+key, args, clientv3.WithLease(lease.ID))
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 
 	return err
@@ -110,7 +111,7 @@ func (t *Etcd) Set(ctx context.Context, key string, args string, timeout time.Du
 
 func (t *Etcd) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
 	s := time.Now()
-	data, err := t.GetMap(ctx, key)
+	data, err := t.GetMap(ctx, t.config.KeyPrefix+key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -121,7 +122,7 @@ func (t *Etcd) SetIn(ctx context.Context, key string, key2 string, args any, tim
 
 	data.(map[string]any)[key2] = args
 
-	err = t.SetMap(ctx, key, data, timeout)
+	err = t.SetMap(ctx, t.config.KeyPrefix+key, data, timeout)
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 
 	return err
@@ -137,7 +138,7 @@ func (t *Etcd) SetMap(ctx context.Context, key string, args any, timeout time.Du
 		return err
 	}
 
-	err = t.Set(ctx, key, string(data), timeout)
+	err = t.Set(ctx, t.config.KeyPrefix+key, string(data), timeout)
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return err
 }
@@ -146,7 +147,7 @@ func (t *Etcd) Get(ctx context.Context, key string) ([]byte, error) {
 	s := time.Now()
 	t.counterRead.Add(ctx, 1)
 
-	item, err := t.client.Get(ctx, key)
+	item, err := t.client.Get(ctx, t.config.KeyPrefix+key)
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 	if err != nil {
@@ -161,7 +162,7 @@ func (t *Etcd) Get(ctx context.Context, key string) ([]byte, error) {
 }
 
 func (t *Etcd) GetIn(ctx context.Context, key string, key2 string) (any, error) {
-	data, err := t.GetMap(ctx, key)
+	data, err := t.GetMap(ctx, t.config.KeyPrefix+key)
 
 	if err != nil {
 		return "", err
@@ -177,7 +178,7 @@ func (t *Etcd) GetIn(ctx context.Context, key string, key2 string) (any, error) 
 func (t *Etcd) GetMap(ctx context.Context, key string) (any, error) {
 	s := time.Now()
 
-	data, err := t.Get(ctx, key)
+	data, err := t.Get(ctx, t.config.KeyPrefix+key)
 
 	if err != nil {
 		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
@@ -198,12 +199,12 @@ func (t *Etcd) GetMap(ctx context.Context, key string) (any, error) {
 func (t *Etcd) Increment(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
 	s := time.Now()
 
-	v, _ := t.Get(ctx, key)
+	v, _ := t.Get(ctx, t.config.KeyPrefix+key)
 
 	conv, _ := strconv.ParseInt(string(v), 10, 64)
 	val += conv
 
-	err := t.Set(ctx, key, fmt.Sprint(val), timeout)
+	err := t.Set(ctx, t.config.KeyPrefix+key, fmt.Sprint(val), timeout)
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return val, err
 }
@@ -211,7 +212,7 @@ func (t *Etcd) Increment(ctx context.Context, key string, val int64, timeout tim
 func (t *Etcd) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	s := time.Now()
 
-	data, err := t.GetMap(ctx, key)
+	data, err := t.GetMap(ctx, t.config.KeyPrefix+key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -224,25 +225,25 @@ func (t *Etcd) IncrementIn(ctx context.Context, key string, key2 string, val int
 	} else {
 		data.(map[string]any)[key2] = val
 	}
-	err = t.SetMap(ctx, key, data, timeout)
+	err = t.SetMap(ctx, t.config.KeyPrefix+key, data, timeout)
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return data.(map[string]any)[key2].(int64), err
 }
 
 func (t *Etcd) Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
-	return t.Increment(ctx, key, val*-1, timeout)
+	return t.Increment(ctx, t.config.KeyPrefix+key, val*-1, timeout)
 }
 
 func (t *Etcd) DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
-	return t.IncrementIn(ctx, key, key2, -1*val, timeout)
+	return t.IncrementIn(ctx, t.config.KeyPrefix+key, key2, -1*val, timeout)
 }
 
 func (t *Etcd) Delete(ctx context.Context, key string) error {
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	_, err := t.client.Delete(ctx, key)
+	_, err := t.client.Delete(ctx, t.config.KeyPrefix+key)
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 
 	if err != nil {
@@ -256,7 +257,7 @@ func (t *Etcd) Expire(ctx context.Context, key string, timeout time.Duration) er
 	s := time.Now()
 	t.counterWrite.Add(ctx, 1)
 
-	resp, err := t.client.Get(ctx, key)
+	resp, err := t.client.Get(ctx, t.config.KeyPrefix+key)
 	if err != nil {
 		return err
 	}
