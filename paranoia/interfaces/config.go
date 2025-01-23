@@ -20,5 +20,6 @@ type IConfig interface {
 	GetSliceInt(key string, def []int) []int
 	GetSliceFloat(key string, def []float64) []float64
 	GetSliceInterface(key string, def []interface{}) []interface{}
+
 	GetConfigItem(typeName string, name string) map[string]interface{}
 }

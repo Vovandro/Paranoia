@@ -313,10 +313,14 @@ func (t *Yaml) GetConfigItem(typeName string, name string) map[string]interface{
 			continue
 		}
 
-		if item["type"] == typeName && item["name"] == name {
-			delete(item, "type")
-			delete(item, "name")
-			return item
+		if item["type"] == typeName {
+			if name == "" {
+				return item
+			} else if item["name"] == name {
+				delete(item, "type")
+				delete(item, "name")
+				return item
+			}
 		}
 	}
 

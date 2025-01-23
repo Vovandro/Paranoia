@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/paranoia/config/yaml"
 	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/paranoia/telemetry"
 )
 
 type Engine struct {
@@ -220,12 +221,28 @@ func (t *Engine) Init() error {
 		}
 	}
 
+	if t.metricExporter == nil {
+		cfg := t.config.GetConfigItem("metrics", "")
+
+		if len(cfg) > 0 {
+			t.metricExporter = telemetry.NewMetrics(cfg)
+		}
+	}
+
 	if t.metricExporter != nil {
 		err = t.metricExporter.Init(t.config.GetConfigItem("metrics", t.metricExporter.Name()))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
 			return err
+		}
+	}
+
+	if t.trace == nil {
+		cfg := t.config.GetConfigItem("trace", "")
+
+		if len(cfg) > 0 {
+			t.trace = telemetry.NewTrace(cfg)
 		}
 	}
 
