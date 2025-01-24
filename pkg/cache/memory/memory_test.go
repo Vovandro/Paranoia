@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -212,7 +213,7 @@ func TestMemory_Set(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test timeout",
+			"base test Timeout",
 			[]args{
 				{
 					"k1",
@@ -245,7 +246,7 @@ func TestMemory_Set(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test replace timeout",
+			"base test replace Timeout",
 			[]args{
 				{
 					"k1",
@@ -338,7 +339,7 @@ func TestMemory_SetIn(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test timeout",
+			"base test Timeout",
 			[]args{
 				{
 					"k1",
@@ -374,7 +375,7 @@ func TestMemory_SetIn(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test replace timeout",
+			"base test replace Timeout",
 			[]args{
 				{
 					"k1",
@@ -461,7 +462,7 @@ func TestMemory_Increment(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test timeout",
+			"base test Timeout",
 			[]args{
 				{
 					"k1",
@@ -494,7 +495,7 @@ func TestMemory_Increment(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test replace timeout",
+			"base test replace Timeout",
 			[]args{
 				{
 					"k1",
@@ -582,7 +583,7 @@ func TestMemory_IncrementIn(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test timeout",
+			"base test Timeout",
 			[]args{
 				{
 					"k1",
@@ -618,7 +619,7 @@ func TestMemory_IncrementIn(t1 *testing.T) {
 			true,
 		},
 		{
-			"base test replace timeout",
+			"base test replace Timeout",
 			[]args{
 				{
 					"k1",
@@ -663,7 +664,7 @@ func TestMemory_IncrementIn(t1 *testing.T) {
 }
 
 func TestMemory_ClearTimeout(t1 *testing.T) {
-	t1.Run("test timeout clear", func(t1 *testing.T) {
+	t1.Run("test Timeout clear", func(t1 *testing.T) {
 		t := &Memory{
 			config: Config{
 				TimeClear:  time.Millisecond * 10,
@@ -791,7 +792,7 @@ func BenchmarkCheckAndStore(b *testing.B) {
 		}
 
 		if val, ok := t.Get(context.Background(), k); ok != nil || val.(string) != k {
-			b.Fatalf("Unexpected error data")
+			b.Fatalf("Unexpected error Data")
 		}
 	}
 }
@@ -810,7 +811,7 @@ func BenchmarkCheckAndStoreMutex(b *testing.B) {
 		}
 
 		if val, ok := t.Get(context.Background(), k); ok != nil || val.(string) != k {
-			b.Fatalf("Unexpected error data")
+			b.Fatalf("Unexpected error Data")
 		}
 	}
 }
@@ -829,7 +830,7 @@ func BenchmarkCheckAndStoreArray(b *testing.B) {
 		}
 
 		if val, ok := t.Get(context.Background(), k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
-			b.Fatalf("Unexpected error data")
+			b.Fatalf("Unexpected error Data")
 		}
 	}
 }
@@ -848,7 +849,53 @@ func BenchmarkCheckAndStoreArrayMutex(b *testing.B) {
 		}
 
 		if val, ok := t.Get(context.Background(), k); ok != nil || !reflect.DeepEqual(val.([]string), []string{k}) {
-			b.Fatalf("Unexpected error data")
+			b.Fatalf("Unexpected error Data")
 		}
 	}
+}
+
+func TestMemory_StoreAndLoad(t1 *testing.T) {
+	t1.Run("store and load data", func(t1 *testing.T) {
+		t := New("test")
+		t.Init(map[string]interface{}{
+			"time_clear":     0,
+			"shard_count":    2,
+			"enable_storage": true,
+			"storage_file":   "test.back",
+		})
+
+		// Store data
+		key := "testKey"
+		value := "testValue"
+
+		err := t.Set(context.Background(), key, value, time.Minute)
+		if err != nil {
+			t.Stop()
+			t1.Fatalf("Set() error = %v", err)
+			return
+		}
+
+		t.Stop()
+		t = New("test")
+		t.Init(map[string]interface{}{
+			"time_clear":     0,
+			"shard_count":    2,
+			"enable_storage": true,
+			"storage_file":   "test.back",
+		})
+		defer func() {
+			t.Stop()
+			os.Remove("test.back")
+		}()
+
+		// Load data
+		got, ok := t.Get(context.Background(), key)
+		if ok != nil {
+			t1.Errorf("Get() error = no data found")
+		}
+
+		if got != value {
+			t1.Errorf("Get() value = %v, want %v", got, value)
+		}
+	})
 }

@@ -3,10 +3,13 @@ package memory
 import (
 	"container/heap"
 	"context"
+	"encoding/json"
+	"fmt"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"hash/crc32"
+	"os"
 	"sync"
 	"time"
 )
@@ -31,13 +34,15 @@ type Memory struct {
 }
 
 type Config struct {
-	TimeClear  time.Duration `yaml:"time_clear"`
-	ShardCount int           `yaml:"shard_count"`
+	TimeClear     time.Duration `yaml:"time_clear"`
+	ShardCount    int           `yaml:"shard_count"`
+	EnableStorage bool          `yaml:"enable_storage"`
+	StorageFile   string        `yaml:"storage_file"`
 }
 
 type cacheItem struct {
-	data    any
-	timeout time.Time
+	Data    any       `json:"data"`
+	Timeout time.Time `json:"timeout"`
 }
 
 func New(name string) *Memory {
@@ -79,6 +84,43 @@ func (t *Memory) Init(cfg map[string]interface{}) error {
 	t.timeRead, _ = otel.Meter("").Int64Histogram("cache_memory." + t.name + ".timeRead")
 	t.timeWrite, _ = otel.Meter("").Int64Histogram("cache_memory." + t.name + ".timeWrite")
 
+	if t.config.EnableStorage {
+		if t.config.StorageFile == "" {
+			return fmt.Errorf("storage file is empty")
+		}
+
+		if _, err := os.Stat(t.config.StorageFile); !os.IsNotExist(err) {
+			// Open the storage file for reading
+			file, err := os.Open(t.config.StorageFile)
+			if err == nil {
+				data := make(map[string]cacheItem)
+				// Read all content from the file
+				fileContent, err := os.ReadFile(t.config.StorageFile)
+				file.Close()
+
+				if err != nil {
+					os.Remove(t.config.StorageFile)
+				} else {
+					// Unmarshal the content into the Data map
+					err = json.Unmarshal(fileContent, &data)
+					if err != nil {
+						return fmt.Errorf("could not unmarshal storage file content: %w", err)
+					}
+
+					for key, val := range data {
+						shard := t.getShardNum(key)
+						t.data[shard].mutex.Lock()
+						t.data[shard].data[key] = &val
+						t.data[shard].mutex.Unlock()
+						heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
+							key: key,
+						})
+					}
+				}
+			}
+		}
+	}
+
 	go t.run()
 
 	return nil
@@ -86,6 +128,22 @@ func (t *Memory) Init(cfg map[string]interface{}) error {
 
 func (t *Memory) Stop() error {
 	close(t.done)
+	if t.config.EnableStorage {
+		data := make(map[string]cacheItem)
+		for i := 0; i < t.config.ShardCount; i++ {
+			for key, val := range t.data[i].data {
+				data[key] = *val
+			}
+		}
+		file, err := os.Create(t.config.StorageFile)
+		if err != nil {
+			return err
+		}
+
+		json.NewEncoder(file).Encode(data)
+
+		file.Close()
+	}
 	return nil
 }
 
@@ -144,7 +202,7 @@ func (t *Memory) Has(ctx context.Context, key string) bool {
 	defer t.data[shard].mutex.RUnlock()
 	val, ok := t.data[shard].data[key]
 
-	if ok && val.timeout.After(time.Now()) {
+	if ok && val.Timeout.After(time.Now()) {
 		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
 		return true
 	}
@@ -165,18 +223,18 @@ func (t *Memory) Set(ctx context.Context, key string, args any, timeout time.Dur
 	val, ok := t.data[shard].data[key]
 
 	if ok {
-		val.timeout = time.Now().Add(timeout)
-		val.data = args
+		val.Timeout = time.Now().Add(timeout)
+		val.Data = args
 	} else {
 		val = t.pool.Get().(*cacheItem)
-		val.timeout = time.Now().Add(timeout)
-		val.data = args
+		val.Timeout = time.Now().Add(timeout)
+		val.Data = args
 		t.data[shard].data[key] = val
 	}
 
 	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
-		time: val.timeout,
+		time: val.Timeout,
 	})
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
@@ -195,25 +253,25 @@ func (t *Memory) SetIn(ctx context.Context, key string, key2 string, args any, t
 	val, ok := t.data[shard].data[key]
 
 	if ok {
-		if _, ok := val.data.(map[string]any); ok {
-			val.data.(map[string]any)[key2] = args
+		if _, ok := val.Data.(map[string]any); ok {
+			val.Data.(map[string]any)[key2] = args
 		} else {
 			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 			return ErrTypeMismatch
 		}
 
-		val.timeout = time.Now().Add(timeout)
+		val.Timeout = time.Now().Add(timeout)
 	} else {
 		val = t.pool.Get().(*cacheItem)
-		val.timeout = time.Now().Add(timeout)
-		val.data = make(map[string]any)
-		val.data.(map[string]any)[key2] = args
+		val.Timeout = time.Now().Add(timeout)
+		val.Data = make(map[string]any)
+		val.Data.(map[string]any)[key2] = args
 		t.data[shard].data[key] = val
 	}
 
 	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
-		time: val.timeout,
+		time: val.Timeout,
 	})
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
@@ -236,9 +294,9 @@ func (t *Memory) Get(ctx context.Context, key string) (any, error) {
 
 	val, ok := t.data[shard].data[key]
 
-	if ok && val.timeout.After(time.Now()) {
+	if ok && val.Timeout.After(time.Now()) {
 		t.timeRead.Record(ctx, time.Since(s).Milliseconds())
-		return val.data, nil
+		return val.Data, nil
 	}
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
@@ -257,8 +315,8 @@ func (t *Memory) GetIn(ctx context.Context, key string, key2 string) (any, error
 	val, ok := t.data[shard].data[key]
 
 	t.timeRead.Record(ctx, time.Since(s).Milliseconds())
-	if ok && val.timeout.After(time.Now()) {
-		if val2, ok := val.data.(map[string]any); ok {
+	if ok && val.Timeout.After(time.Now()) {
+		if val2, ok := val.Data.(map[string]any); ok {
 			if v, ok := val2[key2]; ok {
 				return v, nil
 			} else {
@@ -288,28 +346,28 @@ func (t *Memory) Increment(ctx context.Context, key string, val int64, timeout t
 	v, ok := t.data[shard].data[key]
 
 	if ok {
-		v.timeout = time.Now().Add(timeout)
+		v.Timeout = time.Now().Add(timeout)
 
-		if _, ok := v.data.(int64); ok {
-			v.data = v.data.(int64) + val
+		if _, ok := v.Data.(int64); ok {
+			v.Data = v.Data.(int64) + val
 		} else {
 			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 			return 0, ErrTypeMismatch
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)
-		v.timeout = time.Now().Add(timeout)
-		v.data = val
+		v.Timeout = time.Now().Add(timeout)
+		v.Data = val
 		t.data[shard].data[key] = v
 	}
 
 	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
-		time: v.timeout,
+		time: v.Timeout,
 	})
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	return v.data.(int64), nil
+	return v.Data.(int64), nil
 }
 
 func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
@@ -324,18 +382,18 @@ func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val i
 	v, ok := t.data[shard].data[key]
 
 	if ok {
-		v.timeout = time.Now().Add(timeout)
+		v.Timeout = time.Now().Add(timeout)
 
-		if _, ok := v.data.(map[string]any); ok {
-			if _, ok := v.data.(map[string]any)[key2]; ok {
-				if v2, ok := v.data.(map[string]any)[key2].(int64); ok {
-					v.data.(map[string]any)[key2] = v2 + val
+		if _, ok := v.Data.(map[string]any); ok {
+			if _, ok := v.Data.(map[string]any)[key2]; ok {
+				if v2, ok := v.Data.(map[string]any)[key2].(int64); ok {
+					v.Data.(map[string]any)[key2] = v2 + val
 				} else {
 					t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 					return 0, ErrTypeMismatch
 				}
 			} else {
-				v.data.(map[string]any)[key2] = val
+				v.Data.(map[string]any)[key2] = val
 			}
 		} else {
 			t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
@@ -343,19 +401,19 @@ func (t *Memory) IncrementIn(ctx context.Context, key string, key2 string, val i
 		}
 	} else {
 		v = t.pool.Get().(*cacheItem)
-		v.timeout = time.Now().Add(timeout)
-		v.data = make(map[string]any)
-		v.data.(map[string]any)[key2] = val
+		v.Timeout = time.Now().Add(timeout)
+		v.Data = make(map[string]any)
+		v.Data.(map[string]any)[key2] = val
 		t.data[shard].data[key] = v
 	}
 
 	heap.Push(&t.data[shard].timeHeap, &TimeHeapItem{
 		key:  key,
-		time: v.timeout,
+		time: v.Timeout,
 	})
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
-	return v.data.(map[string]any)[key2].(int64), nil
+	return v.Data.(map[string]any)[key2].(int64), nil
 }
 
 func (t *Memory) Decrement(ctx context.Context, key string, val int64, timeout time.Duration) (int64, error) {
@@ -402,7 +460,7 @@ func (t *Memory) Expire(ctx context.Context, key string, timeout time.Duration) 
 		return ErrKeyNotFound
 	}
 
-	val.timeout = time.Now().Add(timeout)
+	val.Timeout = time.Now().Add(timeout)
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return nil
