@@ -1,8 +1,7 @@
 # Paranoia framework - golang microservice engine
 
 [![pipeline status](https://gitlab.com/devpro_studio/Paranoia/badges/master/pipeline.svg)](https://gitlab.com/devpro_studio/Paranoia/-/commits/master) 
-[![coverage report](https://gitlab.com/devpro_studio/Paranoia/badges/master/coverage.svg)](https://gitlab.com/devpro_studio/Paranoia/-/commits/master) 
-[![Latest Release](https://gitlab.com/devpro_studio/Paranoia/-/badges/release.svg)](https://gitlab.com/devpro_studio/Paranoia/-/releases)
+[![coverage report](https://gitlab.com/devpro_studio/Paranoia/badges/master/coverage.svg)](https://gitlab.com/devpro_studio/Paranoia/-/commits/master)
 [![Go Reference](https://pkg.go.dev/badge/gitlab.com/devpro_studio/Paranoia)](https://pkg.go.dev/gitlab.com/devpro_studio/Paranoia)
 
 ## [Use GO helper library](https://gitlab.com/devpro_studio/go_utils)
@@ -486,6 +485,8 @@ go get gitlab.com/devpro_studio/Paranoia/pkg/cache/memory
   name: secondary
   time_clear: 10m
   shard_count: 10
+  enable_storage: true
+  storage_file: cache.back
 ```
 
 ```go

@@ -1,0 +1,11 @@
+# Changelog
+
+## [pkg/cache/memory/v1.0.2] - 2025-01-24
+
+### Added
+
+- Add persistent storage support to in-memory cache:
+- Introduced optional persistent storage for cache data using JSON files.
+- Enabled data restoration on initialization.
+- Modified `cacheItem` struct and updated methods to handle serialization.
+- Updated test cases to validate persistence functionality.
