@@ -8,6 +8,7 @@ const (
 	PkgStorage    = "storage"
 	PkgMiddleware = "middleware"
 	PkgLogger     = "logger"
+	PkgExternal   = "external"
 )
 
 const (
