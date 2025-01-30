@@ -25,4 +25,5 @@ use (
 	./pkg/server/rabbitmq
 	./pkg/storage/file
 	./pkg/storage/s3
+	./pkg/external/NetLocker
 )
