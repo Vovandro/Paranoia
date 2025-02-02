@@ -105,6 +105,6 @@ func (t *Postgres) Exec(ctx context.Context, query string, args ...interface{}) 
 	return err
 }
 
-func (t *Postgres) GetDb() interface{} {
+func (t *Postgres) GetDb() *pgx.Conn {
 	return t.client
 }

@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
+	"github.com/jackc/pgx/v5"
 )
 
 // IPostgres defines the interface for Postgres operations
@@ -17,7 +17,7 @@ type IPostgres interface {
 	Exec(ctx context.Context, query string, args ...interface{}) error
 
 	// GetDb returns the Postgres client instance
-	GetDb() *sql.DB
+	GetDb() *pgx.Conn
 }
 
 type SQLRow interface {
