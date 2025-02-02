@@ -317,9 +317,16 @@ func (t *Yaml) GetConfigItem(typeName string, name string) map[string]interface{
 			if name == "" {
 				return item
 			} else if item["name"] == name {
-				delete(item, "type")
-				delete(item, "name")
-				return item
+				res := make(map[string]interface{}, len(item))
+				for k, v := range item {
+					if k == "type" || k == "name" {
+						continue
+					}
+
+					res[k] = v
+				}
+
+				return res
 			}
 		}
 	}
