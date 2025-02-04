@@ -1,4 +1,4 @@
-package middleware
+package kafka
 
 import (
 	"context"
@@ -35,8 +35,8 @@ func (t *TimingMiddleware) Type() string {
 	return "middleware"
 }
 
-func (t *TimingMiddleware) Invoke(next interfaces2.RouteFunc) interfaces2.RouteFunc {
-	return func(c context.Context, ctx interfaces2.ICtx) {
+func (t *TimingMiddleware) Invoke(next RouteFunc) RouteFunc {
+	return func(c context.Context, ctx ICtx) {
 		tm := time.Now()
 
 		next(c, ctx)

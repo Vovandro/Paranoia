@@ -1,4 +1,4 @@
-package middleware
+package kafka
 
 import (
 	"context"
@@ -34,8 +34,8 @@ func (t *RestoreMiddleware) Type() string {
 	return "middleware"
 }
 
-func (t *RestoreMiddleware) Invoke(next interfaces2.RouteFunc) interfaces2.RouteFunc {
-	return func(c context.Context, ctx interfaces2.ICtx) {
+func (t *RestoreMiddleware) Invoke(next RouteFunc) RouteFunc {
+	return func(c context.Context, ctx ICtx) {
 		defer func() {
 			if err := recover(); err != nil {
 				t.logger.Error(context.Background(), fmt.Errorf("%v", err))

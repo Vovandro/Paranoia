@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gitlab.com/devpro_studio/Paranoia/paranoia/config/yaml"
-	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
+	"gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"gitlab.com/devpro_studio/Paranoia/paranoia/telemetry"
 )
 
@@ -13,16 +13,16 @@ type Engine struct {
 
 	starting bool
 
-	config         interfaces2.IConfig
-	logger         interfaces2.ILogger
-	metricExporter interfaces2.IMetrics
-	trace          interfaces2.ITrace
+	config         interfaces.IConfig
+	logger         interfaces.ILogger
+	metricExporter interfaces.IMetrics
+	trace          interfaces.ITrace
 
 	task task
 
-	pkg         map[string]map[string]interfaces2.IPkg
-	modules     map[string]map[string]interfaces2.IModules
-	middlewares map[string]interfaces2.IMiddleware
+	pkg         map[string]map[string]interfaces.IPkg
+	modules     map[string]map[string]interfaces.IModules
+	middlewares map[string]interfaces.IMiddleware
 }
 
 func New(name string, configName string) *Engine {
@@ -32,9 +32,9 @@ func New(name string, configName string) *Engine {
 	t.name = name
 	t.config = yaml.New(yaml.AutoConfig{FName: configName})
 
-	t.pkg = make(map[string]map[string]interfaces2.IPkg, 10)
-	t.modules = make(map[string]map[string]interfaces2.IModules, 10)
-	t.middlewares = make(map[string]interfaces2.IMiddleware)
+	t.pkg = make(map[string]map[string]interfaces.IPkg, 10)
+	t.modules = make(map[string]map[string]interfaces.IModules, 10)
+	t.middlewares = make(map[string]interfaces.IMiddleware)
 
 	t.task.Init(t)
 
@@ -50,15 +50,15 @@ func New(name string, configName string) *Engine {
 	return t
 }
 
-func (t *Engine) GetLogger() interfaces2.ILogger {
+func (t *Engine) GetLogger() interfaces.ILogger {
 	return t.logger
 }
 
-func (t *Engine) GetConfig() interfaces2.IConfig {
+func (t *Engine) GetConfig() interfaces.IConfig {
 	return t.config
 }
 
-func (t *Engine) SetMetrics(c interfaces2.IMetrics) {
+func (t *Engine) SetMetrics(c interfaces.IMetrics) {
 	if t.metricExporter != nil {
 		_ = t.metricExporter.Stop()
 	}
@@ -66,7 +66,7 @@ func (t *Engine) SetMetrics(c interfaces2.IMetrics) {
 	t.metricExporter = c
 }
 
-func (t *Engine) SetTrace(c interfaces2.ITrace) {
+func (t *Engine) SetTrace(c interfaces.ITrace) {
 	if t.trace != nil {
 		_ = t.trace.Stop()
 	}
@@ -74,7 +74,7 @@ func (t *Engine) SetTrace(c interfaces2.ITrace) {
 	t.trace = c
 }
 
-func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
+func (t *Engine) PushPkg(c interfaces.IPkg) interfaces.IEngine {
 	if c == nil {
 		panic("nil package")
 		return nil
@@ -83,8 +83,8 @@ func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
 	name := c.Name()
 	typePkg := c.Type()
 
-	if typePkg == interfaces2.PkgLogger {
-		convertedLogger, ok := c.(interfaces2.ILogger)
+	if typePkg == interfaces.PkgLogger {
+		convertedLogger, ok := c.(interfaces.ILogger)
 
 		if !ok {
 			panic("cannot cast logger")
@@ -102,7 +102,7 @@ func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
 				break
 			}
 
-			l = l.Parent().(interfaces2.ILogger)
+			l = l.Parent().(interfaces.ILogger)
 		}
 
 		l.SetParent(convertedLogger)
@@ -114,7 +114,7 @@ func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
 
 			p[name] = c
 		} else {
-			t.pkg[typePkg] = make(map[string]interfaces2.IPkg)
+			t.pkg[typePkg] = make(map[string]interfaces.IPkg)
 			t.pkg[typePkg][name] = c
 		}
 	}
@@ -122,7 +122,7 @@ func (t *Engine) PushPkg(c interfaces2.IPkg) interfaces2.IEngine {
 	return t
 }
 
-func (t *Engine) GetPkg(typePkg string, key string) interfaces2.IPkg {
+func (t *Engine) GetPkg(typePkg string, key string) interfaces.IPkg {
 	if p, ok := t.pkg[typePkg]; ok {
 		if pkg, ok := p[key]; ok {
 			return pkg
@@ -132,7 +132,7 @@ func (t *Engine) GetPkg(typePkg string, key string) interfaces2.IPkg {
 	return nil
 }
 
-func (t *Engine) PushModule(c interfaces2.IModules) interfaces2.IEngine {
+func (t *Engine) PushModule(c interfaces.IModules) interfaces.IEngine {
 	if c == nil {
 		panic("nil package")
 		return nil
@@ -141,8 +141,8 @@ func (t *Engine) PushModule(c interfaces2.IModules) interfaces2.IEngine {
 	name := c.Name()
 	typeModule := c.Type()
 
-	if typeModule == interfaces2.ModuleMiddleware {
-		convertedMiddleware, ok := c.(interfaces2.IMiddleware)
+	if typeModule == interfaces.ModuleMiddleware {
+		convertedMiddleware, ok := c.(interfaces.IMiddleware)
 
 		if !ok {
 			panic("cannot cast middleware")
@@ -161,7 +161,7 @@ func (t *Engine) PushModule(c interfaces2.IModules) interfaces2.IEngine {
 
 			p[name] = c
 		} else {
-			t.modules[typeModule] = make(map[string]interfaces2.IModules)
+			t.modules[typeModule] = make(map[string]interfaces.IModules)
 			t.modules[typeModule][name] = c
 		}
 	}
@@ -169,8 +169,8 @@ func (t *Engine) PushModule(c interfaces2.IModules) interfaces2.IEngine {
 	return t
 }
 
-func (t *Engine) GetModule(typeModule string, key string) interfaces2.IModules {
-	if typeModule == interfaces2.ModuleMiddleware {
+func (t *Engine) GetModule(typeModule string, key string) interfaces.IModules {
+	if typeModule == interfaces.ModuleMiddleware {
 		if m, ok := t.middlewares[key]; ok {
 			return m
 		}
@@ -185,11 +185,11 @@ func (t *Engine) GetModule(typeModule string, key string) interfaces2.IModules {
 	return nil
 }
 
-func (t *Engine) GetTask(key string) interfaces2.ITask {
+func (t *Engine) GetTask(key string) interfaces.ITask {
 	return t.task.GetTask(key)
 }
 
-func (t *Engine) PushTask(b interfaces2.ITask) interfaces2.IEngine {
+func (t *Engine) PushTask(b interfaces.ITask) interfaces.IEngine {
 	t.task.PushTask(b, t.starting)
 
 	return t
@@ -208,7 +208,7 @@ func (t *Engine) Init() error {
 
 	l := t.logger
 
-	for ; l != nil; l = l.Parent().(interfaces2.ILogger) {
+	for ; l != nil; l = l.Parent().(interfaces.ILogger) {
 		err = l.Init(t.config.GetConfigItem(l.Type(), l.Name()))
 
 		if err != nil {
@@ -257,7 +257,11 @@ func (t *Engine) Init() error {
 
 	for typePkg, pkg := range t.pkg {
 		for name, c := range pkg {
-			err = c.Init(t.config.GetConfigItem(typePkg, name))
+			cfg := t.config.GetConfigItem(typePkg, name)
+			if typePkg == interfaces.PkgServer {
+				cfg["middlewares"] = t.middlewares
+			}
+			err = c.Init(cfg)
 
 			if err != nil {
 				t.logger.Fatal(context.Background(), err)
@@ -267,7 +271,7 @@ func (t *Engine) Init() error {
 	}
 
 	for name, c := range t.middlewares {
-		err = c.Init(t, t.config.GetConfigItem(interfaces2.ModuleMiddleware, name))
+		err = c.Init(t, t.config.GetConfigItem(interfaces.ModuleMiddleware, name))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
@@ -289,7 +293,7 @@ func (t *Engine) Init() error {
 
 	if servers, ok := t.pkg["servers"]; ok {
 		for _, server := range servers {
-			err = server.(interfaces2.IServer).Start()
+			err = server.(interfaces.IServer).Start()
 
 			if err != nil {
 				t.logger.Fatal(context.Background(), err)

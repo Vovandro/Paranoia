@@ -5,5 +5,4 @@ type IMiddleware interface {
 	Stop() error
 	Name() string
 	Type() string
-	Invoke(next RouteFunc) RouteFunc
 }

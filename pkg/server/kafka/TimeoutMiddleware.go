@@ -1,4 +1,4 @@
-package middleware
+package kafka
 
 import (
 	"context"
@@ -47,8 +47,8 @@ func (t *TimeoutMiddleware) Type() string {
 	return "middleware"
 }
 
-func (t *TimeoutMiddleware) Invoke(next interfaces2.RouteFunc) interfaces2.RouteFunc {
-	return func(c context.Context, ctx interfaces2.ICtx) {
+func (t *TimeoutMiddleware) Invoke(next RouteFunc) RouteFunc {
+	return func(c context.Context, ctx ICtx) {
 		var end context.CancelFunc
 		c, end = context.WithTimeout(c, t.config.Timeout)
 

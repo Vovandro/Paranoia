@@ -10,6 +10,10 @@ require (
 	go.opentelemetry.io/otel/metric v1.34.0
 )
 
+replace (
+	gitlab.com/devpro_studio/Paranoia => ../../../
+)
+
 require (
 	github.com/docker/docker v27.3.0+incompatible // indirect
 	github.com/go-logr/logr v1.4.2 // indirect

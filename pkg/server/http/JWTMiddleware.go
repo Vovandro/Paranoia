@@ -1,4 +1,4 @@
-package middleware
+package http
 
 import (
 	"context"
@@ -70,8 +70,8 @@ func (t *JWTMiddleware) Type() string {
 	return "middleware"
 }
 
-func (t *JWTMiddleware) Invoke(next interfaces2.RouteFunc) interfaces2.RouteFunc {
-	return func(c context.Context, ctx interfaces2.ICtx) {
+func (t *JWTMiddleware) Invoke(next RouteFunc) RouteFunc {
+	return func(c context.Context, ctx ICtx) {
 		authHeader := ctx.GetRequest().GetHeader().Get("Authorization")
 		if authHeader == "" {
 			ctx.GetResponse().SetStatus(http.StatusUnauthorized)

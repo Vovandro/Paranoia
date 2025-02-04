@@ -9,6 +9,10 @@ require (
 	go.opentelemetry.io/otel/metric v1.34.0
 )
 
+replace (
+	gitlab.com/devpro_studio/Paranoia => ../../../
+)
+
 require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
