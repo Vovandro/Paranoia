@@ -11,6 +11,12 @@ type NetLocker struct {
 	client     NetLockerServiceClient
 }
 
+func New(name string) *NetLocker {
+	return &NetLocker{
+		NamePkg: name,
+	}
+}
+
 func (t *NetLocker) Init(cfg map[string]interface{}) error {
 	t.grpcClient = grpc_client.New(t.NamePkg)
 	err := t.grpcClient.Init(cfg)
