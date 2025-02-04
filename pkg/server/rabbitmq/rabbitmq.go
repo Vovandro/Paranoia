@@ -47,7 +47,9 @@ func (t *Rabbitmq) Init(cfg map[string]interface{}) error {
 	middlewares := make(map[string]IMiddleware)
 
 	if m, ok := cfg["middlewares"]; ok {
-		middlewares = m.(map[string]IMiddleware)
+		for k, v := range m.(map[string]interface{}) {
+			middlewares[k] = v.(IMiddleware)
+		}
 		delete(cfg, "middlewares")
 	}
 

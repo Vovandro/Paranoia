@@ -22,7 +22,7 @@ type Engine struct {
 
 	pkg         map[string]map[string]interfaces.IPkg
 	modules     map[string]map[string]interfaces.IModules
-	middlewares map[string]interfaces.IMiddleware
+	middlewares map[string]interface{}
 }
 
 func New(name string, configName string) *Engine {
@@ -34,7 +34,7 @@ func New(name string, configName string) *Engine {
 
 	t.pkg = make(map[string]map[string]interfaces.IPkg, 10)
 	t.modules = make(map[string]map[string]interfaces.IModules, 10)
-	t.middlewares = make(map[string]interfaces.IMiddleware)
+	t.middlewares = make(map[string]interface{})
 
 	t.task.Init(t)
 
@@ -172,7 +172,7 @@ func (t *Engine) PushModule(c interfaces.IModules) interfaces.IEngine {
 func (t *Engine) GetModule(typeModule string, key string) interfaces.IModules {
 	if typeModule == interfaces.ModuleMiddleware {
 		if m, ok := t.middlewares[key]; ok {
-			return m
+			return m.(interfaces.IMiddleware)
 		}
 	} else {
 		if p, ok := t.modules[typeModule]; ok {
@@ -271,7 +271,7 @@ func (t *Engine) Init() error {
 	}
 
 	for name, c := range t.middlewares {
-		err = c.Init(t, t.config.GetConfigItem(interfaces.ModuleMiddleware, name))
+		err = c.(interfaces.IMiddleware).Init(t, t.config.GetConfigItem(interfaces.ModuleMiddleware, name))
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
@@ -364,7 +364,7 @@ func (t *Engine) Stop() error {
 	}
 
 	for _, item := range t.middlewares {
-		err = item.Stop()
+		err = item.(interfaces.IMiddleware).Stop()
 
 		if err != nil {
 			t.logger.Fatal(context.Background(), err)
