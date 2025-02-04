@@ -3,7 +3,7 @@ module gitlab.com/devpro_studio/Paranoia/pkg/client/http-client
 go 1.23.4
 
 require (
-	gitlab.com/devpro_studio/go_utils v1.1.2
+	gitlab.com/devpro_studio/go_utils v1.1.3
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0
 	go.opentelemetry.io/otel v1.34.0
 	go.opentelemetry.io/otel/metric v1.34.0

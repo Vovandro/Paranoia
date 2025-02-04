@@ -24,12 +24,12 @@ type MongoDB struct {
 }
 
 type Config struct {
-	Database string        `yaml:"database"`
-	User     string        `yaml:"user"`
-	Password string        `yaml:"password"`
-	Hosts    string        `yaml:"hosts"`
-	Mode     readpref.Mode `yaml:"mode"`
-	URI      string        `yaml:"uri"`
+	Database string `yaml:"database"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Hosts    string `yaml:"hosts"`
+	Mode     string `yaml:"mode"`
+	URI      string `yaml:"uri"`
 }
 
 func New(name string) *MongoDB {
@@ -54,7 +54,12 @@ func (t *MongoDB) Init(cfg map[string]interface{}) error {
 		opt.ApplyURI(t.config.URI)
 	} else {
 		opt.Hosts = strings.Split(t.config.Hosts, ",")
-		opt.ReadPreference, _ = readpref.New(t.config.Mode)
+		modeConverted, err := readpref.ModeFromString(t.config.Mode)
+		if err != nil {
+			return err
+		}
+
+		opt.ReadPreference, _ = readpref.New(modeConverted)
 
 		if t.config.User != "" {
 			opt.Auth = &options.Credential{
