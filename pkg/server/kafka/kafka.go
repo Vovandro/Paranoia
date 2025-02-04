@@ -49,7 +49,9 @@ func (t *Kafka) Init(cfg map[string]interface{}) error {
 
 	if m, ok := cfg["middlewares"]; ok {
 		for k, v := range m.(map[string]interface{}) {
-			middlewares[k] = v.(IMiddleware)
+			if md, ok := v.(IMiddleware); !ok {
+				middlewares[k] = md
+			}
 		}
 		delete(cfg, "middlewares")
 	}
