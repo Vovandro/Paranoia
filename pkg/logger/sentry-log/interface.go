@@ -21,7 +21,7 @@ type ILogger interface {
 	Stop() error
 	Name() string
 	Type() string
-	SetLevel(level LogLevel)
+	SetLevel(level int)
 	Debug(ctx context.Context, args ...interface{})
 	Info(ctx context.Context, args ...interface{})
 	Warn(ctx context.Context, args ...interface{})

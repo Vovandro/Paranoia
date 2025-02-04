@@ -132,8 +132,8 @@ func (t *File) write(m string) {
 	}
 }
 
-func (t *File) SetLevel(level LogLevel) {
-	t.config.Level = level
+func (t *File) SetLevel(level int) {
+	t.config.Level = LogLevel(level)
 
 	if t.parent != nil {
 		t.parent.SetLevel(level)

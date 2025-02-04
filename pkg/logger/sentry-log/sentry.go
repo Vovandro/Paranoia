@@ -83,8 +83,8 @@ func (t *Sentry) Type() string {
 	return "logger"
 }
 
-func (t *Sentry) SetLevel(level LogLevel) {
-	t.config.Level = level
+func (t *Sentry) SetLevel(level int) {
+	t.config.Level = LogLevel(level)
 
 	if t.parent != nil {
 		t.parent.SetLevel(level)

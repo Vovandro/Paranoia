@@ -84,8 +84,8 @@ func (t *Std) run() {
 	}()
 }
 
-func (t *Std) SetLevel(level LogLevel) {
-	t.config.Level = level
+func (t *Std) SetLevel(level int) {
+	t.config.Level = LogLevel(level)
 
 	if t.parent != nil {
 		t.parent.SetLevel(level)
