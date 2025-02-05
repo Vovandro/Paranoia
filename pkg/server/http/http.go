@@ -45,7 +45,7 @@ func (t *Http) Init(cfg map[string]interface{}) error {
 
 	if m, ok := cfg["middlewares"]; ok {
 		for k, v := range m.(map[string]interface{}) {
-			if md, ok := v.(IMiddleware); !ok {
+			if md, ok := v.(IMiddleware); ok {
 				middlewares[k] = md
 			}
 		}
