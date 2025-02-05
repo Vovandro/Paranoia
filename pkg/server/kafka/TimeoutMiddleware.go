@@ -23,7 +23,7 @@ func NewTimeoutMiddleware(name string) interfaces2.IMiddleware {
 }
 
 func (t *TimeoutMiddleware) Init(app interfaces2.IEngine, cfg map[string]interface{}) error {
-	err := decode.Decode(cfg, t.config, "yaml", decode.DecoderStrongFoundDst)
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
+	"gitlab.com/devpro_studio/go_utils/decode"
 	"net/http"
 	"os"
 	"strings"
@@ -33,6 +34,11 @@ func NewJWTMiddleware(name string) interfaces2.IMiddleware {
 }
 
 func (t *JWTMiddleware) Init(app interfaces2.IEngine, cfg map[string]interface{}) error {
+	err := decode.Decode(cfg, &t.config, "yaml", decode.DecoderStrongFoundDst)
+
+	if err != nil {
+		return fmt.Errorf("JWT: could not decode config: %w", err)
+	}
 
 	pubKeyData, err := os.ReadFile(t.config.PublicKey)
 	if err != nil {
