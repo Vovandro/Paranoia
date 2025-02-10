@@ -41,13 +41,13 @@ func (t *NetLocker) Type() string {
 	return "external"
 }
 
-func (t *NetLocker) Lock(ctx context.Context, key string, timeLock int64, uniqueId *string) bool {
+func (t *NetLocker) Lock(ctx context.Context, key string, timeLock int64, uniqueId *string) (bool, error) {
 	res, err := t.client.TryAndLock(ctx, &NetLockRequest{Key: key, TimeLock: timeLock, UniqueId: uniqueId})
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return res.GetSuccess()
+	return res.GetSuccess(), nil
 }
 
 func (t *NetLocker) Unlock(ctx context.Context, key string, uniqueId *string) bool {
