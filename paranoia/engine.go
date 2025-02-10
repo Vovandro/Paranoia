@@ -291,7 +291,7 @@ func (t *Engine) Init() error {
 
 	t.task.Start()
 
-	if servers, ok := t.pkg["servers"]; ok {
+	if servers, ok := t.pkg[interfaces.PkgServer]; ok {
 		for _, server := range servers {
 			err = server.(interfaces.IServer).Start()
 
@@ -328,7 +328,7 @@ func (t *Engine) Stop() error {
 
 	t.starting = false
 
-	if servers, ok := t.pkg["servers"]; ok {
+	if servers, ok := t.pkg[interfaces.PkgServer]; ok {
 		for _, server := range servers {
 			err = server.Stop()
 
