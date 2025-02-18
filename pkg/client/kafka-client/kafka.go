@@ -26,6 +26,8 @@ type Config struct {
 	Hosts      string `yaml:"hosts"`
 	Username   string `yaml:"username"`
 	Password   string `yaml:"password"`
+	SecurityProtocol string `yaml:"security_protocol"`
+	SaslMechanisms   string `yaml:"sasl_mechanisms"`
 	RetryCount int    `yaml:"retry_count"`
 }
 
@@ -50,8 +52,14 @@ func (t *KafkaClient) Init(cfg map[string]interface{}) error {
 	}
 
 	if t.config.Username != "" {
-		_ = cfgKafka.SetKey("sasl.mechanisms", "PLAIN")
-		_ = cfgKafka.SetKey("security.protocol", "SASL_SSL")
+		if t.config.SecurityProtocol != "" {
+			_ = cfgKafka.SetKey("security.protocol", t.config.SecurityProtocol)
+		}
+
+		if t.config.SaslMechanisms != "" {
+			_ = cfgKafka.SetKey("sasl.mechanisms", t.config.SaslMechanisms)
+		}
+
 		_ = cfgKafka.SetKey("sasl.username", t.config.Username)
 		_ = cfgKafka.SetKey("sasl.password", t.config.Password)
 	}
