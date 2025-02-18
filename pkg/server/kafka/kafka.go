@@ -33,6 +33,8 @@ type Config struct {
 	GroupId           string   `yaml:"group_id"`
 	User              string   `yaml:"user"`
 	Password          string   `yaml:"password"`
+	SecurityProtocol  string   `yaml:"security_protocol"`
+	SaslMechanisms    string   `yaml:"sasl_mechanisms"`
 	Topics            []string `yaml:"topics"`
 	LimitMessageCount int64    `yaml:"limit_message_count"`
 	BaseMiddleware    []string `yaml:"base_middleware"`
@@ -101,8 +103,14 @@ func (t *Kafka) Init(cfg map[string]interface{}) error {
 	}
 
 	if t.config.User != "" {
-		cfgKafka.SetKey("sasl.mechanisms", "PLAIN")
-		cfgKafka.SetKey("security.protocol", "SASL_SSL")
+		if t.config.SecurityProtocol != "" {
+			cfgKafka.SetKey("security.protocol", t.config.SecurityProtocol)
+		}
+
+		if t.config.SaslMechanisms != "" {
+			cfgKafka.SetKey("sasl.mechanisms", t.config.SaslMechanisms)
+		}
+
 		cfgKafka.SetKey("sasl.username", t.config.User)
 		cfgKafka.SetKey("sasl.password", t.config.Password)
 	}
