@@ -355,6 +355,9 @@ func (t *Engine) Stop() error {
 	}
 
 	for typePkg, pkg := range t.pkg {
+		if typePkg == interfaces.PkgServer {
+			continue
+		}
 		for name, p := range pkg {
 			err = p.Stop()
 
