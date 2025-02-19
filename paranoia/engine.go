@@ -343,8 +343,8 @@ func (t *Engine) Stop() error {
 
 	t.task.Stop()
 
-	for _, modules := range t.modules {
-		for _, m := range modules {
+	for typeModule, modules := range t.modules {
+		for name, m := range modules {
 			err = m.Stop()
 
 			if err != nil {
@@ -354,8 +354,8 @@ func (t *Engine) Stop() error {
 		}
 	}
 
-	for _, pkg := range t.pkg {
-		for _, p := range pkg {
+	for typePkg, pkg := range t.pkg {
+		for name, p := range pkg {
 			err = p.Stop()
 
 			if err != nil {
@@ -365,7 +365,7 @@ func (t *Engine) Stop() error {
 		}
 	}
 
-	for _, item := range t.middlewares {
+	for name, item := range t.middlewares {
 		err = item.(interfaces.IMiddleware).Stop()
 
 		if err != nil {
@@ -395,7 +395,7 @@ func (t *Engine) Stop() error {
 	err = t.config.Stop()
 
 	if err != nil {
-		t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop config %s: %w", t.config.Name(), err))
+		t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop config: %w", err))
 		return err
 	}
 
