@@ -212,7 +212,7 @@ func (t *Engine) Init() error {
 		err = l.Init(t.config.GetConfigItem(l.Type(), l.Name()))
 
 		if err != nil {
-			t.logger.Fatal(context.Background(), err)
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to init logger %s: %w", l.Name(), err))
 			return err
 		}
 
@@ -233,7 +233,7 @@ func (t *Engine) Init() error {
 		err = t.metricExporter.Init(t.config.GetConfigItem("metrics", t.metricExporter.Name()))
 
 		if err != nil {
-			t.logger.Fatal(context.Background(), err)
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to init metrics %s: %w", t.metricExporter.Name(), err))
 			return err
 		}
 	}
@@ -250,7 +250,7 @@ func (t *Engine) Init() error {
 		err = t.trace.Init(t.config.GetConfigItem("trace", t.trace.Name()))
 
 		if err != nil {
-			t.logger.Fatal(context.Background(), err)
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to init trace %s: %w", t.trace.Name(), err))
 			return err
 		}
 	}
@@ -264,7 +264,7 @@ func (t *Engine) Init() error {
 			err = c.Init(cfg)
 
 			if err != nil {
-				t.logger.Fatal(context.Background(), err)
+				t.logger.Fatal(context.Background(), fmt.Errorf("failed to init package %s %s: %w", typePkg, name, err))
 				return err
 			}
 		}
@@ -274,7 +274,7 @@ func (t *Engine) Init() error {
 		err = c.(interfaces.IMiddleware).Init(t, t.config.GetConfigItem(interfaces.ModuleMiddleware, name))
 
 		if err != nil {
-			t.logger.Fatal(context.Background(), err)
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to init middleware %s: %w", name, err))
 			return err
 		}
 	}
@@ -283,7 +283,7 @@ func (t *Engine) Init() error {
 		for name, c := range modules {
 			err = c.Init(t, t.config.GetConfigItem(typeModule, name))
 			if err != nil {
-				t.logger.Fatal(context.Background(), err)
+				t.logger.Fatal(context.Background(), fmt.Errorf("failed to init module %s %s: %w", typeModule, name, err))
 				return err
 			}
 		}
@@ -296,7 +296,7 @@ func (t *Engine) Init() error {
 			err = server.(interfaces.IServer).Start()
 
 			if err != nil {
-				t.logger.Fatal(context.Background(), err)
+				t.logger.Fatal(context.Background(), fmt.Errorf("failed to start server %s: %w", server.Name(), err))
 				return err
 			}
 		}
@@ -306,6 +306,7 @@ func (t *Engine) Init() error {
 		err = t.trace.Start()
 
 		if err != nil {
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to start trace %s: %w", t.trace.Name(), err))
 			return err
 		}
 	}
@@ -314,6 +315,7 @@ func (t *Engine) Init() error {
 		err = t.metricExporter.Start()
 
 		if err != nil {
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to start metric exporter %s: %w", t.metricExporter.Name(), err))
 			return err
 		}
 	}
@@ -333,7 +335,7 @@ func (t *Engine) Stop() error {
 			err = server.Stop()
 
 			if err != nil {
-				t.logger.Fatal(context.Background(), err)
+				t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop server %s: %w", server.Name(), err))
 				return err
 			}
 		}
@@ -346,7 +348,7 @@ func (t *Engine) Stop() error {
 			err = m.Stop()
 
 			if err != nil {
-				t.logger.Fatal(context.Background(), err)
+				t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop module %s %s: %w", typeModule, name, err))
 				return err
 			}
 		}
@@ -357,7 +359,7 @@ func (t *Engine) Stop() error {
 			err = p.Stop()
 
 			if err != nil {
-				t.logger.Fatal(context.Background(), err)
+				t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop package %s %s: %w", typePkg, name, err))
 				return err
 			}
 		}
@@ -367,7 +369,7 @@ func (t *Engine) Stop() error {
 		err = item.(interfaces.IMiddleware).Stop()
 
 		if err != nil {
-			t.logger.Fatal(context.Background(), err)
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop middleware %s: %w", name, err))
 			return err
 		}
 	}
@@ -376,7 +378,7 @@ func (t *Engine) Stop() error {
 		err = t.metricExporter.Stop()
 
 		if err != nil {
-			fmt.Println(err)
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop metric exporter %s: %w", t.metricExporter.Name(), err))
 			return err
 		}
 	}
@@ -385,7 +387,7 @@ func (t *Engine) Stop() error {
 		err = t.trace.Stop()
 
 		if err != nil {
-			fmt.Println(err)
+			t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop trace %s: %w", t.trace.Name(), err))
 			return err
 		}
 	}
@@ -393,14 +395,14 @@ func (t *Engine) Stop() error {
 	err = t.config.Stop()
 
 	if err != nil {
-		fmt.Println(err)
+		t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop config %s: %w", t.config.Name(), err))
 		return err
 	}
 
 	err = t.logger.Stop()
 
 	if err != nil {
-		fmt.Println(err)
+		t.logger.Fatal(context.Background(), fmt.Errorf("failed to stop logger %s: %w", t.logger.Name(), err))
 		return err
 	}
 
