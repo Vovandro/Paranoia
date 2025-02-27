@@ -2,9 +2,10 @@ package http
 
 import (
 	"context"
+	"time"
+
 	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"gitlab.com/devpro_studio/go_utils/decode"
-	"time"
 )
 
 type TimeoutMiddleware struct {
@@ -59,7 +60,10 @@ func (t *TimeoutMiddleware) Invoke(next RouteFunc) RouteFunc {
 		go func() {
 			next(c, ctx)
 
-			if _, ok := <-c.Done(); ok {
+			select {
+			case <-c.Done():
+				return
+			default:
 				done <- nil
 			}
 		}()

@@ -58,8 +58,11 @@ func (t *TimeoutMiddleware) Invoke(next RouteFunc) RouteFunc {
 
 		go func() {
 			next(c, ctx)
-
-			if _, ok := <-c.Done(); ok {
+			
+			select {
+			case <-c.Done():
+				return
+			default:
 				done <- nil
 			}
 		}()
