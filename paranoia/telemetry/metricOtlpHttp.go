@@ -2,13 +2,14 @@ package telemetry
 
 import (
 	"context"
+	"time"
+
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
-	"time"
 )
 
 type MetricOtlpHttp struct {
@@ -44,7 +45,7 @@ func (t *MetricOtlpHttp) Init(cfg map[string]interface{}) error {
 		return err
 	}
 
-	t.exporter, err = otlpmetrichttp.New(context.Background())
+	t.exporter, err = otlpmetrichttp.New(context.Background(), otlpmetrichttp.WithInsecure())
 
 	if err != nil {
 		return err

@@ -2,12 +2,13 @@ package telemetry
 
 import (
 	"context"
+	"time"
+
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/zipkin"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
-	"time"
 )
 
 type TraceZipking struct {

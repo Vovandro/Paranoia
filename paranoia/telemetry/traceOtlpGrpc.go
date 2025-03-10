@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -39,7 +40,7 @@ func (t *TraceOtlpGrpc) Init(cfg map[string]interface{}) error {
 	)
 	otel.SetTextMapPropagator(prop)
 
-	t.exporter, err = otlptracegrpc.New(context.Background())
+	t.exporter, err = otlptracegrpc.New(context.Background(), otlptracegrpc.WithInsecure())
 
 	if err != nil {
 		return err
