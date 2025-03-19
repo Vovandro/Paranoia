@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -13,7 +14,7 @@ type MongoRows struct {
 	rows *mongo.Cursor
 }
 
-func (t *MongoRow) Scan(dest any) error {
+func (t *MongoRow) Scan(dest *any) error {
 	return t.row.Decode(dest)
 }
 
@@ -21,7 +22,7 @@ func (t *MongoRows) Next() bool {
 	return t.rows.Next(context.TODO())
 }
 
-func (t *MongoRows) Scan(dest any) error {
+func (t *MongoRows) Scan(dest *any) error {
 	return t.rows.Decode(dest)
 }
 
