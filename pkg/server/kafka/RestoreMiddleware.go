@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+
 	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 )
 
@@ -38,7 +39,11 @@ func (t *RestoreMiddleware) Invoke(next RouteFunc) RouteFunc {
 	return func(c context.Context, ctx ICtx) {
 		defer func() {
 			if err := recover(); err != nil {
-				t.logger.Error(context.Background(), fmt.Errorf("%v", err))
+				if e, ok := err.(error); ok {
+					t.logger.Error(context.Background(), e)
+				} else {
+					t.logger.Error(context.Background(), fmt.Errorf("%v", err))
+				}
 			}
 		}()
 

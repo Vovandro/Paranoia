@@ -3,9 +3,10 @@ package sentry_log
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/getsentry/sentry-go"
 	"gitlab.com/devpro_studio/go_utils/decode"
-	"time"
 )
 
 type Sentry struct {
@@ -102,7 +103,7 @@ func (t *Sentry) Debug(ctx context.Context, args ...interface{}) {
 func (t *Sentry) Info(ctx context.Context, args ...interface{}) {
 	if t.config.Level <= INFO {
 		if t.enable {
-			hub := t.getHub(ctx, sentry.LevelInfo)
+			hub := t.getHub(ctx, sentry.LevelInfo, nil)
 			hub.CaptureMessage(fmt.Sprint(args...))
 		}
 
@@ -115,7 +116,7 @@ func (t *Sentry) Info(ctx context.Context, args ...interface{}) {
 func (t *Sentry) Warn(ctx context.Context, args ...interface{}) {
 	if t.config.Level <= WARNING {
 		if t.enable {
-			hub := t.getHub(ctx, sentry.LevelWarning)
+			hub := t.getHub(ctx, sentry.LevelWarning, nil)
 			hub.CaptureMessage(fmt.Sprint(args...))
 		}
 
@@ -128,7 +129,7 @@ func (t *Sentry) Warn(ctx context.Context, args ...interface{}) {
 func (t *Sentry) Message(ctx context.Context, args ...interface{}) {
 	if t.config.Level <= MESSAGE {
 		if t.enable {
-			hub := t.getHub(ctx, sentry.LevelInfo)
+			hub := t.getHub(ctx, sentry.LevelInfo, nil)
 			hub.CaptureMessage(fmt.Sprint(args...))
 		}
 
@@ -141,7 +142,7 @@ func (t *Sentry) Message(ctx context.Context, args ...interface{}) {
 func (t *Sentry) Error(ctx context.Context, err error) {
 	if t.config.Level <= ERROR {
 		if t.enable {
-			hub := t.getHub(ctx, sentry.LevelError)
+			hub := t.getHub(ctx, sentry.LevelError, err)
 			hub.CaptureException(err)
 		}
 
@@ -154,7 +155,7 @@ func (t *Sentry) Error(ctx context.Context, err error) {
 func (t *Sentry) Fatal(ctx context.Context, err error) {
 	if t.config.Level <= CRITICAL {
 		if t.enable {
-			hub := t.getHub(ctx, sentry.LevelFatal)
+			hub := t.getHub(ctx, sentry.LevelFatal, err)
 			hub.CaptureException(err)
 		}
 
@@ -167,7 +168,7 @@ func (t *Sentry) Fatal(ctx context.Context, err error) {
 func (t *Sentry) Panic(ctx context.Context, err error) {
 	if t.config.Level <= CRITICAL {
 		if t.enable {
-			hub := t.getHub(ctx, sentry.LevelFatal)
+			hub := t.getHub(ctx, sentry.LevelFatal, err)
 			hub.CaptureException(err)
 		}
 
@@ -177,7 +178,7 @@ func (t *Sentry) Panic(ctx context.Context, err error) {
 	}
 }
 
-func (t *Sentry) getHub(ctx context.Context, level sentry.Level) *sentry.Hub {
+func (t *Sentry) getHub(ctx context.Context, level sentry.Level, err error) *sentry.Hub {
 	hub := sentry.CurrentHub()
 	hub.ConfigureScope(func(scope *sentry.Scope) {
 		scope.SetLevel(level)
@@ -193,6 +194,43 @@ func (t *Sentry) getHub(ctx context.Context, level sentry.Level) *sentry.Hub {
 		if tags != nil {
 			for k, v := range tags.(map[string]string) {
 				scope.SetTag(k, v)
+			}
+		}
+
+		// Add stack trace information to the scope
+		if err != nil {
+			scope.SetExtra("stack_trace", fmt.Sprintf("%+v", err))
+		}
+		// Add request information from context if available
+		req := ctx.Value("request")
+		if req != nil {
+			if httpReq, ok := req.(map[string]interface{}); ok {
+				for k, v := range httpReq {
+					scope.SetExtra(k, v)
+				}
+			}
+		}
+
+		// Extract OLTP trace information from context
+		if trace := ctx.Value("trace"); trace != nil {
+			if traceData, ok := trace.(map[string]interface{}); ok {
+				for k, v := range traceData {
+					scope.SetExtra("trace."+k, v)
+				}
+			}
+		}
+
+		// Add trace ID if available
+		if traceID := ctx.Value("trace_id"); traceID != nil {
+			if id, ok := traceID.(string); ok {
+				scope.SetTag("trace_id", id)
+			}
+		}
+
+		// Add span ID if available
+		if spanID := ctx.Value("span_id"); spanID != nil {
+			if id, ok := spanID.(string); ok {
+				scope.SetTag("span_id", id)
 			}
 		}
 	})
