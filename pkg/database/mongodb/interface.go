@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -43,11 +44,11 @@ type IMongoDB interface {
 }
 
 type NoSQLRow interface {
-	Scan(dest any) error
+	Scan(dest *any) error
 }
 
 type NoSQLRows interface {
 	Next() bool
-	Scan(dest any) error
+	Scan(dest *any) error
 	Close() error
 }

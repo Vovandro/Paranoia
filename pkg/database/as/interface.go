@@ -2,6 +2,7 @@ package as
 
 import (
 	"context"
+
 	"github.com/aerospike/aerospike-client-go/v7"
 )
 
@@ -39,11 +40,11 @@ type IAerospike interface {
 }
 
 type NoSQLRow interface {
-	Scan(dest any) error
+	Scan(dest *any) error
 }
 
 type NoSQLRows interface {
 	Next() bool
-	Scan(dest any) error
+	Scan(dest *any) error
 	Close() error
 }
