@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	_ "github.com/mattn/go-sqlite3"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"time"
 )
 
 type Sqlite3 struct {
@@ -105,6 +106,6 @@ func (t *Sqlite3) Exec(ctx context.Context, query string, args ...interface{}) e
 	return err
 }
 
-func (t *Sqlite3) GetDb() interface{} {
+func (t *Sqlite3) GetDb() *sql.DB {
 	return t.client
 }
