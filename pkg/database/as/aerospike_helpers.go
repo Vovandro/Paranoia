@@ -1,6 +1,9 @@
 package as
 
 import (
+	"errors"
+	"reflect"
+
 	"github.com/aerospike/aerospike-client-go/v7"
 	"gitlab.com/devpro_studio/go_utils/decode"
 )
@@ -14,10 +17,24 @@ type ASRows struct {
 	row  *aerospike.Result
 }
 
-func (t *ASRow) Scan(dest *any) error {
-	if _, ok := (*dest).(map[string]interface{}); ok {
+func (t *ASRow) Scan(dest any) error {
+	if dest == nil {
+		return errors.New("dest is nil")
+	}
+
+	// Check if dest is a pointer
+	destType := reflect.TypeOf(dest)
+	if destType.Kind() != reflect.Ptr {
+		return errors.New("dest is not a pointer")
+	}
+
+	if _, ok := dest.(*map[string]interface{}); ok {
 		for k, v := range t.row.Bins {
-			(*dest).(map[string]interface{})[k] = v
+			(*dest.(*map[string]interface{}))[k] = v
+		}
+	} else if _, ok := dest.(map[string]interface{}); ok {
+		for k, v := range t.row.Bins {
+			dest.(map[string]interface{})[k] = v
 		}
 	} else {
 		err := decode.Decode(t.row.Bins, dest, "db", 0)
@@ -36,10 +53,24 @@ func (t *ASRows) Next() bool {
 	return ok && t.row.Err == nil
 }
 
-func (t *ASRows) Scan(dest *any) error {
-	if _, ok := (*dest).(map[string]interface{}); ok {
+func (t *ASRows) Scan(dest any) error {
+	if dest == nil {
+		return errors.New("dest is nil")
+	}
+
+	// Check if dest is a pointer
+	destType := reflect.TypeOf(dest)
+	if destType.Kind() != reflect.Ptr {
+		return errors.New("dest is not a pointer")
+	}
+
+	if _, ok := dest.(*map[string]interface{}); ok {
 		for k, v := range t.row.Record.Bins {
-			(*dest).(map[string]interface{})[k] = v
+			(*dest.(*map[string]interface{}))[k] = v
+		}
+	} else if _, ok := dest.(map[string]interface{}); ok {
+		for k, v := range t.row.Record.Bins {
+			dest.(map[string]interface{})[k] = v
 		}
 	} else {
 		err := decode.Decode(t.row.Record.Bins, dest, "db", 0)
