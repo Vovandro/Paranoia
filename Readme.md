@@ -552,6 +552,65 @@ Decrement less than 0 is not supported.
 
 </details>
 
+<details>
+<summary>Server</summary>
+
+## Usage
+
+```shell
+go get gitlab.com/devpro_studio/Paranoia/pkg/server/http
+```
+
+```yaml
+- type: server
+  name: http
+  port: 8080
+  read_timeout: 10s
+  write_timeout: 10s
+```
+
+```go
+app.PushPkg(http.New("http"))
+```
+
+Next, you can get the server in the necessary places:
+
+```go
+server := app.GetPkg(interfaces.PkgServer, "http").(http.IHttp)
+```
+
+## Middlewares
+
+- CORS
+- JWT
+- Timeout
+- Restore from panic
+- Register timing
+
+### CORS
+
+```yaml
+- type: middleware
+  name: cors
+  allow_origins:
+    - "https://example.com"
+    - "https://api.example.com"
+  allow_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+    - "OPTIONS"
+  allow_headers:
+    - "Authorization"
+  allow_credentials: true
+  max_age: 86400
+  expose_headers:
+    - "Content-Type"
+```
+
+</details>
+
 ## Supported:
 
 ### Database
@@ -583,6 +642,7 @@ Decrement less than 0 is not supported.
 - Register timing middleware (default use)
 - Timeout request
 - Authorize (JWT)
+- CORS
 
 ### Clients
 
