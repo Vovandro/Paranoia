@@ -14,6 +14,7 @@ type Sentry struct {
 	parent ILogger
 	config Config
 	enable bool
+	debug  bool
 }
 
 type Config struct {
@@ -23,6 +24,7 @@ type Config struct {
 	SampleRate      float64  `yaml:"sample_rate"`
 	TraceSampleRate float64  `yaml:"trace_sample_rate"`
 	Enable          bool     `yaml:"enable"`
+	Debug           bool     `yaml:"debug"`
 }
 
 func New(name string) *Sentry {
@@ -52,6 +54,7 @@ func (t *Sentry) Init(cfg map[string]interface{}) error {
 			Environment:      t.config.AppEnv,
 			Transport:        transport,
 			EnableTracing:    t.config.TraceSampleRate > 0,
+			Debug:            t.config.Debug,
 		})
 
 		if err != nil {
