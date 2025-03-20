@@ -1,6 +1,6 @@
 # Paranoia framework - golang microservice engine
 
-[![pipeline status](https://gitlab.com/devpro_studio/Paranoia/badges/master/pipeline.svg)](https://gitlab.com/devpro_studio/Paranoia/-/commits/master) 
+[![pipeline status](https://gitlab.com/devpro_studio/Paranoia/badges/master/pipeline.svg)](https://gitlab.com/devpro_studio/Paranoia/-/commits/master)
 [![coverage report](https://gitlab.com/devpro_studio/Paranoia/badges/master/coverage.svg)](https://gitlab.com/devpro_studio/Paranoia/-/commits/master)
 [![Go Reference](https://pkg.go.dev/badge/gitlab.com/devpro_studio/Paranoia)](https://pkg.go.dev/gitlab.com/devpro_studio/Paranoia)
 
@@ -8,11 +8,11 @@
 
 ## [GUI Helper project tool](https://gitlab.com/devpro_studio/paranoia-gui)
 
-
 <details>
 <summary>Getting Started</summary>
 
-To install in the project, use the command 
+To install in the project, use the command
+
 ```shell
 go get gitlab.com/devpro_studio/Paranoia
 ```
@@ -56,6 +56,7 @@ The minimal application is ready.
 The configuration system is set during the framework initialization and does not change within the project.
 
 The framework natively supports configuration systems:
+
 - Auto configuration from a yaml file - support for user configuration and settings for all built-in framework modules.
 
 # Auto configuration
@@ -83,9 +84,9 @@ cfg:
     key1: val1
     key2: val2
     key_slice:
-        - val1
-        - val2
-        - val3
+      - val1
+      - val2
+      - val3
 ```
 
 The `cfg` block is for user configuration.
@@ -132,6 +133,7 @@ Getting package configuration data:
 <summary>Logging</summary>
 
 The framework supports logging systems:
+
 - Std - Output to standard output
 - File - Output logs to a file
 - Sentry - Logging to Sentry
@@ -194,6 +196,7 @@ go get gitlab.com/devpro_studio/Paranoia/pkg/logger/sentry-log
   sample_rate: 1.0
   trace_sample_rate: 0.1
   enable: true
+  debug: false
 ```
 
 ```go
@@ -219,6 +222,7 @@ app.PushPkg(std_log.New("std")).
 Metrics are used to monitor the operation of the application and its components.
 
 The framework includes metric counters, to access them you need to initialize metric export, supported exporters:
+
 - Std - output to standard output
 - Prometheus - get metrics in this format via http
 - OTLP - send metrics in OTLP format (http or grpc)
@@ -316,6 +320,7 @@ All metrics have the format **{Module Type}**.**{Module Name}**.**{Metric Name}*
 <summary>Trace</summary>
 
 The framework includes request and program execution traces. To access them, you need to initialize the export. Supported exporters:
+
 - Std - output to standard output
 - Zipkin
 - Sentry
@@ -365,8 +370,7 @@ app.SetTrace(telemetry.NewTraceSentry("app"))
 
 Or use name in config is "sentry" for auto config from framework and no use SetTrace
 
-* To use Sentry tracing, you need to use Sentry logging *
-
+- To use Sentry tracing, you need to use Sentry logging \*
 
 ## OTLP
 
@@ -377,7 +381,6 @@ Available exporters HTTP and GRPC
   name: app
   service_name: example app
 ```
-
 
 ```go
 app.SetTrace(telemetry.NewTraceOtlpHttp("app"))
@@ -409,7 +412,7 @@ go get gitlab.com/devpro_studio/Paranoia/pkg/cache/etcd
 - type: cache
   name: primary
   hosts: "localhost:2379"
-  username: 
+  username:
   password:
   key_prefix:
 ```
@@ -524,7 +527,7 @@ go get gitlab.com/devpro_studio/Paranoia/pkg/cache/redis
   use_cluster: false
   db_num: 1
   timeout: 3s
-  username: 
+  username:
   password:
   key_prefix:
 ```
@@ -596,7 +599,7 @@ Decrement less than 0 is not supported.
 ### Other
 
 - Initialize base engine module from yaml config file
-- Regulatory task system 
+- Regulatory task system
 - Sentry log
 - JWT native support (module and middleware)
 - Concurrency patterns in template
