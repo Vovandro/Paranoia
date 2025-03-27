@@ -6,11 +6,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"gitlab.com/devpro_studio/go_utils/decode"
-	"os"
-	"time"
 )
 
 // JWT openssl genrsa -out private.key 2048
@@ -21,7 +22,7 @@ type JWT struct {
 }
 
 type JWTConfig struct {
-	PrivateKey string        `yaml:"public_key"`
+	PrivateKey string        `yaml:"private_key"`
 	Expire     time.Duration `yaml:"expire"`
 }
 
