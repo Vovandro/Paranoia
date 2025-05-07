@@ -44,6 +44,9 @@ func (t *RestoreMiddleware) Invoke(next RouteFunc) RouteFunc {
 				} else {
 					t.logger.Error(context.Background(), fmt.Errorf("%v", err))
 				}
+
+				ctx.GetResponse().SetStatus(500)
+				ctx.GetResponse().SetBody([]byte("unknown server error"))
 			}
 		}()
 
