@@ -86,27 +86,42 @@ func (t *dynamicRouter) Push(path []string, handler RouteFunc) {
 	}
 
 	if strings.HasPrefix(path[0], "{") && strings.HasSuffix(path[0], "}") {
+		// Dynamic segment: reuse existing node with the same name if present
+		name := path[0][1 : len(path[0])-1]
+		for i := range t.dynamic {
+			if t.dynamic[i].name == name {
+				t.dynamic[i].next.Push(path[1:], handler)
+				return
+			}
+		}
+		// Not found, create new dynamic branch
 		r := dynamicItem{
-			name: path[0][1 : len(path[0])-1],
+			name: name,
 			next: dynamicRouter{
 				static:  make(map[string]dynamicRouter, 5),
 				dynamic: make([]dynamicItem, 0, 5),
 			},
 		}
-
 		r.next.Push(path[1:], handler)
 		t.dynamic = append(t.dynamic, r)
 		return
 	}
 
-	r := dynamicRouter{
+	// Static segment: merge into existing subtree if it exists
+	if t.static == nil {
+		t.static = make(map[string]dynamicRouter, 5)
+	}
+	if child, ok := t.static[path[0]]; ok {
+		child.Push(path[1:], handler)
+		t.static[path[0]] = child
+		return
+	}
+	child := dynamicRouter{
 		static:  make(map[string]dynamicRouter, 5),
 		dynamic: make([]dynamicItem, 0, 5),
 	}
-
-	r.Push(path[1:], handler)
-
-	t.static[path[0]] = r
+	child.Push(path[1:], handler)
+	t.static[path[0]] = child
 }
 
 func (t *Router) Find(method string, path string) (RouteFunc, map[string]string) {

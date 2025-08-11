@@ -2,12 +2,13 @@ package http
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"net/http"
-	"time"
 )
 
 type Http struct {
@@ -44,9 +45,16 @@ func (t *Http) Init(cfg map[string]interface{}) error {
 	middlewares := make(map[string]IMiddleware)
 
 	if m, ok := cfg["middlewares"]; ok {
-		for k, v := range m.(map[string]interface{}) {
-			if md, ok := v.(IMiddleware); ok {
-				middlewares[k] = md
+		switch mm := m.(type) {
+		case map[string]IMiddleware:
+			for k, v := range mm {
+				middlewares[k] = v
+			}
+		case map[string]interface{}:
+			for k, v := range mm {
+				if md, ok := v.(IMiddleware); ok {
+					middlewares[k] = md
+				}
 			}
 		}
 		delete(cfg, "middlewares")

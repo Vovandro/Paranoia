@@ -153,3 +153,65 @@ func TestHTTP_Fetch(t1 *testing.T) {
 		})
 	}
 }
+
+func TestHTTP_Dynamic_DoNotOverwrite(t *testing.T) {
+	s := Http{
+		config: Config{
+			Port: "8011",
+		},
+	}
+
+	_ = s.Init(map[string]interface{}{
+		"port":        "8011",
+		"middlewares": map[string]IMiddleware{},
+	})
+
+	s.PushRoute("GET", "/api/{v}/users", func(c context.Context, ctx ICtx) {
+		ctx.GetResponse().SetBody([]byte("users"))
+	}, nil)
+
+	s.PushRoute("GET", "/api/{v}/orders", func(c context.Context, ctx ICtx) {
+		ctx.GetResponse().SetBody([]byte("orders"))
+	}, nil)
+
+	s.PushRoute("GET", "/api/{v}/users/profile", func(c context.Context, ctx ICtx) {
+		ctx.GetResponse().SetBody([]byte("profile"))
+	}, nil)
+
+	_ = s.Start()
+
+	// 1) Check first route
+	req1, _ := http.NewRequest("GET", "http://127.0.0.1:8011/api/v1/users", nil)
+	resp1, err := http.DefaultClient.Do(req1)
+	if err != nil {
+		t.Fatalf("request error: %v", err)
+	}
+	body1, _ := io.ReadAll(resp1.Body)
+	if resp1.StatusCode != 200 || string(body1) != "users" {
+		t.Fatalf("want 200 users, got %d %s", resp1.StatusCode, string(body1))
+	}
+
+	// 2) Check sibling route under same prefix
+	req2, _ := http.NewRequest("GET", "http://127.0.0.1:8011/api/v1/orders", nil)
+	resp2, err := http.DefaultClient.Do(req2)
+	if err != nil {
+		t.Fatalf("request error: %v", err)
+	}
+	body2, _ := io.ReadAll(resp2.Body)
+	if resp2.StatusCode != 200 || string(body2) != "orders" {
+		t.Fatalf("want 200 orders, got %d %s", resp2.StatusCode, string(body2))
+	}
+
+	// 3) Check deeper branch under existing dynamic node
+	req3, _ := http.NewRequest("GET", "http://127.0.0.1:8011/api/v2/users/profile", nil)
+	resp3, err := http.DefaultClient.Do(req3)
+	if err != nil {
+		t.Fatalf("request error: %v", err)
+	}
+	body3, _ := io.ReadAll(resp3.Body)
+	if resp3.StatusCode != 200 || string(body3) != "profile" {
+		t.Fatalf("want 200 profile, got %d %s", resp3.StatusCode, string(body3))
+	}
+
+	_ = s.Stop()
+}
