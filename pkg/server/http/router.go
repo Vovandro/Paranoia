@@ -72,6 +72,7 @@ func (t *Router) PushRoute(method string, path string, handler RouteFunc, middle
 
 			router := t.dynamic[method]
 			router.Push(p[1:], h)
+			t.dynamic[method] = router
 		}
 	}
 

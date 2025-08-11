@@ -61,6 +61,7 @@ func (t *Router) PushRoute(path string, handler RouteFunc, middlewares []string)
 		if len(p) > 1 && p[1] != "" {
 			router := t.dynamic
 			router.Push(p[1:], h)
+			t.dynamic = router
 		}
 	}
 
