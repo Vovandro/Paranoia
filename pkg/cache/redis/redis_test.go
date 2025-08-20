@@ -2,6 +2,8 @@ package redis
 
 import (
 	"context"
+	"fmt"
+	"math/rand/v2"
 	"os"
 	"reflect"
 	"strconv"
@@ -20,7 +22,8 @@ func TestRedis_Has(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -52,7 +55,7 @@ func TestRedis_Has(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			for k, v := range tt.store {
-				t.client.Set(context.TODO(), k, v, time.Minute)
+				t.client.Set(context.TODO(), t.config.KeyPrefix+k, v, time.Minute)
 			}
 
 			if got := t.Has(context.Background(), tt.key); got != tt.want {
@@ -60,7 +63,7 @@ func TestRedis_Has(t1 *testing.T) {
 			}
 
 			for k, _ := range tt.store {
-				t.client.Del(context.TODO(), k)
+				t.client.Del(context.TODO(), t.config.KeyPrefix+k)
 			}
 		})
 	}
@@ -77,7 +80,8 @@ func TestRedis_Base(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -203,7 +207,8 @@ func TestRedis_In(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -380,7 +385,8 @@ func TestRedis_Map(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -462,7 +468,8 @@ func TestRedis_Increment(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -553,7 +560,8 @@ func TestRedis_Decrement(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -688,7 +696,8 @@ func TestRedis_IncrementIn(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -791,7 +800,8 @@ func TestRedis_DecrementIn(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -958,7 +968,8 @@ func TestRedis_IncrementMany(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -1017,7 +1028,8 @@ func TestRedis_DecrementMany(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -1076,7 +1088,8 @@ func TestRedis_Batch(t1 *testing.T) {
 	t := &Redis{
 		name: "test",
 		config: Config{
-			Hosts: host + ":6379",
+			Hosts:     host + ":6379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
