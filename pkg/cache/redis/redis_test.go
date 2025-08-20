@@ -678,7 +678,7 @@ func TestRedis_Decrement(t1 *testing.T) {
 				t1.Errorf("Check = %v, last = %v, want %v", a, lastVal, tt.want)
 			}
 
-			for _, v := range tt.store {
+			for _, v := range tt.dec {
 				t.Delete(context.Background(), v.key)
 			}
 		})

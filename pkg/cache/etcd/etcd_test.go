@@ -3,6 +3,7 @@ package etcd
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"reflect"
 	"strconv"
@@ -22,7 +23,8 @@ func TestEtcd_Has(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -79,7 +81,8 @@ func TestEtcd_Base(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -180,7 +183,8 @@ func TestEtcd_In(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -351,7 +355,8 @@ func TestEtcd_Map(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -433,7 +438,8 @@ func TestEtcd_GetMapInvalid(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -467,7 +473,8 @@ func TestEtcd_Increment(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -558,7 +565,8 @@ func TestEtcd_Decrement(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -693,7 +701,8 @@ func TestEtcd_IncrementIn(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -790,7 +799,8 @@ func TestEtcd_DecrementIn(t1 *testing.T) {
 	t := &Etcd{
 		name: "test",
 		config: Config{
-			Hosts: host + ":2379",
+			Hosts:     host + ":2379",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)

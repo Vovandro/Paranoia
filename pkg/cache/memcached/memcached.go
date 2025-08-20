@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/bradfitz/gomemcache/memcache"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"strings"
-	"time"
 )
 
 type Memcached struct {
@@ -117,7 +118,7 @@ func (t *Memcached) Set(ctx context.Context, key string, args any, timeout time.
 }
 
 func (t *Memcached) SetIn(ctx context.Context, key string, key2 string, args any, timeout time.Duration) error {
-	data, err := t.GetMap(ctx, t.config.KeyPrefix+key)
+	data, err := t.GetMap(ctx, key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -127,7 +128,7 @@ func (t *Memcached) SetIn(ctx context.Context, key string, key2 string, args any
 
 	data[key2] = args
 
-	return t.SetMap(ctx, t.config.KeyPrefix+key, data, timeout)
+	return t.SetMap(ctx, key, data, timeout)
 }
 
 func (t *Memcached) SetMap(ctx context.Context, key string, args any, timeout time.Duration) error {
@@ -137,7 +138,7 @@ func (t *Memcached) SetMap(ctx context.Context, key string, args any, timeout ti
 		return err
 	}
 
-	return t.Set(ctx, t.config.KeyPrefix+key, data, timeout)
+	return t.Set(ctx, key, data, timeout)
 }
 
 func (t *Memcached) Get(ctx context.Context, key string) ([]byte, error) {
@@ -158,7 +159,7 @@ func (t *Memcached) Get(ctx context.Context, key string) ([]byte, error) {
 }
 
 func (t *Memcached) GetIn(ctx context.Context, key string, key2 string) (any, error) {
-	data, err := t.GetMap(ctx, t.config.KeyPrefix+key)
+	data, err := t.GetMap(ctx, key)
 
 	if err != nil {
 		return nil, err
@@ -172,7 +173,7 @@ func (t *Memcached) GetIn(ctx context.Context, key string, key2 string) (any, er
 }
 
 func (t *Memcached) GetMap(ctx context.Context, key string) (map[string]any, error) {
-	data, err := t.Get(ctx, t.config.KeyPrefix+key)
+	data, err := t.Get(ctx, key)
 
 	if err != nil {
 		return nil, err
@@ -195,7 +196,7 @@ func (t *Memcached) Increment(ctx context.Context, key string, val int64, timeou
 	v, err := t.client.Increment(t.config.KeyPrefix+key, uint64(val))
 
 	if errors.Is(err, memcache.ErrCacheMiss) {
-		return val, t.Set(ctx, t.config.KeyPrefix+key, val, timeout)
+		return val, t.Set(ctx, key, val, timeout)
 	} else if err != nil {
 		return 0, err
 	}
@@ -208,7 +209,7 @@ func (t *Memcached) Increment(ctx context.Context, key string, val int64, timeou
 
 func (t *Memcached) IncrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	s := time.Now()
-	data, err := t.GetMap(ctx, t.config.KeyPrefix+key)
+	data, err := t.GetMap(ctx, key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -223,7 +224,7 @@ func (t *Memcached) IncrementIn(ctx context.Context, key string, key2 string, va
 		data[key2] = val
 	}
 
-	err = t.SetMap(ctx, t.config.KeyPrefix+key, data, timeout)
+	err = t.SetMap(ctx, key, data, timeout)
 
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return data[key2].(int64), err
@@ -250,7 +251,7 @@ func (t *Memcached) Decrement(ctx context.Context, key string, val int64, timeou
 
 func (t *Memcached) DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error) {
 	s := time.Now()
-	data, err := t.GetMap(ctx, t.config.KeyPrefix+key)
+	data, err := t.GetMap(ctx, key)
 
 	if errors.Is(err, ErrKeyNotFound) {
 		data = make(map[string]any)
@@ -264,7 +265,7 @@ func (t *Memcached) DecrementIn(ctx context.Context, key string, key2 string, va
 		data[key2] = val * -1
 	}
 
-	err = t.SetMap(ctx, t.config.KeyPrefix+key, data, timeout)
+	err = t.SetMap(ctx, key, data, timeout)
 	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
 	return data[key2].(int64), err
 }

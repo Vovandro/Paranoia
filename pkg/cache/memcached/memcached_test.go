@@ -3,13 +3,16 @@ package memcached
 import (
 	"bytes"
 	"context"
-	"github.com/bradfitz/gomemcache/memcache"
+	"fmt"
+	"math/rand/v2"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/bradfitz/gomemcache/memcache"
 )
 
 func TestMemcached_Has(t1 *testing.T) {
@@ -23,7 +26,8 @@ func TestMemcached_Has(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -56,7 +60,7 @@ func TestMemcached_Has(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			for k, v := range tt.store {
 				t.client.Add(&memcache.Item{
-					Key:   k,
+					Key:   t.config.KeyPrefix + k,
 					Value: []byte(v),
 				})
 			}
@@ -66,7 +70,7 @@ func TestMemcached_Has(t1 *testing.T) {
 			}
 
 			for k, _ := range tt.store {
-				t.client.Delete(k)
+				t.client.Delete(t.config.KeyPrefix + k)
 			}
 		})
 	}
@@ -83,7 +87,8 @@ func TestMemcached_Base(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -210,7 +215,8 @@ func TestMemcached_In(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -417,7 +423,8 @@ func TestMemcached_Map(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -499,7 +506,8 @@ func TestMemcached_GetMapInvalid(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -533,7 +541,8 @@ func TestMemcached_Increment(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -624,7 +633,8 @@ func TestMemcached_Decrement(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -759,7 +769,8 @@ func TestMemcached_IncrementIn(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)
@@ -855,7 +866,8 @@ func TestMemcached_DecrementIn(t1 *testing.T) {
 	t := &Memcached{
 		name: "test",
 		config: Config{
-			Hosts: host + ":11211",
+			Hosts:     host + ":11211",
+			KeyPrefix: fmt.Sprintf("test_%d", rand.Int64()),
 		},
 	}
 	err := t.Init(nil)

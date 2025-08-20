@@ -2,6 +2,7 @@ image: golang:latest
 
 stages:
   - test
+  - coverage
 
 test:
   stage: test
@@ -14,6 +15,8 @@ test:
     reports:
       junit: report.xml
   rules:
+    - if: "$CI_COMMIT_TAG"
+      when: never
     - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_BRANCH != "master"'
       when: always
 
@@ -31,13 +34,15 @@ test_full:
     reports:
       junit: report.xml
   rules:
+    - if: "$CI_COMMIT_TAG"
+      when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       when: always
     - if: '$CI_COMMIT_BRANCH == "master"'
       when: always
 
 coverage:
-  stage: test
+  stage: coverage
   variables:
     PARANOIA_INTEGRATED_TESTS: Y
     PARANOIA_INTEGRATED_SERVER: $PARANOIA_INTEGRATED_SERVER
@@ -56,6 +61,8 @@ coverage:
         path: coverage.xml
   coverage: /total:\s+\(statements\)\s+(\d+.\d+\%)/
   rules:
+    - if: "$CI_COMMIT_TAG"
+      when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       when: always
     - if: '$CI_COMMIT_BRANCH == "master"'
