@@ -62,6 +62,7 @@ The minimal application is ready.
 - Clickhouse
 - MongoDB
 - Aerospike
+- Elasticsearch
 
 ### Cache
 
