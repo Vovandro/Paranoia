@@ -2,6 +2,9 @@ package telemetry
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
@@ -9,9 +12,7 @@ import (
 	api "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
-	"net/http"
-	"time"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 )
 
 type MetricPrometheus struct {
