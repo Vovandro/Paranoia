@@ -285,7 +285,7 @@ func initClickhouseTest(name string) *ClickHouse {
 		panic(err)
 	}
 
-	err = db.client.Exec(context.Background(), `insert into test.`+name+` (id, name, balance, created_at) values 
+	err = db.client.Exec(context.Background(), `insert into test.`+name+` (id, name, balance, created_at) values
 						 (1, 'test', 1.0, now()), (2, 'test2', 0.0, now()), (3, null, 50.0, now());`)
 
 	if err != nil {

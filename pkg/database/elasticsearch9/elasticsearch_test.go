@@ -1,0 +1,91 @@
+package elasticsearch9
+
+import (
+	"context"
+	"os"
+	"reflect"
+	"testing"
+)
+
+type testESDoc struct {
+	ID   int64   `json:"id"`
+	Name *string `json:"name"`
+}
+
+func TestElastic_Index_Get_Delete(t *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t.Skip()
+		return
+	}
+	es := initESTest("test_index")
+	defer closeESTest(es)
+
+	name := "foo"
+	doc := testESDoc{ID: 10, Name: &name}
+
+	id, err := es.Index(context.Background(), es.name, "10", doc, true)
+	if err != nil {
+		t.Fatalf("index err: %v", err)
+	}
+	if id == "" {
+		t.Fatalf("empty id")
+	}
+
+	row, err := es.Get(context.Background(), es.name, "10")
+	if err != nil {
+		t.Fatalf("get err: %v", err)
+	}
+	var got testESDoc
+	if err := row.Scan(&got); err != nil {
+		t.Fatalf("scan err: %v", err)
+	}
+	if !reflect.DeepEqual(got, doc) {
+		t.Fatalf("got %+v want %+v", got, doc)
+	}
+
+	if err := es.Delete(context.Background(), es.name, "10", true); err != nil {
+		t.Fatalf("delete err: %v", err)
+	}
+}
+
+func TestElastic_Search(t *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t.Skip()
+		return
+	}
+	es := initESTest("test_search")
+	defer closeESTest(es)
+
+	name1 := "t1"
+	name2 := "t2"
+	es.Index(context.Background(), es.name, "1", testESDoc{ID: 1, Name: &name1}, true)
+	es.Index(context.Background(), es.name, "2", testESDoc{ID: 2, Name: &name2}, true)
+
+	rows, err := es.Search(context.Background(), []string{es.name}, nil, 0, 10)
+	if err != nil {
+		t.Fatalf("search err: %v", err)
+	}
+	defer rows.Close()
+	cnt := 0
+	for rows.Next() {
+		var d testESDoc
+		if err := rows.Scan(&d); err != nil {
+			t.Fatalf("scan err: %v", err)
+		}
+		cnt++
+	}
+	if cnt < 2 {
+		t.Fatalf("want >=2 got %d", cnt)
+	}
+}
+
+func initESTest(name string) *ElasticSearch {
+	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
+	es := New(name)
+	if err := es.Init(map[string]interface{}{"addresses": "http://" + host + ":9200", "username": "elastic", "password": "changeme"}); err != nil {
+		panic(err)
+	}
+	return es
+}
+
+func closeESTest(es *ElasticSearch) { es.Stop() }

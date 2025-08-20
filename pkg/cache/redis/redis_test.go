@@ -946,3 +946,180 @@ func TestRedis_String(t1 *testing.T) {
 		})
 	}
 }
+
+func TestRedis_IncrementMany(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
+
+	t := &Redis{
+		name: "test",
+		config: Config{
+			Hosts: host + ":6379",
+		},
+	}
+	err := t.Init(nil)
+	defer t.Stop()
+
+	if err != nil {
+		t1.Errorf("Init() = %v", err)
+	}
+
+	// First increment on empty keys
+	res, err := t.IncrementMany(context.Background(), map[string]int64{
+		"im1": 1,
+		"im2": 5,
+	}, time.Minute)
+	if err != nil {
+		t1.Fatalf("IncrementMany err: %v", err)
+	}
+	if res["im1"] != 1 || res["im2"] != 5 {
+		t1.Fatalf("IncrementMany got = %+v, want im1=1 im2=5", res)
+	}
+
+	// Second increment accumulates
+	res, err = t.IncrementMany(context.Background(), map[string]int64{
+		"im1": 2,
+		"im2": -3,
+	}, time.Minute)
+	if err != nil {
+		t1.Fatalf("IncrementMany err: %v", err)
+	}
+	if res["im1"] != 3 || res["im2"] != 2 {
+		t1.Fatalf("IncrementMany got = %+v, want im1=3 im2=2", res)
+	}
+
+	// Validate stored values
+	got1, _ := t.Get(context.Background(), "im1")
+	got2, _ := t.Get(context.Background(), "im2")
+	v1, _ := strconv.ParseInt(got1, 10, 64)
+	v2, _ := strconv.ParseInt(got2, 10, 64)
+	if v1 != 3 || v2 != 2 {
+		t1.Fatalf("Stored values got im1=%d im2=%d", v1, v2)
+	}
+
+	// cleanup
+	t.Delete(context.Background(), "im1")
+	t.Delete(context.Background(), "im2")
+}
+
+func TestRedis_DecrementMany(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
+
+	t := &Redis{
+		name: "test",
+		config: Config{
+			Hosts: host + ":6379",
+		},
+	}
+	err := t.Init(nil)
+	defer t.Stop()
+
+	if err != nil {
+		t1.Errorf("Init() = %v", err)
+	}
+
+	// Seed initial values
+	t.Set(context.Background(), "dm1", 10, time.Minute)
+	t.Set(context.Background(), "dm2", 3, time.Minute)
+
+	res, err := t.DecrementMany(context.Background(), map[string]int64{
+		"dm1": 2,
+		"dm2": 1,
+	}, time.Minute)
+	if err != nil {
+		t1.Fatalf("DecrementMany err: %v", err)
+	}
+	if res["dm1"] != 8 || res["dm2"] != 2 {
+		t1.Fatalf("DecrementMany got = %+v, want dm1=8 dm2=2", res)
+	}
+
+	res, err = t.DecrementMany(context.Background(), map[string]int64{
+		"dm1": 8,
+		"dm2": 5,
+	}, time.Minute)
+	if err != nil {
+		t1.Fatalf("DecrementMany err: %v", err)
+	}
+	if res["dm1"] != 0 || res["dm2"] != -3 {
+		t1.Fatalf("DecrementMany got = %+v, want dm1=0 dm2=-3", res)
+	}
+
+	got1, _ := t.Get(context.Background(), "dm1")
+	got2, _ := t.Get(context.Background(), "dm2")
+	v1, _ := strconv.ParseInt(got1, 10, 64)
+	v2, _ := strconv.ParseInt(got2, 10, 64)
+	if v1 != 0 || v2 != -3 {
+		t1.Fatalf("Stored values got dm1=%d dm2=%d", v1, v2)
+	}
+
+	t.Delete(context.Background(), "dm1")
+	t.Delete(context.Background(), "dm2")
+}
+
+func TestRedis_Batch(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	host := os.Getenv("PARANOIA_INTEGRATED_SERVER")
+
+	t := &Redis{
+		name: "test",
+		config: Config{
+			Hosts: host + ":6379",
+		},
+	}
+	err := t.Init(nil)
+	defer t.Stop()
+
+	if err != nil {
+		t1.Errorf("Init() = %v", err)
+	}
+
+	// batch set/incr/hash-incr and expirations
+	err = t.Batch(context.Background(), func(b Batcher) {
+		b.Set("bt1", "v1", time.Minute)
+		b.IncrBy("bt2", 3)
+		b.Expire("bt2", time.Minute)
+		b.HIncrBy("bh", "f1", 5)
+		b.Expire("bh", time.Minute)
+	})
+	if err != nil {
+		t1.Fatalf("Batch err: %v", err)
+	}
+
+	// verify
+	got, err := t.Get(context.Background(), "bt1")
+	if err != nil || got != "v1" {
+		t1.Fatalf("Get bt1 = %v err=%v", got, err)
+	}
+	got, err = t.Get(context.Background(), "bt2")
+	if err != nil || got != "3" {
+		t1.Fatalf("Get bt2 = %v err=%v", got, err)
+	}
+	got, err = t.GetIn(context.Background(), "bh", "f1")
+	if err != nil || got != "5" {
+		t1.Fatalf("HGet bh.f1 = %v err=%v", got, err)
+	}
+
+	// delete via batch
+	_ = t.Batch(context.Background(), func(b Batcher) {
+		b.Del("bt1")
+		b.Del("bt2")
+		b.Del("bh")
+	})
+
+	if t.Has(context.Background(), "bt1") || t.Has(context.Background(), "bt2") {
+		t1.Fatalf("keys not deleted")
+	}
+}

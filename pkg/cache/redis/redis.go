@@ -3,12 +3,14 @@ package redis
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
+	"time"
+
 	redisExt "github.com/redis/go-redis/v9"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"strings"
-	"time"
 )
 
 type Redis struct {
@@ -274,4 +276,97 @@ func (t *Redis) Expire(ctx context.Context, key string, timeout time.Duration) e
 	}
 
 	return nil
+}
+
+// internal pipeline batcher
+type pipelineBatcher struct {
+	p    redisExt.Pipeliner
+	pref string
+	ctx  context.Context
+}
+
+func (b *pipelineBatcher) Set(key string, value any, timeout time.Duration) {
+	b.p.Set(b.ctx, b.pref+key, value, timeout)
+}
+func (b *pipelineBatcher) Del(key string) { b.p.Del(b.ctx, b.pref+key) }
+func (b *pipelineBatcher) Expire(key string, timeout time.Duration) {
+	b.p.Expire(b.ctx, b.pref+key, timeout)
+}
+func (b *pipelineBatcher) HSet(key string, values map[string]any) {
+	b.p.HSet(b.ctx, b.pref+key, values)
+}
+func (b *pipelineBatcher) HIncrBy(key, field string, incr int64) {
+	b.p.HIncrBy(b.ctx, b.pref+key, field, incr)
+}
+func (b *pipelineBatcher) IncrBy(key string, incr int64) { b.p.IncrBy(b.ctx, b.pref+key, incr) }
+func (b *pipelineBatcher) DecrBy(key string, decr int64) { b.p.DecrBy(b.ctx, b.pref+key, decr) }
+
+// Batch groups multiple Redis operations into a single pipeline execution
+func (t *Redis) Batch(ctx context.Context, fn func(Batcher)) error {
+	s := time.Now()
+	t.counterWrite.Add(ctx, 1)
+
+	p := t.client.Pipeline()
+	fn(&pipelineBatcher{p: p, pref: t.config.KeyPrefix, ctx: ctx})
+	_, err := p.Exec(ctx)
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
+	return err
+}
+
+// IncrementMany increments multiple keys using a pipeline
+func (t *Redis) IncrementMany(ctx context.Context, deltas map[string]int64, timeout time.Duration) (map[string]int64, error) {
+	if len(deltas) == 0 {
+		return map[string]int64{}, nil
+	}
+	s := time.Now()
+	t.counterWrite.Add(ctx, int64(len(deltas)))
+
+	p := t.client.Pipeline()
+	results := make(map[string]*redisExt.IntCmd, len(deltas))
+	for k, v := range deltas {
+		results[k] = p.IncrBy(ctx, t.config.KeyPrefix+k, v)
+		p.Expire(ctx, t.config.KeyPrefix+k, timeout)
+	}
+	_, err := p.Exec(ctx)
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
+	if err != nil && !errors.Is(err, redisExt.Nil) {
+		return nil, err
+	}
+	out := make(map[string]int64, len(deltas))
+	for k, cmd := range results {
+		if cmd.Err() != nil && !errors.Is(cmd.Err(), redisExt.Nil) {
+			return nil, fmt.Errorf("incr %s: %w", k, cmd.Err())
+		}
+		out[k] = cmd.Val()
+	}
+	return out, nil
+}
+
+// DecrementMany decrements multiple keys using a pipeline
+func (t *Redis) DecrementMany(ctx context.Context, deltas map[string]int64, timeout time.Duration) (map[string]int64, error) {
+	if len(deltas) == 0 {
+		return map[string]int64{}, nil
+	}
+	s := time.Now()
+	t.counterWrite.Add(ctx, int64(len(deltas)))
+
+	p := t.client.Pipeline()
+	results := make(map[string]*redisExt.IntCmd, len(deltas))
+	for k, v := range deltas {
+		results[k] = p.DecrBy(ctx, t.config.KeyPrefix+k, v)
+		p.Expire(ctx, t.config.KeyPrefix+k, timeout)
+	}
+	_, err := p.Exec(ctx)
+	t.timeWrite.Record(ctx, time.Since(s).Milliseconds())
+	if err != nil && !errors.Is(err, redisExt.Nil) {
+		return nil, err
+	}
+	out := make(map[string]int64, len(deltas))
+	for k, cmd := range results {
+		if cmd.Err() != nil && !errors.Is(cmd.Err(), redisExt.Nil) {
+			return nil, fmt.Errorf("decr %s: %w", k, cmd.Err())
+		}
+		out[k] = cmd.Val()
+	}
+	return out, nil
 }

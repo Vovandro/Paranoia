@@ -2,10 +2,11 @@ package paranoia
 
 import (
 	"context"
-	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
 )
 
 type testTask struct {

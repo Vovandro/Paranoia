@@ -3,11 +3,12 @@ package paranoia
 import (
 	"context"
 	"fmt"
-	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
-	"go.opentelemetry.io/otel"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	interfaces2 "gitlab.com/devpro_studio/Paranoia/paranoia/interfaces"
+	"go.opentelemetry.io/otel"
 )
 
 type taskRun struct {

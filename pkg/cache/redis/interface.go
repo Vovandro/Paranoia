@@ -56,9 +56,32 @@ type IRedis interface {
 	// DecrementIn decreases the numeric value stored under a nested key of a map in Redis.
 	DecrementIn(ctx context.Context, key string, key2 string, val int64, timeout time.Duration) (int64, error)
 
+	// IncrementMany increases multiple keys by provided deltas atomically using a pipeline.
+	// Returns the resulting values per key.
+	IncrementMany(ctx context.Context, deltas map[string]int64, timeout time.Duration) (map[string]int64, error)
+
+	// DecrementMany decreases multiple keys by provided deltas atomically using a pipeline.
+	// Returns the resulting values per key.
+	DecrementMany(ctx context.Context, deltas map[string]int64, timeout time.Duration) (map[string]int64, error)
+
+	// Batch allows grouping multiple operations in a single pipeline round-trip.
+	// The provided function is called with a Batcher to enqueue operations.
+	Batch(ctx context.Context, fn func(Batcher)) error
+
 	// Delete removes the value stored for the given key from Redis.
 	Delete(ctx context.Context, key string) error
 
 	// Expire sets or updates the expiration time for the given key.
 	Expire(ctx context.Context, key string, timeout time.Duration) error
+}
+
+// Batcher provides a minimal set of batched operations supported by Batch.
+type Batcher interface {
+	Set(key string, value any, timeout time.Duration)
+	Del(key string)
+	Expire(key string, timeout time.Duration)
+	HSet(key string, values map[string]any)
+	HIncrBy(key, field string, incr int64)
+	IncrBy(key string, incr int64)
+	DecrBy(key string, decr int64)
 }

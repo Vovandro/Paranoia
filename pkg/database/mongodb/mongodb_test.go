@@ -2,11 +2,12 @@ package mongodb
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"testing"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestMongoDB_Exists(t1 *testing.T) {
@@ -301,6 +302,7 @@ func initMongoTest(name string) *MongoDB {
 		"user":     "test",
 		"password": "test",
 		"hosts":    host + ":27017",
+		"mode":     "primary",
 	})
 
 	if err != nil {
