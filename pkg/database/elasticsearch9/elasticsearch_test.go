@@ -48,6 +48,58 @@ func TestElastic_Index_Get_Delete(t *testing.T) {
 	}
 }
 
+func TestElastic_DeleteByQuery(t *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t.Skip()
+		return
+	}
+	es := initESTest("test_index")
+	defer closeESTest(es)
+
+	name1 := "t1"
+	name2 := "t2"
+	es.Index(context.Background(), es.name, "1", testESDoc{ID: 1, Name: &name1}, true)
+	es.Index(context.Background(), es.name, "2", testESDoc{ID: 2, Name: &name2}, true)
+
+	rows, err := es.Search(context.Background(), []string{es.name}, nil, 0, 10)
+	if err != nil {
+		t.Fatalf("search err: %v", err)
+	}
+	defer rows.Close()
+	cnt := 0
+	for rows.Next() {
+		var d testESDoc
+		if err := rows.Scan(&d); err != nil {
+			t.Fatalf("scan err: %v", err)
+		}
+		cnt++
+	}
+	if cnt < 2 {
+		t.Fatalf("want >=2 got %d", cnt)
+	}
+
+	if err := es.DeleteByQuery(context.Background(), []string{es.name}, nil, true); err != nil {
+		t.Fatalf("delete by query err: %v", err)
+	}
+
+	rows, err = es.Search(context.Background(), []string{es.name}, nil, 0, 10)
+	if err != nil {
+		t.Fatalf("search err: %v", err)
+	}
+	defer rows.Close()
+	cnt = 0
+	for rows.Next() {
+		var d testESDoc
+		if err := rows.Scan(&d); err != nil {
+			t.Fatalf("scan err: %v", err)
+		}
+		cnt++
+	}
+	if cnt != 0 {
+		t.Fatalf("want 0 got %d", cnt)
+	}
+}
+
 func TestElastic_Search(t *testing.T) {
 	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
 		t.Skip()
@@ -71,6 +123,45 @@ func TestElastic_Search(t *testing.T) {
 		var d testESDoc
 		if err := rows.Scan(&d); err != nil {
 			t.Fatalf("scan err: %v", err)
+		}
+		cnt++
+	}
+	if cnt < 2 {
+		t.Fatalf("want >=2 got %d", cnt)
+	}
+}
+
+func TestElastic_SearchSource_IncludesExcludes(t *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t.Skip()
+		return
+	}
+	es := initESTest("test_searchsource9")
+	defer closeESTest(es)
+
+	name1 := "sx1"
+	name2 := "sx2"
+	es.Index(context.Background(), es.name, "101", testESDoc{ID: 101, Name: &name1}, true)
+	es.Index(context.Background(), es.name, "102", testESDoc{ID: 102, Name: &name2}, true)
+
+	rows, err := es.SearchSource(context.Background(), []string{es.name}, nil, 0, 10, []string{"id"}, []string{"name"})
+	if err != nil {
+		t.Fatalf("searchsource err: %v", err)
+	}
+	defer rows.Close()
+
+	// Expect that only id is present in _source, and name is omitted
+	cnt := 0
+	for rows.Next() {
+		var d testESDoc
+		if err := rows.Scan(&d); err != nil {
+			t.Fatalf("scan err: %v", err)
+		}
+		if d.ID == 0 {
+			t.Fatalf("expected id to be present")
+		}
+		if d.Name != nil {
+			t.Fatalf("expected name to be nil due to excludes, got %v", *d.Name)
 		}
 		cnt++
 	}

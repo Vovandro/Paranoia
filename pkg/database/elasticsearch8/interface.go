@@ -8,22 +8,13 @@ import (
 
 // IElasticSearch defines the interface for Elasticsearch operations
 type IElasticSearch interface {
-	// Index indexes a document and returns the document ID
 	Index(ctx context.Context, index string, id string, document interface{}, refresh bool) (string, error)
-
-	// Get retrieves a single document by ID
 	Get(ctx context.Context, index string, id string) (NoSQLRow, error)
-
-	// Search performs a search query and returns multiple hits
 	Search(ctx context.Context, index []string, query *types.Query, from, size int) (NoSQLRows, error)
-
-	// Delete removes a document by ID
+	SearchSource(ctx context.Context, index []string, query *types.Query, from, size int, include, exclude []string) (NoSQLRows, error)
 	Delete(ctx context.Context, index string, id string, refresh bool) error
-
-	// Update performs a partial update on a document
+	DeleteByQuery(ctx context.Context, index []string, query map[string]any, refresh bool) error
 	Update(ctx context.Context, index string, id string, doc interface{}, refresh bool) error
-
-	// GetClient returns the underlying client instance
 	GetClient() interface{}
 }
 

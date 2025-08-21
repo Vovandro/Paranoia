@@ -187,6 +187,51 @@ func (t *ElasticSearch) Search(ctx context.Context, index []string, query *types
 	return &ESRows{res: res}, nil
 }
 
+// SearchSource performs search with _source includes/excludes filtering
+func (t *ElasticSearch) SearchSource(ctx context.Context, index []string, query *types.Query, from, size int, include, exclude []string) (NoSQLRows, error) {
+	defer func(s time.Time) { t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds()) }(time.Now())
+	t.counter.Add(context.Background(), 1)
+
+	body := map[string]interface{}{
+		"from": from,
+		"size": size,
+	}
+	if query != nil {
+		body["query"] = query
+	} else {
+		body["query"] = map[string]any{"match_all": map[string]any{}}
+	}
+	if len(include) > 0 || len(exclude) > 0 {
+		src := map[string]any{}
+		if len(include) > 0 {
+			src["includes"] = include
+		}
+		if len(exclude) > 0 {
+			src["excludes"] = exclude
+		}
+		body["_source"] = src
+	}
+
+	b, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	res, err := t.client.Search(
+		t.client.Search.WithContext(ctx),
+		t.client.Search.WithIndex(index...),
+		t.client.Search.WithBody(bytes.NewReader(b)),
+	)
+	if err != nil {
+		return nil, err
+	}
+	if res.IsError() {
+		data, _ := io.ReadAll(res.Body)
+		_ = res.Body.Close()
+		return nil, errors.New(string(data))
+	}
+	return &ESRows{res: res}, nil
+}
+
 func (t *ElasticSearch) Delete(ctx context.Context, index string, id string, refresh bool) error {
 	defer func(s time.Time) { t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds()) }(time.Now())
 	t.counter.Add(context.Background(), 1)
@@ -198,6 +243,27 @@ func (t *ElasticSearch) Delete(ctx context.Context, index string, id string, ref
 			return "false"
 		}
 	}()}
+	res, err := req.Do(ctx, t.client)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		data, _ := io.ReadAll(res.Body)
+		return errors.New(string(data))
+	}
+	return nil
+}
+
+func (t *ElasticSearch) DeleteByQuery(ctx context.Context, index []string, query map[string]any, refresh bool) error {
+	defer func(s time.Time) { t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds()) }(time.Now())
+	t.counter.Add(context.Background(), 1)
+	body := map[string]any{"query": query}
+	b, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	req := esapi.DeleteByQueryRequest{Index: index, Body: bytes.NewReader(b), Refresh: &refresh}
 	res, err := req.Do(ctx, t.client)
 	if err != nil {
 		return err
