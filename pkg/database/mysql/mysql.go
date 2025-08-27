@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	_ "github.com/go-sql-driver/mysql"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"time"
 )
 
 type MySQL struct {
@@ -107,4 +108,71 @@ func (t *MySQL) Exec(ctx context.Context, query string, args ...interface{}) err
 
 func (t *MySQL) GetDb() interface{} {
 	return t.client
+}
+
+// BeginTx starts a transaction with metrics tracking
+func (t *MySQL) BeginTx(ctx context.Context) (SQLTx, error) {
+	tx, err := t.client.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &MySQLTx{tx: tx, counter: t.counter, timeCounter: t.timeCounter}, nil
+}
+
+type MySQLTx struct {
+	tx          *sql.Tx
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
+}
+
+func (p *MySQLTx) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+
+	rows, err := p.tx.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+func (p *MySQLTx) QueryRow(ctx context.Context, query string, args ...interface{}) (SQLRow, error) {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+
+	row := p.tx.QueryRowContext(ctx, query, args...)
+	if row.Err() != nil {
+		return nil, row.Err()
+	}
+	return row, nil
+}
+
+func (p *MySQLTx) Exec(ctx context.Context, query string, args ...interface{}) error {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+
+	_, err := p.tx.ExecContext(ctx, query, args...)
+	return err
+}
+
+func (p *MySQLTx) Commit(ctx context.Context) error {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+	return p.tx.Commit()
+}
+
+func (p *MySQLTx) Rollback(ctx context.Context) error {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+	return p.tx.Rollback()
 }

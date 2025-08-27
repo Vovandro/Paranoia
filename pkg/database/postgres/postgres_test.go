@@ -273,7 +273,7 @@ func initPostgresTest(name string) *Postgres {
 		panic(err)
 	}
 
-	_, err = db.client.Exec(context.Background(), `insert into `+name+` (id, name, balance, created_at) values 
+	_, err = db.client.Exec(context.Background(), `insert into `+name+` (id, name, balance, created_at) values
 						 (1, 'test', 1.0, now()), (2, 'test2', 0.0, now()), (3, null, 50.0, now());`)
 
 	if err != nil {
@@ -287,4 +287,79 @@ func initPostgresTest(name string) *Postgres {
 func closePostgresTest(db *Postgres) {
 	db.Exec(context.Background(), "drop table if exists "+db.name+";")
 	db.Stop()
+}
+
+func TestPostgres_TxCommit(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	db := initPostgresTest("test_tx_commit")
+	defer closePostgresTest(db)
+
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx)
+	if err != nil {
+		t1.Fatalf("BeginTx() error = %v", err)
+	}
+	defer tx.Rollback(ctx)
+
+	err = tx.Exec(ctx, "insert into test_tx_commit values ($1, $2, $3, now());", 10, "tx", 1.0)
+	if err != nil {
+		t1.Fatalf("tx.Exec() error = %v", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		t1.Fatalf("Commit() error = %v", err)
+	}
+
+	var exist bool
+	row, err := db.QueryRow(ctx, "select exists(select id from test_tx_commit where id = 10);")
+	if err != nil {
+		t1.Fatalf("QueryRow() error = %v", err)
+	}
+	if err := row.Scan(&exist); err != nil {
+		t1.Fatalf("Scan() error = %v", err)
+	}
+	if !exist {
+		t1.Errorf("commit not persisted")
+	}
+}
+
+func TestPostgres_TxRollback(t1 *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t1.Skip()
+		return
+	}
+
+	db := initPostgresTest("test_tx_rollback")
+	defer closePostgresTest(db)
+
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx)
+	if err != nil {
+		t1.Fatalf("BeginTx() error = %v", err)
+	}
+
+	err = tx.Exec(ctx, "insert into test_tx_rollback values ($1, $2, $3, now());", 10, "tx", 1.0)
+	if err != nil {
+		t1.Fatalf("tx.Exec() error = %v", err)
+	}
+
+	if err := tx.Rollback(ctx); err != nil {
+		t1.Fatalf("Rollback() error = %v", err)
+	}
+
+	var exist bool
+	row, err := db.QueryRow(ctx, "select exists(select id from test_tx_rollback where id = 10);")
+	if err != nil {
+		t1.Fatalf("QueryRow() error = %v", err)
+	}
+	if err := row.Scan(&exist); err != nil {
+		t1.Fatalf("Scan() error = %v", err)
+	}
+	if exist {
+		t1.Errorf("rollback not reverted")
+	}
 }

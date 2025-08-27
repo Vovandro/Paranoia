@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/jackc/pgx/v5"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"time"
 )
 
 type Postgres struct {
@@ -107,4 +108,71 @@ func (t *Postgres) Exec(ctx context.Context, query string, args ...interface{}) 
 
 func (t *Postgres) GetDb() *pgx.Conn {
 	return t.client
+}
+
+// BeginTx starts a transaction with metrics tracking
+func (t *Postgres) BeginTx(ctx context.Context) (SQLTx, error) {
+	tx, err := t.client.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &PGSQLTx{tx: tx, counter: t.counter, timeCounter: t.timeCounter}, nil
+}
+
+type PGSQLTx struct {
+	tx          pgx.Tx
+	counter     metric.Int64Counter
+	timeCounter metric.Int64Histogram
+}
+
+func (p *PGSQLTx) Query(ctx context.Context, query string, args ...interface{}) (SQLRows, error) {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+
+	rows, err := p.tx.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return &PGSQLRows{Rows: rows}, nil
+}
+
+func (p *PGSQLTx) QueryRow(ctx context.Context, query string, args ...interface{}) (SQLRow, error) {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+
+	row := p.tx.QueryRow(ctx, query, args...)
+	if row == nil {
+		return nil, fmt.Errorf(query + " not found")
+	}
+	return row, nil
+}
+
+func (p *PGSQLTx) Exec(ctx context.Context, query string, args ...interface{}) error {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+
+	_, err := p.tx.Exec(ctx, query, args...)
+	return err
+}
+
+func (p *PGSQLTx) Commit(ctx context.Context) error {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+	return p.tx.Commit(ctx)
+}
+
+func (p *PGSQLTx) Rollback(ctx context.Context) error {
+	defer func(s time.Time) {
+		p.timeCounter.Record(context.Background(), time.Since(s).Milliseconds())
+	}(time.Now())
+	p.counter.Add(context.Background(), 1)
+	return p.tx.Rollback(ctx)
 }
