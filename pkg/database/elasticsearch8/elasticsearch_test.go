@@ -76,3 +76,47 @@ func initESTest(name string) *ElasticSearch {
 }
 
 func closeESTest(es *ElasticSearch) { _ = es.Stop() }
+
+func TestElastic_BulkIndex(t *testing.T) {
+	if os.Getenv("PARANOIA_INTEGRATED_TESTS") != "Y" {
+		t.Skip()
+		return
+	}
+	es := initESTest("test_bulk8")
+	defer closeESTest(es)
+
+	name1 := "b1"
+	name2 := "b2"
+	res, err := es.BulkIndex(context.Background(), es.name, []BulkItem{
+		{ID: "b201", Document: testESDoc{ID: 201, Name: &name1}},
+		{ID: "b202", Document: testESDoc{ID: 202, Name: &name2}},
+	}, true)
+	if err != nil {
+		t.Fatalf("bulk err: %v", err)
+	}
+	if len(res.Errors) != 0 {
+		t.Fatalf("bulk errors: %+v", res.Errors)
+	}
+	if len(res.IDs) < 2 {
+		t.Fatalf("bulk ids len < 2: %+v", res.IDs)
+	}
+
+	rows, err := es.Search(context.Background(), []string{es.name}, nil, 0, 10)
+	if err != nil {
+		t.Fatalf("search err: %v", err)
+	}
+	defer rows.Close()
+	found := 0
+	for rows.Next() {
+		var d testESDoc
+		if err := rows.Scan(&d); err != nil {
+			t.Fatalf("scan err: %v", err)
+		}
+		if (d.ID == 201 && d.Name != nil && *d.Name == name1) || (d.ID == 202 && d.Name != nil && *d.Name == name2) {
+			found++
+		}
+	}
+	if found < 2 {
+		t.Fatalf("expected to find 2 docs, got %d", found)
+	}
+}
