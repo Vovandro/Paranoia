@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -305,3 +306,64 @@ func (t *ElasticSearch) Update(ctx context.Context, index string, id string, doc
 }
 
 func (t *ElasticSearch) GetClient() interface{} { return t.client }
+
+// BulkIndex performs bulk indexing into a single index
+func (t *ElasticSearch) BulkIndex(ctx context.Context, index string, items []BulkItem, refresh bool) (BulkIndexResult, error) {
+	defer func(s time.Time) { t.timeCounter.Record(context.Background(), time.Since(s).Milliseconds()) }(time.Now())
+	t.counter.Add(context.Background(), 1)
+
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	for _, it := range items {
+		meta := map[string]map[string]string{"index": {"_index": index}}
+		if it.ID != "" {
+			meta["index"]["_id"] = it.ID
+		}
+		if err := enc.Encode(meta); err != nil {
+			return BulkIndexResult{}, err
+		}
+		if err := enc.Encode(it.Document); err != nil {
+			return BulkIndexResult{}, err
+		}
+	}
+
+	req := esapi.BulkRequest{Body: bytes.NewReader(buf.Bytes()), Refresh: func() string {
+		if refresh {
+			return "true"
+		} else {
+			return "false"
+		}
+	}()}
+	res, err := req.Do(ctx, t.client)
+	if err != nil {
+		return BulkIndexResult{}, err
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		data, _ := io.ReadAll(res.Body)
+		return BulkIndexResult{}, errors.New(string(data))
+	}
+	var out struct {
+		Errors bool `json:"errors"`
+		Items  []map[string]struct {
+			ID     string `json:"_id"`
+			Status int    `json:"status"`
+			Error  any    `json:"error"`
+		} `json:"items"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return BulkIndexResult{}, err
+	}
+	var ids []string
+	var errs []string
+	for _, m := range out.Items {
+		if v, ok := m["index"]; ok {
+			if v.Status >= 200 && v.Status < 300 {
+				ids = append(ids, v.ID)
+			} else {
+				errs = append(errs, strconv.Itoa(v.Status))
+			}
+		}
+	}
+	return BulkIndexResult{IDs: ids, Errors: errs}, nil
+}
