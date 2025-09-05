@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/pkg/logger/file-log
+module gitlab.com/devpro_studio/Paranoia/pkg/logger/std_log
 
 go 1.23.4
 

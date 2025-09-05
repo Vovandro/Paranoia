@@ -7,7 +7,7 @@ require (
 	google.golang.org/protobuf v1.36.4
 )
 
-replace gitlab.com/devpro_studio/Paranoia/pkg/client/grpc-client => ../../client/grpc-client
+replace gitlab.com/devpro_studio/Paranoia/pkg/client/grpc_client => ../../client/grpc_client
 
 require (
 	go.opentelemetry.io/otel v1.34.0 // indirect

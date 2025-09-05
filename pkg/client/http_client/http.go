@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
-	"net/http"
-	"time"
 )
 
 type HTTPClient struct {
@@ -74,11 +75,9 @@ func (t *HTTPClient) Fetch(ctx context.Context, method string, host string, data
 		res := &Response{}
 		request, _ := http.NewRequestWithContext(ctx, method, host, bytes.NewBuffer(data))
 
-		if headers != nil {
-			for key, value := range headers {
-				if len(value) > 0 {
-					request.Header.Set(key, value[0])
-				}
+		for key, value := range headers {
+			if len(value) > 0 {
+				request.Header.Set(key, value[0])
 			}
 		}
 

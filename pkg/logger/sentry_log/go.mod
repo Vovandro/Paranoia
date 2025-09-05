@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/pkg/logger/sentry-log
+module gitlab.com/devpro_studio/Paranoia/pkg/logger/sentry_log
 
 go 1.23.4
 

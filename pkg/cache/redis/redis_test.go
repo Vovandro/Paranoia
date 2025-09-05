@@ -536,7 +536,7 @@ func TestRedis_Increment(t1 *testing.T) {
 				t1.Errorf("Check error = %v, want %v", err, tt.want)
 			}
 
-			a, err := strconv.ParseInt(got, 10, 64)
+			a, _ := strconv.ParseInt(got, 10, 64)
 
 			if a != tt.want || lastVal != tt.want {
 				t1.Errorf("Check = %v, last = %v, want %v", a, lastVal, tt.want)

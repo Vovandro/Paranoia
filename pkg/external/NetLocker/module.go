@@ -2,7 +2,8 @@ package NetLocker
 
 import (
 	"context"
-	grpc_client "gitlab.com/devpro_studio/Paranoia/pkg/client/grpc-client"
+
+	"gitlab.com/devpro_studio/Paranoia/pkg/client/grpc_client"
 )
 
 type NetLocker struct {

@@ -1,4 +1,4 @@
-module gitlab.com/devpro_studio/Paranoia/pkg/client/kafka-client
+module gitlab.com/devpro_studio/Paranoia/pkg/client/kafka_client
 
 go 1.23.4
 

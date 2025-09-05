@@ -6,21 +6,20 @@ use (
 	./pkg/cache/memcached
 	./pkg/cache/memory
 	./pkg/cache/redis
-	./pkg/client/grpc-client
-	./pkg/client/http-client
-	./pkg/client/kafka-client
-	./pkg/client/rabbitmq-client
+	./pkg/client/grpc_client
+	./pkg/client/http_client
+	./pkg/client/kafka_client
+	./pkg/client/rabbitmq_client
 	./pkg/database/as
 	./pkg/database/clickhouse
 	./pkg/database/mongodb
 	./pkg/database/mysql
 	./pkg/database/postgres
-	./pkg/database/elasticsearch8
 	./pkg/database/elasticsearch9
 	./pkg/database/sqlite
-	./pkg/logger/file-log
-	./pkg/logger/sentry-log
-	./pkg/logger/std-log
+	./pkg/logger/file_log
+	./pkg/logger/sentry_log
+	./pkg/logger/std_log
 	./pkg/server/grpc
 	./pkg/server/http
 	./pkg/server/kafka
@@ -28,4 +27,5 @@ use (
 	./pkg/storage/file
 	./pkg/storage/s3
 	./pkg/external/NetLocker
+	./pkg/external/FeatureChaos
 )
