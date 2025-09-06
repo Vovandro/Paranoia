@@ -20,6 +20,7 @@ use (
 	./pkg/logger/file_log
 	./pkg/logger/sentry_log
 	./pkg/logger/std_log
+	./pkg/logger/mock_log
 	./pkg/server/grpc
 	./pkg/server/http
 	./pkg/server/kafka
