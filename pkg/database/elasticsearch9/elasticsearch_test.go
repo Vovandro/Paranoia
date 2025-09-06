@@ -78,7 +78,7 @@ func TestElastic_DeleteByQuery(t *testing.T) {
 		t.Fatalf("want >=2 got %d", cnt)
 	}
 
-	if err := es.DeleteByQuery(context.Background(), []string{es.name}, nil, true); err != nil {
+	if err := es.DeleteByQuery(context.Background(), []string{es.name}, map[string]any{"match_all": map[string]any{}}, true); err != nil {
 		t.Fatalf("delete by query err: %v", err)
 	}
 
