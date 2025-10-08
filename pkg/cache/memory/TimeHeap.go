@@ -14,7 +14,8 @@ func (t *TimeHeap) Len() int {
 }
 
 func (t *TimeHeap) Less(i, j int) bool {
-	return (*t)[i].time.After((*t)[j].time)
+	// min-heap by time: earlier time has higher priority
+	return (*t)[i].time.Before((*t)[j].time)
 }
 
 func (t *TimeHeap) Swap(i, j int) {
@@ -36,7 +37,8 @@ func (t *TimeHeap) Pop() any {
 
 func (t *TimeHeap) Top() any {
 	if len(*t) > 0 {
-		return (*t)[len(*t)-1]
+		// root of min-heap is at index 0
+		return (*t)[0]
 	}
 
 	return nil

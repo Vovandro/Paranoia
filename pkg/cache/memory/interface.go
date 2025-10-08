@@ -8,6 +8,7 @@ import (
 
 var ErrKeyNotFound = errors.New("key not found")
 var ErrTypeMismatch = errors.New("type mismatch")
+var ErrCapacityExceeded = errors.New("capacity exceeded")
 
 // IMemory defines the interface for the Memory struct, specifying behavior for interacting with Memory.
 type IMemory interface {

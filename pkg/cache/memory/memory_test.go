@@ -694,6 +694,110 @@ func TestMemory_ClearTimeout(t1 *testing.T) {
 	})
 }
 
+func TestMemory_Capacity_Error(t1 *testing.T) {
+	t := New("test")
+	err := t.Init(map[string]interface{}{
+		"time_clear":  0,
+		"shard_count": 2,
+		"max_entries": 1,
+		"on_limit":    "error",
+	})
+	if err != nil {
+		t1.Fatalf("Init() error = %v", err)
+	}
+	defer t.Stop()
+
+	if err := t.Set(context.Background(), "k1", "v1", time.Minute); err != nil {
+		t1.Fatalf("Set(k1) error = %v", err)
+	}
+	if err := t.Set(context.Background(), "k2", "v2", time.Minute); err == nil {
+		t1.Fatalf("Set(k2) expected ErrCapacityExceeded")
+	}
+}
+
+func TestMemory_Capacity_TTL(t1 *testing.T) {
+	t := New("test")
+	err := t.Init(map[string]interface{}{
+		"time_clear":  0,
+		"shard_count": 2,
+		"max_entries": 1,
+		"on_limit":    "ttl",
+	})
+	if err != nil {
+		t1.Fatalf("Init() error = %v", err)
+	}
+	defer t.Stop()
+
+	// k1 has earlier TTL than k2
+	_ = t.Set(context.Background(), "k1", "v1", time.Second*30)
+	_ = t.Set(context.Background(), "k2", "v2", time.Minute)
+
+	if _, err := t.Get(context.Background(), "k1"); err == nil {
+		t1.Fatalf("k1 should be evicted by ttl policy")
+	}
+	if v, err := t.Get(context.Background(), "k2"); err != nil || v != "v2" {
+		t1.Fatalf("k2 should remain, got %v, err %v", v, err)
+	}
+}
+
+func TestMemory_Capacity_LRU(t1 *testing.T) {
+	t := New("test")
+	err := t.Init(map[string]interface{}{
+		"time_clear":  time.Second, // irrelevant here
+		"shard_count": 1,
+		"max_entries": 2,
+		"on_limit":    "lru",
+	})
+	if err != nil {
+		t1.Fatalf("Init() error = %v", err)
+	}
+	defer t.Stop()
+
+	_ = t.Set(context.Background(), "k1", "v1", time.Minute)
+	_ = t.Set(context.Background(), "k2", "v2", time.Minute)
+	// touch k2 to make it MRU
+	if _, err := t.Get(context.Background(), "k2"); err != nil {
+		t1.Fatalf("Get(k2) error = %v", err)
+	}
+	// inserting k3 should evict LRU which is k1
+	_ = t.Set(context.Background(), "k3", "v3", time.Minute)
+
+	if _, err := t.Get(context.Background(), "k1"); err == nil {
+		t1.Fatalf("k1 should be evicted by lru policy")
+	}
+	if v, err := t.Get(context.Background(), "k2"); err != nil || v != "v2" {
+		t1.Fatalf("k2 should remain, got %v, err %v", v, err)
+	}
+	if v, err := t.Get(context.Background(), "k3"); err != nil || v != "v3" {
+		t1.Fatalf("k3 should remain, got %v, err %v", v, err)
+	}
+}
+
+func TestMemory_TTL_Order(t1 *testing.T) {
+	t := New("test")
+	err := t.Init(map[string]interface{}{
+		"time_clear":  time.Millisecond * 5,
+		"shard_count": 2,
+	})
+	if err != nil {
+		t1.Fatalf("Init() error = %v", err)
+	}
+	defer t.Stop()
+
+	// a expires earlier than b
+	_ = t.Set(context.Background(), "a", "va", time.Millisecond*20)
+	_ = t.Set(context.Background(), "b", "vb", time.Millisecond*100)
+
+	time.Sleep(time.Millisecond * 50)
+
+	if _, err := t.Get(context.Background(), "a"); err == nil {
+		t1.Fatalf("a should have expired first")
+	}
+	if v, err := t.Get(context.Background(), "b"); err != nil || v != "vb" {
+		t1.Fatalf("b should still exist, got %v, err %v", v, err)
+	}
+}
+
 func TestMemory_String(t1 *testing.T) {
 	type fields struct {
 		Name string
