@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"gitlab.com/devpro_studio/FeatureChaos/sdk/fc_sdk_go"
+	"gitlab.com/devpro_studio/fc_sdk_go"
 	"gitlab.com/devpro_studio/go_utils/decode"
 )
 
