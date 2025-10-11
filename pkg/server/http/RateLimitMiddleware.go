@@ -18,7 +18,7 @@ type RateLimitMiddleware struct {
 	mu      sync.RWMutex
 	buckets map[string]*bucket
 
-	keyFunc func(ICtx) (string, int)
+	keyFunc func(ICtx) (string, int, int)
 
 	stopCh        chan struct{}
 	cleanupTicker *time.Ticker
@@ -156,9 +156,9 @@ func (t *RateLimitMiddleware) Type() string { return "middleware" }
 
 func (t *RateLimitMiddleware) Invoke(next RouteFunc) RouteFunc {
 	return func(c context.Context, ctx ICtx) {
-		key, burst := t.keyFunc(ctx)
-		// If burst is 0, disable rate limiting for this request
-		if burst == 0 {
+		key, burst, reqs := t.keyFunc(ctx)
+		// If reqs is 0, disable rate limiting for this request
+		if reqs == 0 {
 			next(c, ctx)
 			return
 		}
@@ -182,11 +182,11 @@ func (t *RateLimitMiddleware) Invoke(next RouteFunc) RouteFunc {
 			t.mu.Unlock()
 		}
 
-		rate := float64(t.config.Requests) / t.config.Interval.Seconds()
+		rate := float64(reqs) / t.config.Interval.Seconds()
 		if rate <= 0 {
 			// Degenerate config: block everything immediately
 			hdr := ctx.GetResponse().Header()
-			hdr.Set("X-RateLimit-Limit", strconv.Itoa(t.config.Requests))
+			hdr.Set("X-RateLimit-Limit", strconv.Itoa(reqs))
 			hdr.Set("X-RateLimit-Remaining", "0")
 			hdr.Set("Retry-After", "1")
 			ctx.GetResponse().SetStatus(429)
@@ -208,7 +208,7 @@ func (t *RateLimitMiddleware) Invoke(next RouteFunc) RouteFunc {
 			b.mu.Unlock()
 
 			hdr := ctx.GetResponse().Header()
-			hdr.Set("X-RateLimit-Limit", strconv.Itoa(t.config.Requests))
+			hdr.Set("X-RateLimit-Limit", strconv.Itoa(reqs))
 			hdr.Set("X-RateLimit-Remaining", strconv.Itoa(remaining))
 
 			next(c, ctx)
@@ -223,7 +223,7 @@ func (t *RateLimitMiddleware) Invoke(next RouteFunc) RouteFunc {
 		b.mu.Unlock()
 
 		hdr := ctx.GetResponse().Header()
-		hdr.Set("X-RateLimit-Limit", strconv.Itoa(t.config.Requests))
+		hdr.Set("X-RateLimit-Limit", strconv.Itoa(reqs))
 		hdr.Set("X-RateLimit-Remaining", "0")
 		hdr.Set("Retry-After", strconv.Itoa(retryAfter))
 		hdr.Set("X-RateLimit-Reset", strconv.FormatInt(resetAt.Unix(), 10))
@@ -234,30 +234,31 @@ func (t *RateLimitMiddleware) Invoke(next RouteFunc) RouteFunc {
 }
 
 // SetKeyFunc allows overriding key building logic.
-// Custom function returns key and bucket capacity; capacity 0 disables rate limiting for the request.
-func (t *RateLimitMiddleware) SetKeyFunc(f func(ICtx) (string, int)) {
+// Custom function returns: key, bucket capacity (burst), requests per interval.
+// Capacity 0 disables rate limiting for the request; requests <= 0 falls back to config.Requests.
+func (t *RateLimitMiddleware) SetKeyFunc(f func(ICtx) (string, int, int)) {
 	t.keyFunc = f
 }
 
 // buildKeyDefault implements the default key strategy and returns default burst
-func (t *RateLimitMiddleware) buildKeyDefault(ctx ICtx) (string, int) {
+func (t *RateLimitMiddleware) buildKeyDefault(ctx ICtx) (string, int, int) {
 	req := ctx.GetRequest()
 	switch t.config.KeyStrategy {
 	case "global":
-		return "global", t.config.Burst
+		return "global", t.config.Burst, t.config.Requests
 	case "header":
 		v := req.GetHeader().Get(t.config.HeaderName)
 		if v == "" {
-			return "header:unknown", t.config.Burst
+			return "header:unknown", t.config.Burst, t.config.Requests
 		}
-		return "header:" + v, t.config.Burst
+		return "header:" + v, t.config.Burst, t.config.Requests
 	case "method_path":
-		return req.GetMethod() + " " + req.GetURI(), t.config.Burst
+		return req.GetMethod() + " " + req.GetURI(), t.config.Burst, t.config.Requests
 	case "ip_method_path":
-		return req.GetRemoteIP() + " " + req.GetMethod() + " " + req.GetURI(), t.config.Burst
+		return req.GetRemoteIP() + " " + req.GetMethod() + " " + req.GetURI(), t.config.Burst, t.config.Requests
 	case "ip":
 		fallthrough
 	default:
-		return req.GetRemoteIP(), t.config.Burst
+		return req.GetRemoteIP(), t.config.Burst, t.config.Requests
 	}
 }
