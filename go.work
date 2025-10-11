@@ -1,4 +1,4 @@
-go 1.23.4
+go 1.24.0
 
 use (
 	.
@@ -12,21 +12,21 @@ use (
 	./pkg/client/rabbitmq_client
 	./pkg/database/as
 	./pkg/database/clickhouse
+	./pkg/database/elasticsearch9
 	./pkg/database/mongodb
 	./pkg/database/mysql
 	./pkg/database/postgres
-	./pkg/database/elasticsearch9
 	./pkg/database/sqlite
+	./pkg/external/FeatureChaos
+	./pkg/external/NetLocker
 	./pkg/logger/file_log
+	./pkg/logger/mock_log
 	./pkg/logger/sentry_log
 	./pkg/logger/std_log
-	./pkg/logger/mock_log
 	./pkg/server/grpc
 	./pkg/server/http
 	./pkg/server/kafka
 	./pkg/server/rabbitmq
 	./pkg/storage/file
 	./pkg/storage/s3
-	./pkg/external/NetLocker
-	./pkg/external/FeatureChaos
 )

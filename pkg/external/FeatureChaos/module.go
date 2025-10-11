@@ -24,6 +24,7 @@ func New(name string) *FeatureChaos {
 type FeatureChaosConfig struct {
 	Host        string `yaml:"host"`
 	ServiceName string `yaml:"service_name"`
+	StorageDir  string `yaml:"storage_dir"`
 }
 
 func (t *FeatureChaos) Init(cfg map[string]interface{}) error {
@@ -47,6 +48,7 @@ func (t *FeatureChaos) Init(cfg map[string]interface{}) error {
 
 	t.fcClient, err = fc_sdk_go.New(ctx, t.cfg.Host, t.cfg.ServiceName, fc_sdk_go.Options{
 		AutoSendStats: true,
+		StorageDir:    t.cfg.StorageDir,
 	})
 
 	return err
