@@ -266,14 +266,14 @@ func initPostgresTest(name string) *Postgres {
 		panic(err)
 	}
 
-	_, err = db.client.Exec(context.Background(), "create table if not exists "+name+" (id integer primary key, name varchar(255), balance float not null, created_at timestamp)")
+	_, err = db.pool.Exec(context.Background(), "create table if not exists "+name+" (id integer primary key, name varchar(255), balance float not null, created_at timestamp)")
 
 	if err != nil {
 		closePostgresTest(db)
 		panic(err)
 	}
 
-	_, err = db.client.Exec(context.Background(), `insert into `+name+` (id, name, balance, created_at) values
+	_, err = db.pool.Exec(context.Background(), `insert into `+name+` (id, name, balance, created_at) values
 						 (1, 'test', 1.0, now()), (2, 'test2', 0.0, now()), (3, null, 50.0, now());`)
 
 	if err != nil {

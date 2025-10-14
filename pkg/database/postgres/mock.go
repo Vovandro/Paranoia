@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Mock implements IPostgres for tests. It records calls and returns configured results.
@@ -110,7 +110,7 @@ func (m *Mock) BeginTx(ctx context.Context) (SQLTx, error) {
 	return &MockTx{}, nil
 }
 
-func (m *Mock) GetDb() *pgx.Conn {
+func (m *Mock) GetDb() *pgxpool.Pool {
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
@@ -15,7 +16,7 @@ import (
 type Postgres struct {
 	name   string
 	config Config
-	client *pgx.Conn
+	pool   *pgxpool.Pool
 
 	counter     metric.Int64Counter
 	timeCounter metric.Int64Histogram
@@ -41,8 +42,12 @@ func (t *Postgres) Init(cfg map[string]interface{}) error {
 		return errors.New("URI is required")
 	}
 
-	t.client, err = pgx.Connect(context.TODO(), t.config.URI)
+	poolCfg, err := pgxpool.ParseConfig(t.config.URI)
+	if err != nil {
+		return err
+	}
 
+	t.pool, err = pgxpool.NewWithConfig(context.TODO(), poolCfg)
 	if err != nil {
 		return err
 	}
@@ -50,11 +55,12 @@ func (t *Postgres) Init(cfg map[string]interface{}) error {
 	t.counter, _ = otel.Meter("").Int64Counter("postgres." + t.name + ".count")
 	t.timeCounter, _ = otel.Meter("").Int64Histogram("postgres." + t.name + ".time")
 
-	return t.client.Ping(context.TODO())
+	return t.pool.Ping(context.TODO())
 }
 
 func (t *Postgres) Stop() error {
-	return t.client.Close(context.TODO())
+	t.pool.Close()
+	return nil
 }
 
 func (t *Postgres) Name() string {
@@ -71,7 +77,7 @@ func (t *Postgres) Query(ctx context.Context, query string, args ...interface{})
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	find, err := t.client.Query(ctx, query, args...)
+	find, err := t.pool.Query(ctx, query, args...)
 
 	if err != nil {
 		return nil, err
@@ -86,7 +92,7 @@ func (t *Postgres) QueryRow(ctx context.Context, query string, args ...interface
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	find := t.client.QueryRow(ctx, query, args...)
+	find := t.pool.QueryRow(ctx, query, args...)
 
 	if find == nil {
 		return nil, fmt.Errorf(query + " not found")
@@ -101,18 +107,18 @@ func (t *Postgres) Exec(ctx context.Context, query string, args ...interface{}) 
 	}(time.Now())
 	t.counter.Add(context.Background(), 1)
 
-	_, err := t.client.Exec(ctx, query, args...)
+	_, err := t.pool.Exec(ctx, query, args...)
 
 	return err
 }
 
-func (t *Postgres) GetDb() *pgx.Conn {
-	return t.client
+func (t *Postgres) GetDb() *pgxpool.Pool {
+	return t.pool
 }
 
 // BeginTx starts a transaction with metrics tracking
 func (t *Postgres) BeginTx(ctx context.Context) (SQLTx, error) {
-	tx, err := t.client.Begin(ctx)
+	tx, err := t.pool.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}

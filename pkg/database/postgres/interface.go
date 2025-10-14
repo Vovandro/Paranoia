@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // IPostgres defines the interface for Postgres operations
@@ -20,8 +20,8 @@ type IPostgres interface {
 	// BeginTx starts a new transaction
 	BeginTx(ctx context.Context) (SQLTx, error)
 
-	// GetDb returns the Postgres client instance
-	GetDb() *pgx.Conn
+	// GetDb returns the Postgres pool instance
+	GetDb() *pgxpool.Pool
 }
 
 type SQLRow interface {
