@@ -9,6 +9,8 @@ goupdate() {
 
   go get -u ./... "$@"
 
+  go mod tidy
+
   cd $ROOT
 }
 

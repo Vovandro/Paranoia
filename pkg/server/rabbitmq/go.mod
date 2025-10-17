@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/rabbitmq/amqp091-go v1.10.0
+	gitlab.com/devpro_studio/Paranoia v0.0.0-00010101000000-000000000000
 	gitlab.com/devpro_studio/go_utils v1.1.5
 	go.opentelemetry.io/otel v1.38.0
 	go.opentelemetry.io/otel/metric v1.38.0
