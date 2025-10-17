@@ -2,14 +2,22 @@ package NetLocker
 
 import (
 	"context"
+	"errors"
 
-	"gitlab.com/devpro_studio/Paranoia/pkg/client/grpc_client"
+	"gitlab.com/devpro_studio/go_utils/decode"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type NetLocker struct {
-	NamePkg    string
-	grpcClient *grpc_client.GrpcClient
-	client     NetLockerServiceClient
+	NamePkg string
+	conn    *grpc.ClientConn
+	client  NetLockerServiceClient
+}
+
+type config struct {
+	Url string `yaml:"url"`
 }
 
 func New(name string) *NetLocker {
@@ -19,18 +27,33 @@ func New(name string) *NetLocker {
 }
 
 func (t *NetLocker) Init(cfg map[string]interface{}) error {
-	t.grpcClient = grpc_client.New(t.NamePkg)
-	err := t.grpcClient.Init(cfg)
+	var c config
+	if err := decode.Decode(cfg, &c, "yaml", decode.DecoderStrongFoundDst); err != nil {
+		return err
+	}
+	if c.Url == "" {
+		return errors.New("url is required")
+	}
+
+	conn, err := grpc.Dial(
+		c.Url,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+	)
 	if err != nil {
 		return err
 	}
 
-	t.client = NewNetLockerServiceClient(t.grpcClient.GetClient())
+	t.conn = conn
+	t.client = NewNetLockerServiceClient(conn)
 
 	return nil
 }
 
 func (t *NetLocker) Stop() error {
+	if t.conn != nil {
+		return t.conn.Close()
+	}
 	return nil
 }
 
