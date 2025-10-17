@@ -6,10 +6,10 @@ import (
 
 	"gitlab.com/devpro_studio/go_utils/decode"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 )
 
 type MetricOtlpGrpc struct {
@@ -37,8 +37,8 @@ func (t *MetricOtlpGrpc) Init(cfg map[string]interface{}) error {
 	}
 
 	res, err := resource.Merge(resource.Default(),
-		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(t.config.ServiceName),
+		resource.NewSchemaless(
+			attribute.String("service.name", t.config.ServiceName),
 		))
 
 	if err != nil {

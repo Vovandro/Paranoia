@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -95,7 +94,7 @@ func (t *Postgres) QueryRow(ctx context.Context, query string, args ...interface
 	find := t.pool.QueryRow(ctx, query, args...)
 
 	if find == nil {
-		return nil, fmt.Errorf(query + " not found")
+		return nil, errors.New(query + " not found")
 	}
 
 	return find, nil
@@ -152,7 +151,7 @@ func (p *PGSQLTx) QueryRow(ctx context.Context, query string, args ...interface{
 
 	row := p.tx.QueryRow(ctx, query, args...)
 	if row == nil {
-		return nil, fmt.Errorf(query + " not found")
+		return nil, errors.New(query + " not found")
 	}
 	return row, nil
 }
